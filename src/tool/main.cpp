@@ -34,8 +34,7 @@ main(void)
 		inst->initialize();
 
 		// TODO
-		nimble_uid_class uid;
-		std::cout << inst->to_string(true) << std::endl;
+		
 		// ---
 
 		inst->uninitialize();

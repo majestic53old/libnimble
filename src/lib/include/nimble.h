@@ -39,6 +39,14 @@ using namespace NIMBLE;
 
 using namespace NIMBLE::COMPONENT;
 
+#ifndef LANGUAGE
+#define LANGUAGE lang
+#endif // LANGUAGE
+
+#include "nimble_lexer.h"
+
+using namespace NIMBLE::LANGUAGE;
+
 namespace NIMBLE {
 
 	typedef class _nimble {

@@ -28,11 +28,11 @@ all: build archive
 archive:
 	@echo ''
 	@echo '--- BUILDING LIBRARY -----------------------'
-	ar rcs $(DIR_BUILD)$(LIB) $(DIR_BUILD)nimble.o $(DIR_BUILD)nimble_exception.o $(DIR_BUILD)nimble_uid.o
+	ar rcs $(DIR_BUILD)$(LIB) $(DIR_BUILD)nimble.o $(DIR_BUILD)nimble_exception.o $(DIR_BUILD)nimble_lexer.o $(DIR_BUILD)nimble_uid.o
 	@echo '--- DONE -----------------------------------'
 	@echo ''
 
-build: nimble.o nimble_exception.o nimble_uid.o
+build: nimble.o nimble_exception.o nimble_lexer.o nimble_uid.o
 
 nimble.o: $(DIR_SRC)nimble.cpp $(DIR_INC)nimble.h
 	$(CC) $(CC_FLAGS) -c $(DIR_SRC)nimble.cpp -o $(DIR_BUILD)nimble.o
@@ -46,3 +46,6 @@ nimble_uid.o: $(DIR_SRC)nimble_uid.cpp $(DIR_INC)nimble_uid.h
 	$(CC) $(CC_FLAGS) -c $(DIR_SRC)nimble_uid.cpp -o $(DIR_BUILD)nimble_uid.o
 
 # LANGUAGE
+
+nimble_lexer.o: $(DIR_SRC)nimble_lexer.cpp $(DIR_INC)nimble_lexer.h
+	$(CC) $(CC_FLAGS) -c $(DIR_SRC)nimble_lexer.cpp -o $(DIR_BUILD)nimble_lexer.o
