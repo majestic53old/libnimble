@@ -25,6 +25,7 @@ namespace NIMBLE {
 	nimble_ptr nimble::m_instance = NULL;
 
 	_nimble::_nimble(void) :
+		m_factory_uid(nimble_uid_factory::acquire()),
 		m_initialized(false)
 	{
 		std::atexit(nimble::_delete);
@@ -63,6 +64,13 @@ namespace NIMBLE {
 		return nimble::m_instance;
 	}
 
+	nimble_uid_factory_ptr 
+	_nimble::acquire_uid(void)
+	{
+		SERIALIZE_CALL_RECUR(m_lock);
+		return m_factory_uid;
+	}
+
 	void 
 	_nimble::initialize(void)
 	{
@@ -73,6 +81,7 @@ namespace NIMBLE {
 		}
 
 		m_initialized = true;
+		m_factory_uid->initialize();
 
 		// TODO: initialize components
 	}
@@ -105,6 +114,8 @@ namespace NIMBLE {
 			result << " (" << VAL_AS_HEX(nimble_ptr, this) << ")";
 		}
 
+		result << std::endl << m_factory_uid->to_string(verbose);
+
 		// TODO: print components
 
 		return CHK_STR(result.str());
@@ -121,6 +132,7 @@ namespace NIMBLE {
 
 		// TODO: uninitialize components
 
+		m_factory_uid->uninitialize();
 		m_initialized = false;
 	}
 

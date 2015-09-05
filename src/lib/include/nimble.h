@@ -49,6 +49,8 @@ namespace NIMBLE {
 
 			static _nimble *acquire(void);
 
+			nimble_uid_factory_ptr acquire_uid(void);
+
 			void initialize(void);
 
 			static bool is_allocated(void);
@@ -76,6 +78,8 @@ namespace NIMBLE {
 				);
 
 			static void _delete(void);
+
+			nimble_uid_factory_ptr m_factory_uid;
 
 			bool m_initialized;
 

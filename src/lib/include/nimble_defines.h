@@ -40,9 +40,11 @@ namespace NIMBLE {
 	#define EMPTY "(EMPTY)"
 	#define UNKNOWN "(UNKNOWN)"
 
+	#define REF_INITIAL 1
+
 	#define VER_MAJ 0
 	#define VER_MIN 1
-	#define VER_REV 2
+	#define VER_REV 3
 	#define VER_WEEK 1536
 
 	#define _CAT_STR(_STR_) # _STR_

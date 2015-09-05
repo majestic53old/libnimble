@@ -35,6 +35,8 @@ namespace NIMBLE {
 		enum {
 			NIMBLE_UID_EXCEPTION_ALLOCATION = 0,
 			NIMBLE_UID_EXCEPTION_INITIALIZED,
+			NIMBLE_UID_EXCEPTION_NOT_FOUND,
+			NIMBLE_UID_EXCEPTION_RESOURCES,
 			NIMBLE_UID_EXCEPTION_UNINITIALIZED,
 		};
 
@@ -43,6 +45,8 @@ namespace NIMBLE {
 		static const std::string NIMBLE_UID_EXCEPTION_STR[] = {
 			NIMBLE_UID_EXCEPTION_HEADER " Failed to allocate Uid component",
 			NIMBLE_UID_EXCEPTION_HEADER " Uid component is initialized",
+			NIMBLE_UID_EXCEPTION_HEADER " Uid does not exist",
+			NIMBLE_UID_EXCEPTION_HEADER " Uid factory is full",
 			NIMBLE_UID_EXCEPTION_HEADER " Uid component is uninitialized",
 			};
 

@@ -13,6 +13,10 @@ Changelog
 =========
 
 ##Version 0.1.1536
+*Updated:9/5/2105*
+
+* Added Uid factory component
+
 *Updated:9/3/2015*
 
 * Initial commit
