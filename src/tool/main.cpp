@@ -34,7 +34,19 @@ main(void)
 		inst->initialize();
 
 		// TODO
-		
+		nimble_lexer_base base("./test/test_lexer_base", true);
+
+		while(base.has_next_character()) {
+			std::cout << base.to_string(true) << std::endl;
+			base.move_next_character();
+		}
+
+		std::cout << base.to_string(true) << std::endl;
+
+		while(base.has_previous_character()) {
+			base.move_previous_character();
+			std::cout << base.to_string(true) << std::endl;
+		}
 		// ---
 
 		inst->uninitialize();

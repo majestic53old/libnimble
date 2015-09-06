@@ -26,8 +26,11 @@ namespace NIMBLE {
 
 	namespace LANGUAGE {
 
-		#define CHAR_END '\0'
-		#define CHAR_NEWLINE '\n'
+		#define CHAR_CARAGE_RETURN '\r'
+		#define CHAR_END_OF_FILE '\0'
+		#define CHAR_LINE_FEED '\n'
+		#define CHAR_SPACE ' '
+		#define CHAR_TAB '\t'
 
 		typedef enum {
 			CHAR_CLASS_ALPHA = 0,
@@ -56,6 +59,11 @@ namespace NIMBLE {
 
 				_nimble_lexer_base &operator=(
 					__in const _nimble_lexer_base &other
+					);
+
+				static std::string as_string(
+					__in char ch,
+					__in_opt bool verbose = false
 					);
 
 				char character(void);
@@ -111,13 +119,19 @@ namespace NIMBLE {
 
 			protected:
 
-				std::map<size_t, std::pair<std::string, size_t>>::iterator find_line(
+				std::map<size_t, std::pair<size_t, std::string>>::iterator find_line(
 					__in size_t row
+					);
+
+				bool is_newline(
+					__in size_t position,
+					__in bool forward,
+					__out_opt size_t *length = NULL
 					);
 
 				size_t m_char_column;
 
-				std::map<size_t, std::pair<std::string, size_t>> m_char_line;
+				std::map<size_t, std::pair<size_t, std::string>> m_char_line;
 
 				size_t m_char_position;
 

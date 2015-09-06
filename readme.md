@@ -13,7 +13,11 @@ Changelog
 =========
 
 ##Version 0.1.1536
-*Updated:9/5/2105*
+*Updated:9/6/2015*
+
+* Implemented lexer base class
+
+*Updated:9/5/2015*
 
 * Added Uid factory component
 
