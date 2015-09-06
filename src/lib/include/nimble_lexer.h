@@ -72,6 +72,11 @@ namespace NIMBLE {
 
 				size_t character_column(void);
 
+				std::string character_exception(
+					__in_opt size_t tab = 0,
+					__in_opt bool verbose = false
+					);
+
 				std::string character_line(void);
 
 				size_t character_position(void);

@@ -20,7 +20,11 @@
 #include "../lib/include/nimble.h"
 
 int 
-main(void)
+main(
+	__in int argc,
+	__in const char **argv,
+	__in const char **envp
+	)
 {
 	int result = 0;
 	nimble_ptr inst = NULL;

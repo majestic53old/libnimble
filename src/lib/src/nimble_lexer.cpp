@@ -166,6 +166,73 @@ namespace NIMBLE {
 		}
 
 		std::string 
+		_nimble_lexer_base::character_exception(
+			__in_opt size_t tab,
+			__in_opt bool verbose
+			)
+		{						
+			std::string line;
+			size_t iter, off = 0;
+			std::stringstream result;
+			std::string::iterator ch_iter;
+
+			SERIALIZE_CALL_RECUR(m_lock);
+
+			for(iter = 0; iter < tab; ++iter) {
+				result << CHAR_TAB;
+			}
+
+			line = CHK_STR(character_line());
+			for(ch_iter = line.begin(), iter = 0; ch_iter != line.end(); ++ch_iter, ++iter) {
+
+				if(iter < m_char_column) {
+
+					switch(*ch_iter) {
+						case  CHAR_CARAGE_RETURN:
+						case CHAR_LINE_FEED:
+						case CHAR_TAB:
+							++off;
+							break;
+					}
+				}
+
+				result << nimble_lexer_base::as_string(*ch_iter, verbose);
+			}
+
+			if(result.str().back() != CHAR_LINE_FEED) {
+				result << std::endl;
+			}
+
+			for(iter = 0; iter < tab; ++iter) {
+				result << CHAR_TAB;
+			}
+
+			for(iter = 0; iter < (m_char_column + off); ++iter) {
+				result << CHAR_SPACE;
+			}
+
+			result << "^";
+
+			if(verbose) {
+				result << std::endl;
+
+				for(iter = 0; iter <= tab; ++iter) {
+					result << CHAR_TAB;
+				}
+
+				result << "(";
+
+				if(has_path()) {
+					result << CHK_STR(m_path) << ":";
+				}
+
+				result << m_char_row << ":" << m_char_column << ")";
+			}
+
+			return CHK_STR(result.str());
+		}
+
+		std::string 
 		_nimble_lexer_base::character_line(void)
 		{
 			SERIALIZE_CALL_RECUR(m_lock);
