@@ -262,7 +262,7 @@ namespace NIMBLE {
 		signal_set();
 		environment_update(environment);
 
-		// TODO: prompt format: <USER> <PWD> %>
+		// TODO: prompt format: <USER> <PWD> %> 
 
 		try {
 
