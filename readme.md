@@ -13,6 +13,10 @@ Changelog
 =========
 
 ##Version 0.1.1536
+*Updated:9/7/2015*
+
+* Added skinnable color prompt
+
 *Updated:9/6/2015*
 
 * Implemented lexer base class
