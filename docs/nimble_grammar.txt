@@ -5,23 +5,11 @@ immediate ::= 0 ['b' | 'B'][0-1]+
 	| [0-7]+
 	| ['-']?[8-9][0-9]*('.'[0-9]*)?
 
-keyword ::= 'break' | 'continue' | 'elif' | 'else' | 'end' | 'endif' | 'goto' | 'if' | 'set' | 'while'
-
 literal ::= '\"' .* '\"' | .* ';' | .*\n
 
 mode :: '&'
 
 modifier ::= '$'
-
-operator_arithmetic ::= '+' | '-' | '*' | '/' | '%'
-
-operator_equivalence ::= '==' | '!=' | '<' | '>' | '<=' | '>='
-
-operator_bitwise ::= '&' | '|' | '^'
-
-operator_logical ::= '>>' | '<<' | '&&' | '||'
-
-operator_unary ::= '-' | '~' | '!'
 
 redirect_input ::= '<'
 
@@ -29,7 +17,7 @@ redirect_output ::= '>' | '>&' | '>!' | '>&!' | '>>' | '>>&'
 
 redirect_pipe ::= '|'
 
-symbol ::= '=' | ':' | ';' | '(' | ')'
+symbol ::= ';' | '(' | ')'
 
 ---
 
@@ -46,19 +34,11 @@ symbol ::= '=' | ':' | ';' | '(' | ')'
 # >>&	Append standard output and standard error
 #
 
-statement ::= <assignment> | <builtin> | <command> | <comment> | <directive> | <label>
+statement ::= <command_0> <mode>?
 
-assignment ::= <assignment_list>
-
-assignment_define ::= 'set' <identifier> '=' ((<modifier> <identifier>) | <immediate> | <literal>)
-
-assignment_list ::= <assignment_define> (';' <assignment>)*
-
-builtin ::= 'break' 
-	| 'continue'
-	| 'goto' ((<modifier> <identifier>) | <immediate>)
-
-command ::= <command_0> <mode>?
+argument ::= (<modifier> <identifier>) 
+	| <immediate> 
+	| <literal>
 
 command_0 ::= <command_1> <command_0p>*
 
@@ -76,22 +56,6 @@ command_3 ::= '(' <command_0> ')'
 	| <command_call_list>
 	| <modifier> <identifier>
 
-command_call ::= <literal> <argument_list>
+command_call ::= (<identifier> | <literal>) <argument>*
 
 command_call_list ::= <command_call> (';' <command_call_list>)*
-
-comment ::= '#'.*\n
-
-directive ::= <directive_if> | <directive_while>
-
-directive_elif ::= 'elif' '(' <expression> ')' <statement>*
-
-directive_else ::= 'else' <statement>*
-
-directive_if ::= 'if' '(' <expression> ')' <statement>* <directive_elif>* <directive_else>? 'endif'
-
-directive_while ::= 'while' '(' <expression> ')' <statement>* 'end'
-
-expression ::= 
-
-label ::= <identifier ':'

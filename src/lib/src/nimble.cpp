@@ -17,10 +17,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <csignal>
+#include <cstdlib>
 #include "../include/nimble.h"
 #include "../include/nimble_type.h"
 
 namespace NIMBLE {
+
+	#define CHAR_ENV_ASSIGN '='
+	#define ENV_PWD "PWD"
+	#define ENV_USER "USER"
 
 	nimble_ptr nimble::m_instance = NULL;
 
@@ -49,6 +55,62 @@ namespace NIMBLE {
 		}
 	}
 
+	void 
+	_nimble::_signal_abort(
+		__in int sig
+		)
+	{
+		std::cout << std::endl << "Aborted" << std::endl;
+		std::exit(sig);
+	}
+
+	void 
+	_nimble::_signal_attention(
+		__in int sig
+		)
+	{
+		std::cout << std::endl << "User interrupt detected." << std::endl;
+
+
+		// TODO
+	}
+
+	void 
+	_nimble::_signal_float(
+		__in int sig
+		)
+	{
+		std::cout << std::endl << "Floating-point exception" << std::endl;
+		std::exit(sig);
+	}
+
+	void 
+	_nimble::_signal_illegal(
+		__in int sig
+		)
+	{
+		std::cout << std::endl << "Illegal operation" << std::endl;
+		std::exit(sig);
+	}
+
+	void 
+	_nimble::_signal_invalid(
+		__in int sig
+		)
+	{
+		std::cout << std::endl << "Segmentation fault" << std::endl;
+		std::exit(sig);
+	}
+
+	void 
+	_nimble::_signal_terminate(
+		__in int sig
+		)
+	{
+		std::cout << std::endl << "Terminated" << std::endl;
+		std::exit(sig);
+	}
+
 	nimble_ptr 
 	_nimble::acquire(void)
 	{
@@ -71,6 +133,71 @@ namespace NIMBLE {
 		return m_factory_uid;
 	}
 
+	std::map<std::string, std::string>::iterator 
+	_nimble::environment_find(
+		__in const std::string &field
+		)
+	{
+		SERIALIZE_CALL_RECUR(m_lock);
+
+		if(!m_initialized) {
+			THROW_NIMBLE_EXCEPTION(NIMBLE_EXCEPTION_UNINITIALIZED);
+		}
+
+		return m_environment_map.find(field);
+	}
+
+	void 
+	_nimble::environment_update(
+		__in_opt const char **environment,
+		__in_opt const char *entry
+		)
+	{
+		size_t len;
+		std::string field;
+		const char *value = NULL;
+		std::map<std::string, std::string>::iterator iter;
+
+		SERIALIZE_CALL_RECUR(m_lock);
+
+		if(!m_initialized) {
+			THROW_NIMBLE_EXCEPTION(NIMBLE_EXCEPTION_UNINITIALIZED);
+		}
+
+		if(!environment) {
+
+			if(entry) {
+
+				value = std::getenv(entry);
+				if(value) {
+
+					iter = environment_find(entry);
+					if(iter == m_environment_map.end()) {
+						m_environment_map.insert(std::pair<std::string, std::string>(
+							entry, value));
+					} else {
+						iter->second = value;
+					}
+				}
+			}
+		} else {
+			m_environment_map.clear();
+
+			for(; environment != NULL; ++environment) {
+
+				if(!*environment) {
+					break;
+				}
+
+				field = *environment;
+				len = field.find_first_of(CHAR_ENV_ASSIGN);
+				m_environment_map.insert(std::pair<std::string, std::string>(
+					field.substr(0, len),
+					field.substr(len + 1, field.size())));
+			}
+		}
+	}
+
 	void 
 	_nimble::initialize(void)
 	{
@@ -81,6 +208,7 @@ namespace NIMBLE {
 		}
 
 		m_initialized = true;
+		m_environment_map.clear();
 		m_factory_uid->initialize();
 
 		// TODO: initialize components
@@ -97,6 +225,60 @@ namespace NIMBLE {
 	{
 		SERIALIZE_CALL_RECUR(m_lock);
 		return m_initialized;
+	}
+
+	void 
+	_nimble::signal_set(void)
+	{
+		SERIALIZE_CALL_RECUR(m_lock);
+
+		if(!m_initialized) {
+			THROW_NIMBLE_EXCEPTION(NIMBLE_EXCEPTION_UNINITIALIZED);
+		}
+
+		std::signal(SIGABRT, nimble::_signal_abort);
+		std::signal(SIGINT, nimble::_signal_attention);
+		std::signal(SIGFPE, nimble::_signal_float);
+		std::signal(SIGILL, nimble::_signal_illegal);
+		std::signal(SIGSEGV, nimble::_signal_invalid);
+		std::signal(SIGTERM, nimble::_signal_terminate);
+	}
+
+	int 
+	_nimble::start(
+		__in int count,
+		__in const char **arguments,
+		__in const char **environment
+		)
+	{
+		int result = 0;
+
+		SERIALIZE_CALL_RECUR(m_lock);
+
+		if(!m_initialized) {
+			THROW_NIMBLE_EXCEPTION(NIMBLE_EXCEPTION_UNINITIALIZED);
+		}
+
+		signal_set();
+		environment_update(environment);
+
+		// TODO: prompt format: <USER> <PWD> %>
+
+		try {
+
+			/*for(;;) {
+
+				// TODO
+			}*/
+		} catch(nimble_exception &exc) {
+			std::cerr << exc.to_string(true) << std::endl;
+			result = INVALID(int);
+		} catch(std::exception &exc) {
+			std::cerr << exc.what() << std::endl;
+			result = INVALID(int);
+		}
+
+		return result;
 	}
 
 	std::string 
@@ -133,6 +315,7 @@ namespace NIMBLE {
 		// TODO: uninitialize components
 
 		m_factory_uid->uninitialize();
+		m_environment_map.clear();
 		m_initialized = false;
 	}
 

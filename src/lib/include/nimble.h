@@ -22,6 +22,8 @@
 
 //#define NDEBUG
 
+#include <map>
+
 #ifndef NIMBLE
 #define NIMBLE nb
 #endif // NIMBLE
@@ -65,6 +67,12 @@ namespace NIMBLE {
 
 			bool is_initialized(void);
 
+			int start(
+				__in int count,
+				__in const char **arguments,
+				__in const char **environment
+				);
+
 			std::string to_string(
 				__in_opt bool verbose = false
 				);
@@ -86,6 +94,43 @@ namespace NIMBLE {
 				);
 
 			static void _delete(void);
+
+			static void _signal_abort(
+				__in int sig
+				);
+
+			static void _signal_attention(
+				__in int sig
+				);
+
+			static void _signal_float(
+				__in int sig
+				);
+
+			static void _signal_illegal(
+				__in int sig
+				);
+
+			static void _signal_invalid(
+				__in int sig
+				);
+
+			static void _signal_terminate(
+				__in int sig
+				);
+
+			std::map<std::string, std::string>::iterator environment_find(
+				__in const std::string &field
+				);
+
+			void environment_update(
+				__in_opt const char **environment = NULL,
+				__in_opt const char *entry = NULL
+				);
+
+			void signal_set(void);		
+
+			std::map<std::string, std::string> m_environment_map;
 
 			nimble_uid_factory_ptr m_factory_uid;
 
