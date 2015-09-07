@@ -167,7 +167,7 @@ namespace NIMBLE {
 
 		std::string 
 		_nimble_lexer_base::character_exception(
-			__in_opt size_t tab,
+			__in_opt size_t tabs,
 			__in_opt bool verbose
 			)
 		{						
@@ -178,7 +178,7 @@ namespace NIMBLE {
 
 			SERIALIZE_CALL_RECUR(m_lock);
 
-			for(iter = 0; iter < tab; ++iter) {
+			for(iter = 0; iter < tabs; ++iter) {
 				result << CHAR_TAB;
 			}
 
@@ -203,7 +203,7 @@ namespace NIMBLE {
 				result << std::endl;
 			}
 
-			for(iter = 0; iter < tab; ++iter) {
+			for(iter = 0; iter < tabs; ++iter) {
 				result << CHAR_TAB;
 			}
 
@@ -216,7 +216,7 @@ namespace NIMBLE {
 			if(verbose) {
 				result << std::endl;
 
-				for(iter = 0; iter <= tab; ++iter) {
+				for(iter = 0; iter <= tabs; ++iter) {
 					result << CHAR_TAB;
 				}
 

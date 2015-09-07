@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 CC=clang++
-CC_FLAGS=-march=native -pthread -std=gnu++11 -O3 -Wall -Werror
+CC_FLAGS=-march=native -lncurses -pthread -std=gnu++11 -O3 -Wall -Werror
 DIR_BIN=./../../bin/
 DIR_BUILD=./../../build/
 DIR_INC=./include/

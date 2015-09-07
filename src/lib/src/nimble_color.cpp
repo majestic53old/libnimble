@@ -17,30 +17,42 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../lib/include/nimble.h"
+#include <cstdlib>
+#include <term.h>
+#include "../include/nimble.h"
 
-int 
-main(
-	__in int argc,
-	__in const char **argv,
-	__in const char **envp
-	)
-{
-	int result = 0;
-	nimble_ptr inst = NULL;
+namespace NIMBLE {
 
-	try {
-		inst = nimble::acquire();
-		inst->initialize();
-		result = inst->start(argc, argv, envp);
-		inst->uninitialize();
-	} catch(nimble_exception &exc) {
-		std::cerr << "Nimble exception: " << exc.to_string(true) << std::endl;
-		result = INVALID(int);
-	} catch(std::exception &exc) {
-		std::cerr << "Exception: " << exc.what() << std::endl;
-		result = INVALID(int);
+	#define TERM_MAX_COL ((char *) "Co")
+
+	void 
+	_nimble_color::clear(
+		__in std::ostream &stream
+		)
+	{
+		nimble_color::set(stream, COL_FORM_RESET);
 	}
-	
-	return result;
+
+	bool 
+	_nimble_color::is_supported(void)
+	{
+		int max;
+		bool result = true;
+
+		max = tgetnum(TERM_MAX_COL);
+		if(max != INVALID(int)) {
+			result = (max >= 8);
+		}
+
+		return result;
+	}
+
+	void 
+	_nimble_color::set(
+		__in std::ostream &stream,
+		__in nimble_col_t color
+		)
+	{
+		stream << "\e[" << color << "m";
+	}
 }

@@ -25,6 +25,8 @@
 namespace NIMBLE {
 
 	#define CHAR_ENV_ASSIGN '='
+	#define CHAR_ENV_HOME '~'
+	#define ENV_HOME "HOME"
 	#define ENV_PWD "PWD"
 	#define ENV_USER "USER"
 
@@ -69,10 +71,8 @@ namespace NIMBLE {
 		__in int sig
 		)
 	{
-		std::cout << std::endl << "User interrupt detected." << std::endl;
-
-
 		// TODO
+		std::exit(sig);
 	}
 
 	void 
@@ -131,6 +131,65 @@ namespace NIMBLE {
 	{
 		SERIALIZE_CALL_RECUR(m_lock);
 		return m_factory_uid;
+	}
+
+	void 
+	_nimble::display_prompt(
+		__in std::string &home,
+		__in std::string &pwd,
+		__in std::string &user,
+		__in_opt bool advance,
+		__in_opt bool update
+		)
+	{
+		bool color;
+		size_t pos = 0;
+
+		SERIALIZE_CALL_RECUR(m_lock);
+
+		if(!m_initialized) {
+			THROW_NIMBLE_EXCEPTION(NIMBLE_EXCEPTION_UNINITIALIZED);
+		}
+
+		if(update) {
+			home = environment_find(ENV_HOME)->second;
+			pwd = environment_find(ENV_PWD)->second;
+			user = environment_find(ENV_USER)->second;
+
+			pos = pwd.find(home, pos);
+			if(pos != std::string::npos) {
+				pwd.replace(pos, home.size(), std::string(1, CHAR_ENV_HOME));
+			}
+		}
+
+		if(advance) {
+			std::cout << std::endl;
+		}
+
+		color = nimble_color::is_supported();
+		if(color) {
+			nimble_color::set(std::cout, COL_FORE_GREEN);
+		}
+
+		std::cout << "[" << pwd << "]" << std::endl;
+
+		if(color) {
+			nimble_color::clear(std::cout);
+			nimble_color::set(std::cout, COL_FORE_CYAN);
+		}
+
+		std::cout << user;
+
+		if(color) {
+			nimble_color::clear(std::cout);
+			nimble_color::set(std::cout, COL_FORE_YELLOW);
+		}
+
+		std::cout << " -> ";
+
+		if(color) {
+			nimble_color::clear(std::cout);
+		}
 	}
 
 	std::map<std::string, std::string>::iterator 
@@ -250,8 +309,10 @@ namespace NIMBLE {
 		__in const char **arguments,
 		__in const char **environment
 		)
-	{
+	{		
 		int result = 0;
+		bool update = true;
+		std::string home, input, pwd, user;
 
 		SERIALIZE_CALL_RECUR(m_lock);
 
@@ -262,14 +323,19 @@ namespace NIMBLE {
 		signal_set();
 		environment_update(environment);
 
-		// TODO: prompt format: <USER> <PWD> %> 
-
 		try {
 
-			/*for(;;) {
+			for(;;) {
+				display_prompt(home, pwd, user, true, update);
+
+				if(update) {
+					update = false;
+				}
+
+				std::getline(std::cin, input);
 
 				// TODO
-			}*/
+			}
 		} catch(nimble_exception &exc) {
 			std::cerr << exc.to_string(true) << std::endl;
 			result = INVALID(int);

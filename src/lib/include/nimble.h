@@ -30,6 +30,7 @@
 
 #include "nimble_defines.h"
 #include "nimble_exception.h"
+#include "nimble_color.h"
 
 using namespace NIMBLE;
 
@@ -117,6 +118,14 @@ namespace NIMBLE {
 
 			static void _signal_terminate(
 				__in int sig
+				);
+
+			void display_prompt(
+				__in std::string &home,
+				__in std::string &pwd,
+				__in std::string &user,
+				__in_opt bool advance = false,
+				__in_opt bool update = false
 				);
 
 			std::map<std::string, std::string>::iterator environment_find(

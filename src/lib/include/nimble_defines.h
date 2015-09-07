@@ -44,7 +44,7 @@ namespace NIMBLE {
 
 	#define VER_MAJ 0
 	#define VER_MIN 1
-	#define VER_REV 6
+	#define VER_REV 7
 	#define VER_WEEK 1536
 
 	#define _CAT_STR(_STR_) # _STR_
@@ -69,7 +69,7 @@ namespace NIMBLE {
 
 	#define VER_STR \
 		CAT_STR(VER_MAJ) "." CAT_STR(VER_MIN) "." \
-		CAT_STR(VER_WEEK) "." CAT_STR(VER_REV)
+		CAT_STR(VER_WEEK) "." CAT_STR(VER_REV)		
 }
 
 #endif // NIMBLE_DEFINES_H_
