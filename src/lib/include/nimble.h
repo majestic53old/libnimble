@@ -123,6 +123,7 @@ namespace NIMBLE {
 
 			void display_prompt(
 				__in std::string &home,
+				__in std::string &host,
 				__in std::string &pwd,
 				__in std::string &user,
 				__in_opt bool advance = false,

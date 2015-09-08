@@ -26,9 +26,12 @@ namespace NIMBLE {
 
 	#define CHAR_ENV_ASSIGN '='
 	#define CHAR_ENV_HOME '~'
+	#define CHAR_HOST_SEP '@'
 	#define ENV_HOME "HOME"
+	#define ENV_HOST "HOSTNAME"
 	#define ENV_PWD "PWD"
-	#define ENV_USER "USER"
+	#define ENV_UNKNOWN "unknown"
+	#define ENV_USER "USERNAME"
 
 	nimble_ptr nimble::m_instance = NULL;
 
@@ -138,6 +141,7 @@ namespace NIMBLE {
 	void 
 	_nimble::display_prompt(
 		__in std::string &home,
+		__in std::string &host,
 		__in std::string &pwd,
 		__in std::string &user,
 		__in_opt bool advance,
@@ -145,6 +149,7 @@ namespace NIMBLE {
 		)
 	{
 		size_t pos = 0;
+		std::map<std::string, std::string>::iterator iter;
 
 		SERIALIZE_CALL_RECUR(m_lock);
 
@@ -153,9 +158,34 @@ namespace NIMBLE {
 		}
 
 		if(update) {
-			home = environment_find(ENV_HOME)->second;
-			pwd = environment_find(ENV_PWD)->second;
-			user = environment_find(ENV_USER)->second;
+
+			iter = environment_find(ENV_HOME);
+			if(iter != m_environment_map.end()) {
+				home = iter->second;
+			} else {
+				home.clear();
+			}
+			
+			iter = environment_find(ENV_HOST);
+			if(iter != m_environment_map.end()) {
+				host = iter->second;
+			} else {
+				host.clear();
+			}
+
+			iter = environment_find(ENV_PWD);
+			if(iter != m_environment_map.end()) {
+				pwd = iter->second;
+			} else {
+				pwd.clear();
+			}
+
+			iter = environment_find(ENV_USER);
+			if(iter != m_environment_map.end()) {
+				user = iter->second;
+			} else {
+				user.clear();
+			}
 
 			pos = pwd.find(home, pos);
 			if(pos != std::string::npos) {
@@ -168,12 +198,18 @@ namespace NIMBLE {
 		}
 
 		CLEAR_TERM_ATTRIB(std::cout);
-		SET_TERM_ATTRIB(std::cout, 1, COL_FORE_GREEN);
-		std::cout << "[" << pwd << "]" << std::endl;
-		CLEAR_TERM_ATTRIB(std::cout);
+
+		if(!pwd.empty()) {
+			SET_TERM_ATTRIB(std::cout, 1, COL_FORE_GREEN);
+			std::cout << "[" << pwd << "]" << std::endl;
+			CLEAR_TERM_ATTRIB(std::cout);
+		}
+
 		SET_TERM_ATTRIB(std::cout, 1, COL_FORE_CYAN);
-		std::cout << user;
+		std::cout << (!user.empty() ? user : ENV_UNKNOWN) << CHAR_HOST_SEP
+			<< (!host.empty() ? host : ENV_UNKNOWN);
 		CLEAR_TERM_ATTRIB(std::cout);
+
 		SET_TERM_ATTRIB(std::cout, 2, COL_FORM_BOLD, COL_FORE_YELLOW);
 		std::cout << " -> ";
 		CLEAR_TERM_ATTRIB(std::cout);
@@ -299,7 +335,7 @@ namespace NIMBLE {
 	{		
 		int result = 0;
 		bool update = true;
-		std::string home, input, pwd, user;
+		std::string home, host, input, pwd, user;
 
 		SERIALIZE_CALL_RECUR(m_lock);
 
@@ -314,7 +350,7 @@ namespace NIMBLE {
 
 			for(;;) {
 				result = 0;
-				display_prompt(home, pwd, user, true, update);
+				display_prompt(home, host, pwd, user, true, update);
 
 				if(update) {
 					update = false;
