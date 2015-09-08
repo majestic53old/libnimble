@@ -95,7 +95,7 @@ namespace NIMBLE {
 		std::stringstream result;
 
 		if(!header.empty()) {
-			SET_TERM_ATTRIB(result, COL_FORE_RED);
+			SET_TERM_ATTRIB(result, 1, COL_FORE_RED);
 			result << header << ": ";
 			CLEAR_TERM_ATTRIB(result);
 		}
@@ -171,7 +171,7 @@ namespace NIMBLE {
 		result << what();
 
 		if(verbose) {
-			SET_TERM_ATTRIB(result, COL_FORE_YELLOW);
+			SET_TERM_ATTRIB(result, 1, COL_FORE_YELLOW);
 			result << " (";
 
 			if(!m_source.empty()) {

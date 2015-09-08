@@ -47,6 +47,9 @@ namespace NIMBLE {
 	#define VER_REV 8
 	#define VER_WEEK 1536
 
+	#define ARR_LEN(_TYPE_, _ARR_) \
+		sizeof(_ARR_) / sizeof(_TYPE_)
+
 	#define _CAT_STR(_STR_) # _STR_
 	#define CAT_STR(_STR_) _CAT_STR(_STR_)
 

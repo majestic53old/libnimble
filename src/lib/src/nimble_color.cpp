@@ -17,12 +17,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <cstdarg>
 #include <cstdlib>
 #include <term.h>
 #include "../include/nimble.h"
 
 namespace NIMBLE {
 
+	#define CHAR_ATTRIB_SEP ';'
 	#define TERM_MAX_COL ((char *) "Co")
 
 	void 
@@ -30,7 +32,7 @@ namespace NIMBLE {
 		__in std::ostream &stream
 		)
 	{
-		nimble_color::set(stream, COL_FORM_RESET);
+		SET_TERM_ATTRIB(stream, 1, COL_FORM_RESET);
 	}
 
 	bool 
@@ -50,9 +52,27 @@ namespace NIMBLE {
 	void 
 	_nimble_color::set(
 		__in std::ostream &stream,
-		__in nimble_col_t color
+		__in size_t count,
+		...
 		)
 	{
-		stream << "\e[" << color << "m";
+		va_list args;
+		size_t iter = 0;
+
+		if(count) {
+			stream << "\e[";
+			va_start(args, count);
+
+			for(; iter < count; ++iter) {
+				stream << va_arg(args, int);
+
+				if(iter < (count - 1)) {
+					stream << CHAR_ATTRIB_SEP;
+				}
+			}
+
+			va_end(args);
+			stream << "m";
+		}
 	}
 }

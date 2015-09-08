@@ -208,7 +208,7 @@ namespace NIMBLE {
 				result << CHAR_TAB;
 			}
 
-			SET_TERM_ATTRIB(result, COL_FORE_GREEN);
+			SET_TERM_ATTRIB(result, 1, COL_FORE_GREEN);
 
 			for(iter = 0; iter < (m_char_column + off); ++iter) {
 
@@ -229,7 +229,7 @@ namespace NIMBLE {
 					result << CHAR_TAB;
 				}
 
-				SET_TERM_ATTRIB(result, COL_FORE_YELLOW);
+				SET_TERM_ATTRIB(result, 1, COL_FORE_YELLOW);
 				result << "(";
 
 				if(has_path()) {

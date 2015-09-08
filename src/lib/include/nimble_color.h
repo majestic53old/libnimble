@@ -80,9 +80,9 @@ namespace NIMBLE {
 		} \
 		}
 
-	#define SET_TERM_ATTRIB(_STR_, _COL_) {\
+	#define SET_TERM_ATTRIB(_STR_, _COUNT_, ...) {\
 		if(nimble_color::is_supported()) { \
-			nimble_color::set(_STR_, _COL_); \
+			nimble_color::set(_STR_, _COUNT_, __VA_ARGS__); \
 		} \
 		}	
 
@@ -98,7 +98,8 @@ namespace NIMBLE {
 
 			static void set(
 				__in std::ostream &stream,
-				__in nimble_col_t color
+				__in size_t count,
+				...
 				);
 
 	} nimble_color, *nimble_color_ptr;

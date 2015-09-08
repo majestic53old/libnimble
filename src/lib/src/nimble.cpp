@@ -167,13 +167,14 @@ namespace NIMBLE {
 			std::cout << std::endl;
 		}
 
-		SET_TERM_ATTRIB(std::cout, COL_FORE_GREEN);
+		CLEAR_TERM_ATTRIB(std::cout);
+		SET_TERM_ATTRIB(std::cout, 1, COL_FORE_GREEN);
 		std::cout << "[" << pwd << "]" << std::endl;
 		CLEAR_TERM_ATTRIB(std::cout);
-		SET_TERM_ATTRIB(std::cout, COL_FORE_CYAN);
+		SET_TERM_ATTRIB(std::cout, 1, COL_FORE_CYAN);
 		std::cout << user;
 		CLEAR_TERM_ATTRIB(std::cout);
-		SET_TERM_ATTRIB(std::cout, COL_FORE_YELLOW);
+		SET_TERM_ATTRIB(std::cout, 2, COL_FORM_BOLD, COL_FORE_YELLOW);
 		std::cout << " -> ";
 		CLEAR_TERM_ATTRIB(std::cout);
 	}
