@@ -24,15 +24,16 @@
 
 namespace NIMBLE {
 
-	#define EXCEPTION_HEADER "(EXCEPTION)"
+	#define EXCEPTION_HEADER "Exception"
 
 	#define UNKNOWN_EXCEPTION "Unknown exception"
 
-	#define THROW_EXCEPTION(_EXCEPT_) \
-		nimble_exception::generate(_EXCEPT_, __FILE__, __LINE__, NULL)
+	#define THROW_EXCEPTION(_HEAD_, _EXCEPT_) \
+		nimble_exception::generate(_HEAD_, _EXCEPT_, __FILE__, __LINE__, \
+		NULL)
 
-	#define THROW_EXCEPTION_MESSAGE(_EXCEPT_, _FORMAT_, ...) \
-		nimble_exception::generate(_EXCEPT_, __FILE__, __LINE__, \
+	#define THROW_EXCEPTION_MESSAGE(_HEAD_, _EXCEPT_, _FORMAT_, ...) \
+		nimble_exception::generate(_HEAD_, _EXCEPT_, __FILE__, __LINE__, \
 		_FORMAT_, __VA_ARGS__)
 
 	typedef class _nimble_exception :
@@ -57,6 +58,7 @@ namespace NIMBLE {
 				);
 
 			static void generate(
+				__in const std::string &header,
 				__in const std::string &message,
 				__in const std::string &source,
 				__in size_t line,

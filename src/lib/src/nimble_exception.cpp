@@ -83,6 +83,7 @@ namespace NIMBLE {
 
 	void 
 	_nimble_exception::generate(
+		__in const std::string &header,
 		__in const std::string &message,
 		__in const std::string &source,
 		__in size_t line,
@@ -92,6 +93,12 @@ namespace NIMBLE {
 	{
 		std::string buf;
 		std::stringstream result;
+
+		if(!header.empty()) {
+			SET_TERM_ATTRIB(result, COL_FORE_RED);
+			result << header << ": ";
+			CLEAR_TERM_ATTRIB(result);
+		}
 
 		if(!message.empty()) {
 			result << message;
@@ -161,17 +168,19 @@ namespace NIMBLE {
 
 		SERIALIZE_CALL_RECUR(m_lock);
 
+		result << what();
+
 		if(verbose) {
-			result << "(";
+			SET_TERM_ATTRIB(result, COL_FORE_YELLOW);
+			result << " (";
 
 			if(!m_source.empty()) {
 				result << m_source << ":";
 			}
 
 			result << m_line << ") ";
+			CLEAR_TERM_ATTRIB(result);
 		}	
-
-		result << what();
 
 		return CHK_STR(result.str());
 	}

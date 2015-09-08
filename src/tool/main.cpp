@@ -35,10 +35,10 @@ main(
 		result = inst->start(argc, argv, envp);
 		inst->uninitialize();
 	} catch(nimble_exception &exc) {
-		std::cerr << "Nimble exception: " << exc.to_string(true) << std::endl;
+		std::cerr << exc.to_string(true) << std::endl;
 		result = INVALID(int);
 	} catch(std::exception &exc) {
-		std::cerr << "Exception: " << exc.what() << std::endl;
+		std::cerr << exc.what() << std::endl;
 		result = INVALID(int);
 	}
 	

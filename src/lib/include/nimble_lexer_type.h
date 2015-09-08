@@ -24,7 +24,7 @@ namespace NIMBLE {
 
 	namespace LANGUAGE {
 
-		#define NIMBLE_LEXER_HEADER "(LEXER)"
+		#define NIMBLE_LEXER_HEADER "Lexer"
 
 		#ifndef NDEBUG
 		#define NIMBLE_LEXER_EXCEPTION_HEADER NIMBLE_LEXER_HEADER
@@ -43,11 +43,11 @@ namespace NIMBLE {
 		#define NIMBLE_LEXER_EXCEPTION_MAX NIMBLE_LEXER_EXCEPTION_ROW_NOT_FOUND
 
 		static const std::string NIMBLE_LEXER_EXCEPTION_STR[] = {
-			NIMBLE_LEXER_EXCEPTION_HEADER " File does not exist",
-			NIMBLE_LEXER_EXCEPTION_HEADER " Invalid character position",
-			NIMBLE_LEXER_EXCEPTION_HEADER " No next character in stream",
-			NIMBLE_LEXER_EXCEPTION_HEADER " No previous character in stream",
-			NIMBLE_LEXER_EXCEPTION_HEADER " Row does not exist",
+			"File does not exist",
+			"Invalid character position",
+			"No next character in stream",
+			"No previous character in stream",
+			"Row does not exist",
 			};
 
 		#define NIMBLE_LEXER_EXCEPTION_STRING(_TYPE_) \
@@ -55,10 +55,11 @@ namespace NIMBLE {
 			CHK_STR(NIMBLE_LEXER_EXCEPTION_STR[_TYPE_]))
 
 		#define THROW_NIMBLE_LEXER_EXCEPTION(_EXCEPT_) \
-			THROW_EXCEPTION(NIMBLE_LEXER_EXCEPTION_STRING(_EXCEPT_))
+			THROW_EXCEPTION(NIMBLE_LEXER_EXCEPTION_HEADER, \
+			NIMBLE_LEXER_EXCEPTION_STRING(_EXCEPT_))
 		#define THROW_NIMBLE_LEXER_EXCEPTION_MESSAGE(_EXCEPT_, _FORMAT_, ...) \
-			THROW_EXCEPTION_MESSAGE(NIMBLE_LEXER_EXCEPTION_STRING(_EXCEPT_), \
-			_FORMAT_, __VA_ARGS__)
+			THROW_EXCEPTION_MESSAGE(NIMBLE_LEXER_EXCEPTION_HEADER, \
+			NIMBLE_LEXER_EXCEPTION_STRING(_EXCEPT_), _FORMAT_, __VA_ARGS__)
 
 		class _nimble_lexer_base;
 		typedef _nimble_lexer_base nimble_lexer_base, *nimble_lexer_base_ptr;

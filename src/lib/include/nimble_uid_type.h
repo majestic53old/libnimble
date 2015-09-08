@@ -24,7 +24,7 @@ namespace NIMBLE {
 
 	namespace COMPONENT {
 
-		#define NIMBLE_UID_HEADER "(UID)"
+		#define NIMBLE_UID_HEADER "Uid"
 
 		#ifndef NDEBUG
 		#define NIMBLE_UID_EXCEPTION_HEADER NIMBLE_UID_HEADER
@@ -43,11 +43,11 @@ namespace NIMBLE {
 		#define NIMBLE_UID_EXCEPTION_MAX NIMBLE_UID_EXCEPTION_UNINITIALIZED
 
 		static const std::string NIMBLE_UID_EXCEPTION_STR[] = {
-			NIMBLE_UID_EXCEPTION_HEADER " Failed to allocate Uid component",
-			NIMBLE_UID_EXCEPTION_HEADER " Uid component is initialized",
-			NIMBLE_UID_EXCEPTION_HEADER " Uid does not exist",
-			NIMBLE_UID_EXCEPTION_HEADER " Uid factory is full",
-			NIMBLE_UID_EXCEPTION_HEADER " Uid component is uninitialized",
+			"Failed to allocate Uid component",
+			"Uid component is initialized",
+			"Uid does not exist",
+			"Uid factory is full",
+			"Uid component is uninitialized",
 			};
 
 		#define NIMBLE_UID_EXCEPTION_STRING(_TYPE_) \
@@ -55,10 +55,11 @@ namespace NIMBLE {
 			CHK_STR(NIMBLE_UID_EXCEPTION_STR[_TYPE_]))
 
 		#define THROW_NIMBLE_UID_EXCEPTION(_EXCEPT_) \
-			THROW_EXCEPTION(NIMBLE_UID_EXCEPTION_STRING(_EXCEPT_))
+			THROW_EXCEPTION(NIMBLE_UID_EXCEPTION_HEADER, \
+			NIMBLE_UID_EXCEPTION_STRING(_EXCEPT_))
 		#define THROW_NIMBLE_UID_EXCEPTION_MESSAGE(_EXCEPT_, _FORMAT_, ...) \
-			THROW_EXCEPTION_MESSAGE(NIMBLE_UID_EXCEPTION_STRING(_EXCEPT_), \
-			_FORMAT_, __VA_ARGS__)
+			THROW_EXCEPTION_MESSAGE(NIMBLE_UID_EXCEPTION_HEADER, \
+			NIMBLE_UID_EXCEPTION_STRING(_EXCEPT_), _FORMAT_, __VA_ARGS__)
 
 		class _nimble_uid;
 		typedef _nimble_uid nimble_uid, *nimble_uid_ptr;

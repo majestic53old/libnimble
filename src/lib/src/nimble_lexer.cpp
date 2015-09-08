@@ -26,6 +26,7 @@ namespace NIMBLE {
 
 	namespace LANGUAGE {
 
+		#define CHAR_FILL '~'
 		#define CHAR_NEWLINE_LEN 1
 		#define CHAR_NEWLINE_LONG_LEN 2
 		#define CHAR_UNPRINTABLE CHAR_SPACE
@@ -207,11 +208,19 @@ namespace NIMBLE {
 				result << CHAR_TAB;
 			}
 
+			SET_TERM_ATTRIB(result, COL_FORE_GREEN);
+
 			for(iter = 0; iter < (m_char_column + off); ++iter) {
-				result << CHAR_SPACE;
+
+				if(iter != (m_char_column + off - 1)) {
+					result << CHAR_FILL;
+				} else {
+					result << CHAR_SPACE;
+				}
 			}
 
 			result << "^";
+			CLEAR_TERM_ATTRIB(result);
 
 			if(verbose) {
 				result << std::endl;
@@ -220,6 +229,7 @@ namespace NIMBLE {
 					result << CHAR_TAB;
 				}
 
+				SET_TERM_ATTRIB(result, COL_FORE_YELLOW);
 				result << "(";
 
 				if(has_path()) {
@@ -227,6 +237,7 @@ namespace NIMBLE {
 				}
 
 				result << m_char_row << ":" << m_char_column << ")";
+				CLEAR_TERM_ATTRIB(result);
 			}
 
 			return CHK_STR(result.str());

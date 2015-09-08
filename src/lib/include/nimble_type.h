@@ -22,7 +22,7 @@
 
 namespace NIMBLE {
 
-	#define NIMBLE_HEADER "(NIMBLE)"
+	#define NIMBLE_HEADER "Library"
 
 	#ifndef NDEBUG
 	#define NIMBLE_EXCEPTION_HEADER NIMBLE_HEADER
@@ -39,9 +39,9 @@ namespace NIMBLE {
 	#define NIMBLE_EXCEPTION_MAX NIMBLE_EXCEPTION_UNINITIALIZED
 
 	static const std::string NIMBLE_EXCEPTION_STR[] = {
-		NIMBLE_EXCEPTION_HEADER " Failed to allocate library",
-		NIMBLE_EXCEPTION_HEADER " Library is initialized",
-		NIMBLE_EXCEPTION_HEADER " Library is uninitialized",
+		"Failed to allocate library",
+		"Library is initialized",
+		"Library is uninitialized",
 		};
 
 	#define NIMBLE_EXCEPTION_STRING(_TYPE_) \
@@ -49,10 +49,11 @@ namespace NIMBLE {
 		CHK_STR(NIMBLE_EXCEPTION_STR[_TYPE_]))
 
 	#define THROW_NIMBLE_EXCEPTION(_EXCEPT_) \
-		THROW_EXCEPTION(NIMBLE_EXCEPTION_STRING(_EXCEPT_))
+		THROW_EXCEPTION(NIMBLE_EXCEPTION_HEADER, \
+		NIMBLE_EXCEPTION_STRING(_EXCEPT_))
 	#define THROW_NIMBLE_EXCEPTION_MESSAGE(_EXCEPT_, _FORMAT_, ...) \
-		THROW_EXCEPTION_MESSAGE(NIMBLE_EXCEPTION_STRING(_EXCEPT_), _FORMAT_, \
-		__VA_ARGS__)
+		THROW_EXCEPTION_MESSAGE(NIMBLE_EXCEPTION_HEADER, \
+		NIMBLE_EXCEPTION_STRING(_EXCEPT_), _FORMAT_, __VA_ARGS__)
 
 	class _nimble;
 	typedef _nimble nimble, *nimble_ptr;

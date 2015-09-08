@@ -62,7 +62,7 @@ namespace NIMBLE {
 		__in int sig
 		)
 	{
-		std::cout << std::endl << "Aborted" << std::endl;
+		std::cout << std::endl << "Aborted." << std::endl;
 		std::exit(sig);
 	}
 
@@ -72,7 +72,9 @@ namespace NIMBLE {
 		)
 	{
 		// TODO
+		std::cout << std::endl;
 		std::exit(sig);
+		// ---
 	}
 
 	void 
@@ -80,7 +82,7 @@ namespace NIMBLE {
 		__in int sig
 		)
 	{
-		std::cout << std::endl << "Floating-point exception" << std::endl;
+		std::cout << std::endl << "Floating-point exception." << std::endl;
 		std::exit(sig);
 	}
 
@@ -89,7 +91,7 @@ namespace NIMBLE {
 		__in int sig
 		)
 	{
-		std::cout << std::endl << "Illegal operation" << std::endl;
+		std::cout << std::endl << "Illegal operation." << std::endl;
 		std::exit(sig);
 	}
 
@@ -98,7 +100,7 @@ namespace NIMBLE {
 		__in int sig
 		)
 	{
-		std::cout << std::endl << "Segmentation fault" << std::endl;
+		std::cout << std::endl << "Segmentation fault." << std::endl;
 		std::exit(sig);
 	}
 
@@ -107,7 +109,7 @@ namespace NIMBLE {
 		__in int sig
 		)
 	{
-		std::cout << std::endl << "Terminated" << std::endl;
+		std::cout << std::endl << "Terminated." << std::endl;
 		std::exit(sig);
 	}
 
@@ -142,7 +144,6 @@ namespace NIMBLE {
 		__in_opt bool update
 		)
 	{
-		bool color;
 		size_t pos = 0;
 
 		SERIALIZE_CALL_RECUR(m_lock);
@@ -166,30 +167,15 @@ namespace NIMBLE {
 			std::cout << std::endl;
 		}
 
-		color = nimble_color::is_supported();
-		if(color) {
-			nimble_color::set(std::cout, COL_FORE_GREEN);
-		}
-
+		SET_TERM_ATTRIB(std::cout, COL_FORE_GREEN);
 		std::cout << "[" << pwd << "]" << std::endl;
-
-		if(color) {
-			nimble_color::clear(std::cout);
-			nimble_color::set(std::cout, COL_FORE_CYAN);
-		}
-
+		CLEAR_TERM_ATTRIB(std::cout);
+		SET_TERM_ATTRIB(std::cout, COL_FORE_CYAN);
 		std::cout << user;
-
-		if(color) {
-			nimble_color::clear(std::cout);
-			nimble_color::set(std::cout, COL_FORE_YELLOW);
-		}
-
+		CLEAR_TERM_ATTRIB(std::cout);
+		SET_TERM_ATTRIB(std::cout, COL_FORE_YELLOW);
 		std::cout << " -> ";
-
-		if(color) {
-			nimble_color::clear(std::cout);
-		}
+		CLEAR_TERM_ATTRIB(std::cout);
 	}
 
 	std::map<std::string, std::string>::iterator 
@@ -326,6 +312,7 @@ namespace NIMBLE {
 		try {
 
 			for(;;) {
+				result = 0;
 				display_prompt(home, pwd, user, true, update);
 
 				if(update) {
@@ -334,7 +321,17 @@ namespace NIMBLE {
 
 				std::getline(std::cin, input);
 
-				// TODO
+				try {
+
+					// TODO: process commands
+
+				} catch(nimble_exception &exc) {
+					std::cerr << exc.to_string(true) << std::endl;
+					result = INVALID(int);
+				} catch(std::exception &exc) {
+					std::cerr << exc.what() << std::endl;
+					result = INVALID(int);
+				}
 			}
 		} catch(nimble_exception &exc) {
 			std::cerr << exc.to_string(true) << std::endl;

@@ -74,6 +74,18 @@ namespace NIMBLE {
 		COL_FORM_UNDERLINED_RESET = 24,
 	} nimble_col_t;
 
+	#define CLEAR_TERM_ATTRIB(_STR_) {\
+		if(nimble_color::is_supported()) { \
+			nimble_color::clear(_STR_); \
+		} \
+		}
+
+	#define SET_TERM_ATTRIB(_STR_, _COL_) {\
+		if(nimble_color::is_supported()) { \
+			nimble_color::set(_STR_, _COL_); \
+		} \
+		}	
+
 	typedef class _nimble_color {
 
 		public:

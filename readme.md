@@ -16,6 +16,7 @@ Changelog
 *Updated:9/7/2015*
 
 * Added skinnable color prompt
+* Added language helper routines
 
 *Updated:9/6/2015*
 
