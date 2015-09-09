@@ -1,7 +1,7 @@
 LIBNIMBLE
 =========
 
-NImble is a C-like procedural programming language
+Nimble is a simple shell environment, written in C++.
 
 Table of Contents
 =================
