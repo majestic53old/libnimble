@@ -327,7 +327,7 @@ namespace NIMBLE {
 	}
 
 	int 
-	_nimble::start(
+	_nimble::run(
 		__in int count,
 		__in const char **arguments,
 		__in const char **environment

@@ -319,6 +319,18 @@ namespace NIMBLE {
 			return find(uid)->second;
 		}
 
+		size_t 
+		_nimble_uid_factory::size(void)
+		{
+			SERIALIZE_CALL_RECUR(m_lock);
+
+			if(!m_initialized) {
+				THROW_NIMBLE_UID_EXCEPTION(NIMBLE_UID_EXCEPTION_UNINITIALIZED);
+			}
+
+			return m_map.size();
+		}
+
 		std::string 
 		_nimble_uid_factory::to_string(
 			__in_opt bool verbose

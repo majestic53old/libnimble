@@ -12,6 +12,11 @@ Table of Contents
 Changelog
 =========
 
+##Version 0.1.1537
+*Updated:9/8/2015*
+
+* Added command factory class (partial)
+
 ##Version 0.1.1536
 *Updated:9/7/2015*
 

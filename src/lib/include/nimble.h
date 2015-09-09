@@ -40,6 +40,7 @@ using namespace NIMBLE;
 #endif // COMPONENT
 
 #include "nimble_uid.h"
+#include "nimble_command.h"
 
 using namespace NIMBLE::COMPONENT;
 
@@ -69,7 +70,7 @@ namespace NIMBLE {
 
 			bool is_initialized(void);
 
-			int start(
+			int run(
 				__in int count,
 				__in const char **arguments,
 				__in const char **environment

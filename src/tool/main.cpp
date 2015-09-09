@@ -32,7 +32,7 @@ main(
 	try {
 		inst = nimble::acquire();
 		inst->initialize();
-		result = inst->start(argc, argv, envp);
+		result = inst->run(argc, argv, envp);
 		inst->uninitialize();
 	} catch(nimble_exception &exc) {
 		std::cerr << exc.to_string(true) << std::endl;

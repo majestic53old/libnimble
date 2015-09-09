@@ -125,6 +125,8 @@ namespace NIMBLE {
 					__in const nimble_uid &uid
 					);
 
+				size_t size(void);
+
 				std::string to_string(
 					__in_opt bool verbose = false
 					);
