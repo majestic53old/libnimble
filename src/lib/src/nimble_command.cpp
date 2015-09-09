@@ -108,10 +108,7 @@ namespace NIMBLE {
 			// TODO: run command
 
 			m_active = false;
-
-			if(complete) {
-				complete(m_uid);
-			}
+			complete(m_uid);
 		}
 
 		void 
