@@ -20,13 +20,21 @@
 #ifndef NIMBLE_COMMAND_H_
 #define NIMBLE_COMMAND_H_
 
+#include <unistd.h>
+
 namespace NIMBLE {
 
 	namespace COMPONENT {
 
-		typedef void (*nimble_cmd_cb)(int);
+		#define PID_INVALID INVALID(pid_t)
 
-		typedef void (*_nimble_cmd_fact_cb)(nimble_uid);
+		typedef void (*nimble_cmd_cb)(
+			__in int
+			);
+
+		typedef void (*_nimble_cmd_fact_cb)(
+			__in const nimble_uid &
+			);
 
 		typedef class _nimble_command :
 				public nimble_uid_class {
@@ -35,21 +43,31 @@ namespace NIMBLE {
 
 				_nimble_command(void);
 
+				_nimble_command(
+					__in const _nimble_command &other
+					);
+
 				virtual ~_nimble_command(void);
+
+				_nimble_command &operator=(
+					__in const _nimble_command &other
+					);
+
+				static std::string as_string(
+					__in const _nimble_command &command,
+					__in_opt bool verbose = false
+					);
 
 				bool is_active(void);
 
 				int result(void);
 
 				void run(
-					__in int count,
-					__in const char **arguments,
+					__in const std::string &command,
 					__in _nimble_cmd_fact_cb complete
 					);
 
 				void stop(void);
-
-				std::thread &thread(void);
 
 				virtual std::string to_string(
 					__in_opt bool verbose = false
@@ -57,25 +75,17 @@ namespace NIMBLE {
 
 			protected:
 
-				_nimble_command(
-					__in const _nimble_command &other
-					);
-
-				_nimble_command &operator=(
-					__in const _nimble_command &other
-					);
-
 				void run_command(
-					__in int count,
-					__in const char **arguments,
-					__in _nimble_cmd_fact_cb complete
+					__in const std::string &command
 					);
 
 				bool m_active;
 
-				int m_result;
+				_nimble_cmd_fact_cb m_complete;
 
-				bool m_stop;
+				pid_t m_pid;
+
+				int m_result;
 
 				std::thread m_thread;
 
@@ -91,11 +101,13 @@ namespace NIMBLE {
 
 				~_nimble_command_factory(void);
 
+				static _nimble_command_factory *acquire(void);
+
 				bool contains(
 					__in const nimble_uid &uid
 					);
 
-				nimble_uid &generate(void);
+				nimble_uid generate(void);
 
 				void initialize(void);
 
@@ -105,8 +117,7 @@ namespace NIMBLE {
 
 				void run(
 					__in const nimble_uid &uid,
-					__in int count,
-					__in const char **arguments,
+					__in const std::string &command,
 					__in nimble_cmd_cb complete
 					);
 
@@ -132,20 +143,14 @@ namespace NIMBLE {
 
 				static void _delete(void);
 
+				static void _remove(
+					__in const nimble_uid &uid
+					);
+
 				std::map<nimble_uid, std::pair<nimble_command, 
 						std::pair<nimble_cmd_cb, _nimble_cmd_fact_cb>>>::iterator find(
 					__in const nimble_uid &uid
 					);
-
-				/*
-				 * TODO: Calling conventions
-				 * 	1) User calls generate and gets a UID
-				 * 	2) User calls run with UID and command callback
-				 * 	3) User command is run using command::run with factory callback
-				 * 	4) When command is complete, factory callback is invoked
-				 * 	5) Factory callback calls user callback with status
-				 *	7) Factory callback deletes instance of command from factory map
-				 */
 
 				std::map<nimble_uid, std::pair<nimble_command, 
 					std::pair<nimble_cmd_cb, _nimble_cmd_fact_cb>>> m_map;

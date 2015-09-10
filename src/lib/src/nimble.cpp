@@ -36,8 +36,10 @@ namespace NIMBLE {
 	nimble_ptr nimble::m_instance = NULL;
 
 	_nimble::_nimble(void) :
+		m_factory_command(nimble_command_factory::acquire()),
 		m_factory_uid(nimble_uid_factory::acquire()),
-		m_initialized(false)
+		m_initialized(false),
+		m_result(0)
 	{
 		std::atexit(nimble::_delete);
 	}
@@ -61,6 +63,25 @@ namespace NIMBLE {
 	}
 
 	void 
+	_nimble::_result(
+		__in int result
+		)
+	{
+
+		// TODO
+		std::cout << "_nimble::_result entry" << std::endl;
+		// ---
+
+		if(nimble::m_instance) {
+			nimble::m_instance->m_result = result;
+		}
+
+		// TODO
+		std::cout << "_nimble::_result exit" << std::endl;
+		// ---
+	}
+
+	void 
 	_nimble::_signal_abort(
 		__in int sig
 		)
@@ -74,7 +95,7 @@ namespace NIMBLE {
 		__in int sig
 		)
 	{
-		// TODO
+		// TODO: kill active command
 		std::cout << std::endl;
 		std::exit(sig);
 		// ---
@@ -129,6 +150,13 @@ namespace NIMBLE {
 		}
 
 		return nimble::m_instance;
+	}
+
+	nimble_command_factory_ptr 
+	_nimble::acquire_command(void)
+	{
+		SERIALIZE_CALL_RECUR(m_lock);
+		return m_factory_command;
 	}
 
 	nimble_uid_factory_ptr 
@@ -206,8 +234,13 @@ namespace NIMBLE {
 		}
 
 		SET_TERM_ATTRIB(std::cout, 1, COL_FORE_CYAN);
-		std::cout << (!user.empty() ? user : ENV_UNKNOWN) << CHAR_HOST_SEP
-			<< (!host.empty() ? host : ENV_UNKNOWN);
+		std::cout << (!user.empty() ? user : ENV_UNKNOWN);
+
+		if(!host.empty()) {
+			std::cout << CHAR_HOST_SEP << (!host.empty() 
+				? host : ENV_UNKNOWN);
+		}
+
 		CLEAR_TERM_ATTRIB(std::cout);
 
 		SET_TERM_ATTRIB(std::cout, 2, COL_FORM_BOLD, COL_FORE_YELLOW);
@@ -292,8 +325,8 @@ namespace NIMBLE {
 		m_initialized = true;
 		m_environment_map.clear();
 		m_factory_uid->initialize();
-
-		// TODO: initialize components
+		m_factory_command->initialize();
+		m_result = 0;
 	}
 
 	bool 
@@ -326,13 +359,25 @@ namespace NIMBLE {
 		std::signal(SIGTERM, nimble::_signal_terminate);
 	}
 
+	void 
+	test_callback(
+		__in const nimble_uid &uid
+		)
+	{
+		std::cout << "UID: " << nimble_uid::as_string(uid) << std::endl;
+	}
+
 	int 
 	_nimble::run(
 		__in int count,
 		__in const char **arguments,
 		__in const char **environment
 		)
-	{		
+	{
+		// TODO
+		std::cout << "_nimble::run entry" << std::endl;
+		// ---
+
 		int result = 0;
 		bool update = true;
 		std::string home, host, input, pwd, user;
@@ -350,6 +395,7 @@ namespace NIMBLE {
 
 			for(;;) {
 				result = 0;
+				m_result = 0;
 				display_prompt(home, host, pwd, user, true, update);
 
 				if(update) {
@@ -360,8 +406,22 @@ namespace NIMBLE {
 
 				try {
 
-					// TODO: process commands
+					/*
+					 * TODO: Calling conventions
+					 * 	1) User calls generate and gets a UID
+					 * 	2) User calls run with UID and command callback
+					 * 	3) User command is run using command::run with factory callback (_remove)
+					 * 	4) When command is complete, factory callback is invoked
+					 * 	5) Factory callback calls user callback with status
+					 *	7) Factory callback deletes instance of command from factory map
+					 */
 
+					// TODO: process command
+					m_factory_command->run(m_factory_command->generate(), input, 
+						nimble::_result);
+					//
+
+					result = m_result;
 				} catch(nimble_exception &exc) {
 					std::cerr << exc.to_string(true) << std::endl;
 					result = INVALID(int);
@@ -377,6 +437,10 @@ namespace NIMBLE {
 			std::cerr << exc.what() << std::endl;
 			result = INVALID(int);
 		}
+
+		// TODO
+		std::cout << "_nimble::run exit" << std::endl;
+		// ---
 
 		return result;
 	}
@@ -397,8 +461,7 @@ namespace NIMBLE {
 		}
 
 		result << std::endl << m_factory_uid->to_string(verbose);
-
-		// TODO: print components
+		result << std::endl << m_factory_command->to_string(verbose);
 
 		return CHK_STR(result.str());
 	}
@@ -412,8 +475,8 @@ namespace NIMBLE {
 			THROW_NIMBLE_EXCEPTION(NIMBLE_EXCEPTION_UNINITIALIZED);
 		}
 
-		// TODO: uninitialize components
-
+		m_result = 0;
+		m_factory_command->uninitialize();
 		m_factory_uid->uninitialize();
 		m_environment_map.clear();
 		m_initialized = false;

@@ -13,6 +13,10 @@ Changelog
 =========
 
 ##Version 0.1.1537
+*Updated:9/9/2015*
+
+* Implemented command handling (WIP, buggy)
+
 *Updated:9/8/2015*
 
 * Added command factory class (partial)

@@ -33,10 +33,12 @@ namespace NIMBLE {
 		#endif // NDEBUG
 
 		enum {
-			NIMBLE_COMMAND_EXCEPTION_ALLOCATED = 0,
+			NIMBLE_COMMAND_EXCEPTION_ACTIVE = 0,
+			NIMBLE_COMMAND_EXCEPTION_ALLOCATED,
 			NIMBLE_COMMAND_EXCEPTION_INITIALIZED,
-			NIMBLE_COMMAND_EXCEPTION_INVALID_ARGUMENTS,
 			NIMBLE_COMMAND_EXCEPTION_INVALID_CALLBACK,
+			NIMBLE_COMMAND_EXCEPTION_INVALID_PID,
+			NIMBLE_COMMAND_EXCEPTION_NOT_ACTIVE,
 			NIMBLE_COMMAND_EXCEPTION_NOT_FOUND,
 			NIMBLE_COMMAND_EXCEPTION_UNINITIALIZED,
 		};
@@ -44,10 +46,12 @@ namespace NIMBLE {
 		#define NIMBLE_COMMAND_EXCEPTION_MAX NIMBLE_COMMAND_EXCEPTION_UNINITIALIZED
 
 		static const std::string NIMBLE_COMMAND_EXCEPTION_STR[] = {
+			"Command is active",
 			"Failed to allocate command component",
 			"Command component is initialized",
-			"Command component received invalid argument",
-			"Command component received invalid callback",
+			"Command received invalid callback",
+			"Command failed to create child process",
+			"Command is not active",
 			"Command does not exist",
 			"Command component is uninitialized",
 			};

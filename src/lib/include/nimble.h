@@ -62,6 +62,8 @@ namespace NIMBLE {
 
 			static _nimble *acquire(void);
 
+			nimble_command_factory_ptr acquire_command(void);
+
 			nimble_uid_factory_ptr acquire_uid(void);
 
 			void initialize(void);
@@ -97,6 +99,10 @@ namespace NIMBLE {
 				);
 
 			static void _delete(void);
+
+			static void _result(
+				__in int result
+				);
 
 			static void _signal_abort(
 				__in int sig
@@ -144,11 +150,15 @@ namespace NIMBLE {
 
 			std::map<std::string, std::string> m_environment_map;
 
+			nimble_command_factory_ptr m_factory_command;
+
 			nimble_uid_factory_ptr m_factory_uid;
 
 			bool m_initialized;
 
 			static _nimble *m_instance;
+
+			int m_result;
 
 		private:
 
