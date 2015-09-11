@@ -151,6 +151,8 @@ namespace NIMBLE {
 				std::recursive_mutex m_lock;
 
 		} nimble_lexer_base, *nimble_lexer_base_ptr;
+
+		// TODO: implement lexer class
 	}
 }
 

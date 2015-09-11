@@ -40,6 +40,8 @@ namespace NIMBLE {
 			NIMBLE_COMMAND_EXCEPTION_INVALID_PID,
 			NIMBLE_COMMAND_EXCEPTION_NOT_ACTIVE,
 			NIMBLE_COMMAND_EXCEPTION_NOT_FOUND,
+			NIMBLE_COMMAND_EXCEPTION_PID_KILL,
+			NIMBLE_COMMAND_EXCEPTION_PID_WAIT,
 			NIMBLE_COMMAND_EXCEPTION_UNINITIALIZED,
 		};
 
@@ -53,6 +55,8 @@ namespace NIMBLE {
 			"Command failed to create child process",
 			"Command is not active",
 			"Command does not exist",
+			"Command failed to kill child process",
+			"Command failed to wait for child process",
 			"Command component is uninitialized",
 			};
 

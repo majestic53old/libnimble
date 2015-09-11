@@ -100,19 +100,11 @@ namespace NIMBLE {
 
 			static void _delete(void);
 
-			static void _result(
-				__in int result
-				);
-
 			static void _signal_abort(
 				__in int sig
 				);
 
 			static void _signal_attention(
-				__in int sig
-				);
-
-			static void _signal_float(
 				__in int sig
 				);
 

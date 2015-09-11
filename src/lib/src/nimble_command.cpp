@@ -17,7 +17,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <signal.h>
+#include <errno.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #include "../include/nimble.h"
 #include "../include/nimble_command_type.h"
 
@@ -37,6 +39,7 @@ namespace NIMBLE {
 		_nimble_command::_nimble_command(
 			__in const _nimble_command &other
 			) :
+				nimble_uid_class(other),
 				m_active(other.m_active),
 				m_complete(other.m_complete),
 				m_pid(other.m_pid),
@@ -61,6 +64,7 @@ namespace NIMBLE {
 			SERIALIZE_CALL_RECUR(m_lock);
 
 			if(this != &other) {
+				nimble_uid_class::operator=(other);
 				m_active = other.m_active;
 				m_complete = other.m_complete;
 				m_pid = other.m_pid;
@@ -79,20 +83,15 @@ namespace NIMBLE {
 			std::stringstream result;
 
 			if(verbose) {
-				result << "{" << VAL_AS_HEX(nimble_uid_t, command.m_uid) << "} ";
+				result << nimble_uid::as_string(command.m_uid) << " ";
 			}
 
-			result << "[" << (command.m_thread.joinable() ? "SYNC" : "ASYNC") << ", " 
-				<< (command.m_active ? "ACT" : "INACT") << "]";
+			result << "[" << (command.m_active ? "ACT" : "INACT") << "]";
 
 			if(command.m_active) {
-				result << " " << command.m_thread.get_id() << ", pid. " 
-					<< VAL_AS_HEX(pid_t, command.m_pid) << ", cb. "
-					<< VAL_AS_HEX(_nimble_cmd_fact_cb, command.m_complete);
-			}
-
-			if(verbose) {
-				result << ", last. " << VAL_AS_HEX(int, command.m_result);
+				result << ", comp. " << VAL_AS_HEX(_nimble_cmd_fact_cb, command.m_complete)
+					<< ", pid. " << VAL_AS_HEX(pid_t, command.m_pid)
+					<< ", res. " << VAL_AS_HEX(int, command.m_result);
 			}
 
 			return CHK_STR(result.str());
@@ -115,102 +114,98 @@ namespace NIMBLE {
 		void 
 		_nimble_command::run(
 			__in const std::string &command,
-			__in _nimble_cmd_fact_cb complete
+			__in _nimble_cmd_fact_cb complete,
+			__out bool &update
 			)
 		{
-			// TODO
-			std::cout << "_nimble_command::run entry" << std::endl;
-			// ---
-
 			SERIALIZE_CALL_RECUR(m_lock);
 
-			if(!complete) {
-				THROW_NIMBLE_COMMAND_EXCEPTION(NIMBLE_COMMAND_EXCEPTION_INVALID_CALLBACK);
+			if(m_active) {
+				THROW_NIMBLE_COMMAND_EXCEPTION_MESSAGE(NIMBLE_COMMAND_EXCEPTION_ACTIVE,
+					"%s", CHK_STR(nimble_uid::as_string(m_uid)));
 			}
 
-			if(m_active) {
-				THROW_NIMBLE_COMMAND_EXCEPTION_MESSAGE(NIMBLE_COMMAND_EXCEPTION_NOT_ACTIVE,
-					"%s", CHK_STR(nimble_uid::to_string(true)));
+			if(!complete) {
+				THROW_NIMBLE_COMMAND_EXCEPTION_MESSAGE(NIMBLE_COMMAND_EXCEPTION_INVALID_CALLBACK,
+					"%s", CHK_STR(nimble_uid::as_string(m_uid)));
 			}
 
 			m_active = true;
 			m_complete = complete;
 			m_pid = PID_INVALID;
-
-			m_thread = std::thread(&nimble_command::run_command, this, command);
-			m_thread.join();
-
-			if(m_complete) {
-				m_complete(m_uid);
-				m_complete = NULL;
-			}
-
-			m_active = false;
-			m_pid = PID_INVALID;
-
-			// TODO
-			std::cout << "_nimble_command::run exit" << std::endl;
-			// ---
-		}
-
-		void 
-		_nimble_command::run_command(
-			__in const std::string &command
-			)
-		{
-			// TODO
-			std::cout << "_nimble_command::run_command entry" << std::endl;
-			// ---
+			m_result = 0;
 
 			m_pid = fork();
 			if(m_pid == PID_INVALID) {
-				THROW_NIMBLE_COMMAND_EXCEPTION(NIMBLE_COMMAND_EXCEPTION_INVALID_PID);
-			} else if(!m_pid) {
-
-				// TODO: run command
-				// TODO: set result
-				//std::cout << command << std::endl;
-				m_result = 0;
-				exit(0);
-				// ---
+				THROW_NIMBLE_COMMAND_EXCEPTION_MESSAGE(NIMBLE_COMMAND_EXCEPTION_INVALID_PID,
+					"%s", CHK_STR(nimble_uid::as_string(m_uid)));
 			}
 
-			// TODO
-			std::cout << "_nimble_command::run_command exit" << std::endl;
-			// ---
+			if(!m_pid) {
+
+				// TODO: run command, set m_result
+				nimble_lexer_base base(command);
+
+				while(base.has_next_character()) {
+					std::cout << base.to_string(true) << std::endl;
+					base.move_next_character();
+				}
+
+				std::cout << base.to_string(true) << std::endl;
+
+				while(base.has_previous_character()) {
+					base.move_previous_character();
+					std::cout << base.to_string(true) << std::endl;
+				}
+				// ---
+
+				_exit(m_result);
+			} else {
+
+				if(waitpid(m_pid, &m_result, 0) == PID_INVALID) {
+					THROW_NIMBLE_COMMAND_EXCEPTION_MESSAGE(NIMBLE_COMMAND_EXCEPTION_PID_WAIT,
+						"%s, pid. %x", CHK_STR(nimble_uid::as_string(m_uid)), m_pid);
+				}
+
+				m_active = false;
+				m_pid = PID_INVALID;
+			}
+
+			if(m_complete) {
+				m_complete(*this);
+				m_complete = NULL;
+			}
 		}
 
 		void 
-		_nimble_command::stop(void)
+		_nimble_command::stop(
+			__in_opt int sig
+			)
 		{
 			SERIALIZE_CALL_RECUR(m_lock);
 
 			if(!m_active) {
 				THROW_NIMBLE_COMMAND_EXCEPTION_MESSAGE(NIMBLE_COMMAND_EXCEPTION_NOT_ACTIVE,
-					"%s", CHK_STR(nimble_uid::to_string(true)));
+					"%s", CHK_STR(nimble_uid::as_string(m_uid)));
 			}
 
-			kill(m_pid, SIGTERM);
+			if(m_pid > 0) {
 
-			// TODO: debug
-			std::cout << "Process ";
-			SET_TERM_ATTRIB(std::cout, 1, COL_FORE_YELLOW);
-			std::cout << "[0x" << VAL_AS_HEX(pid_t, m_pid) << "]";
-			CLEAR_TERM_ATTRIB(std::cout);
-			std::cout << " killed." << std::endl;
-			// ---
-
-			if(m_thread.joinable()) {
-				m_thread.join();
+				if(kill(m_pid, sig) == INVALID(int)) {
+					THROW_NIMBLE_COMMAND_EXCEPTION_MESSAGE(NIMBLE_COMMAND_EXCEPTION_PID_KILL,
+						"%s, pid. %x, err. %x", CHK_STR(nimble_uid::as_string(m_uid)), 
+						m_pid, errno);
+				}
 			}
 
 			m_active = false;
 			m_pid = PID_INVALID;
+			m_result = 0;
 
 			if(m_complete) {
-				m_complete(m_uid);
+				m_complete(*this);
 				m_complete = NULL;
-			}	
+			}
 		}
 
 		std::string 
@@ -225,7 +220,8 @@ namespace NIMBLE {
 		nimble_command_factory_ptr nimble_command_factory::m_instance = NULL;
 
 		_nimble_command_factory::_nimble_command_factory(void) :
-			m_initialized(false)
+			m_initialized(false),
+			m_last(UID_INVALID)
 		{
 			std::atexit(nimble_command_factory::_delete);
 		}
@@ -253,29 +249,17 @@ namespace NIMBLE {
 			__in const nimble_uid &uid
 			)
 		{
-			// TODO
-			std::cout << "_nimble_command_factory::_remove entry" << std::endl;
-			// ---
-
 			nimble_command_factory_ptr inst = NULL;
-			std::map<nimble_uid, std::pair<nimble_command, 
-					std::pair<nimble_cmd_cb, _nimble_cmd_fact_cb>>>::iterator iter;
 
 			if(nimble_command_factory::is_allocated()) {
 
-				inst = nimble_command_factory::m_instance;
+				inst = nimble_command_factory::acquire();
 				if(inst 
 						&& inst->is_initialized()
 						&& inst->contains(uid)) {
-					iter = inst->find(uid);
-					iter->second.second.first(iter->second.first.result());
-					inst->m_map.erase(iter);
+					inst->m_map.erase(inst->find(uid));
 				}
 			}
-
-			// TODO
-			std::cout << "_nimble_command_factory::_remove exit" << std::endl;
-			// ---
 		}
 
 		nimble_command_factory_ptr 
@@ -308,13 +292,13 @@ namespace NIMBLE {
 		}
 
 		std::map<nimble_uid, std::pair<nimble_command, 
-				std::pair<nimble_cmd_cb, _nimble_cmd_fact_cb>>>::iterator 
+				_nimble_cmd_fact_cb>>::iterator 
 		_nimble_command_factory::find(
 			__in const nimble_uid &uid
 			)
 		{
 			std::map<nimble_uid, std::pair<nimble_command, 
-					std::pair<nimble_cmd_cb, _nimble_cmd_fact_cb>>>::iterator result;
+					_nimble_cmd_fact_cb>>::iterator result;
 
 			SERIALIZE_CALL_RECUR(m_lock);
 
@@ -325,7 +309,7 @@ namespace NIMBLE {
 			result = m_map.find(uid);
 			if(result == m_map.end()) {
 				THROW_NIMBLE_COMMAND_EXCEPTION_MESSAGE(NIMBLE_COMMAND_EXCEPTION_NOT_FOUND,
-					"%s", CHK_STR(nimble_uid::as_string(uid, true)));
+					"%s", CHK_STR(nimble_uid::as_string(uid)));
 			}
 
 			return result;
@@ -334,7 +318,7 @@ namespace NIMBLE {
 		nimble_uid 
 		_nimble_command_factory::generate(void)
 		{
-			nimble_command cmd;
+			nimble_command command;
 
 			SERIALIZE_CALL_RECUR(m_lock);
 
@@ -342,12 +326,12 @@ namespace NIMBLE {
 				THROW_NIMBLE_COMMAND_EXCEPTION(NIMBLE_COMMAND_EXCEPTION_UNINITIALIZED);
 			}
 
-			m_map.insert(std::pair<nimble_uid, std::pair<nimble_command, 
-				std::pair<nimble_cmd_cb, _nimble_cmd_fact_cb>>>(cmd.uid(), 
-				std::pair<nimble_command, std::pair<nimble_cmd_cb, _nimble_cmd_fact_cb>>(cmd, 
-				std::pair<nimble_cmd_cb, _nimble_cmd_fact_cb>(NULL, nimble_command_factory::_remove))));
+			m_last = command.uid();
+			m_map.insert(std::pair<nimble_uid, std::pair<nimble_command, _nimble_cmd_fact_cb>>(
+				m_last, std::pair<nimble_command, _nimble_cmd_fact_cb>(command, 
+				nimble_command_factory::_remove)));
 
-			return cmd.uid();
+			return m_last;
 		}
 
 		void 
@@ -360,6 +344,7 @@ namespace NIMBLE {
 			}
 
 			m_initialized = true;
+			m_last = UID_INVALID;
 			m_map.clear();
 		}
 
@@ -380,15 +365,11 @@ namespace NIMBLE {
 		_nimble_command_factory::run(
 			__in const nimble_uid &uid,
 			__in const std::string &command,
-			__in nimble_cmd_cb complete
+			__out bool &update
 			)
 		{
-			// TODO
-			std::cout << "_nimble_command_factory::run entry" << std::endl;
-			// ---
-
 			std::map<nimble_uid, std::pair<nimble_command, 
-					std::pair<nimble_cmd_cb, _nimble_cmd_fact_cb>>>::iterator iter;
+					_nimble_cmd_fact_cb>>::iterator iter;
 
 			SERIALIZE_CALL_RECUR(m_lock);
 
@@ -396,15 +377,8 @@ namespace NIMBLE {
 				THROW_NIMBLE_COMMAND_EXCEPTION(NIMBLE_COMMAND_EXCEPTION_UNINITIALIZED);
 			}
 
-			// TODO
 			iter = find(uid);
-			iter->second.second.first = complete;
-			iter->second.first.run(command, iter->second.second.second);
-			// ---
-
-			// TODO
-			std::cout << "_nimble_command_factory::run exit" << std::endl;
-			// ---
+			iter->second.first.run(command, iter->second.second, update);
 		}
 
 		size_t 
@@ -419,6 +393,22 @@ namespace NIMBLE {
 			return m_map.size();
 		}
 
+		void 
+		_nimble_command_factory::stop_last(
+			__in_opt int sig
+			)
+		{
+			SERIALIZE_CALL_RECUR(m_lock);
+
+			if(!m_initialized) {
+				THROW_NIMBLE_COMMAND_EXCEPTION(NIMBLE_COMMAND_EXCEPTION_UNINITIALIZED);
+			}
+
+			if(contains(m_last)) {
+				find(m_last)->second.first.stop(sig);
+			}
+		}
+
 		std::string 
 		_nimble_command_factory::to_string(
 			__in_opt bool verbose
@@ -426,7 +416,7 @@ namespace NIMBLE {
 		{
 			std::stringstream result;
 			std::map<nimble_uid, std::pair<nimble_command, 
-					std::pair<nimble_cmd_cb, _nimble_cmd_fact_cb>>>::iterator iter;
+					_nimble_cmd_fact_cb>>::iterator iter;
 
 			SERIALIZE_CALL_RECUR(m_lock);
 
@@ -437,8 +427,7 @@ namespace NIMBLE {
 				result << " (" << VAL_AS_HEX(nimble_command_factory_ptr, this) << ")";
 
 				for(iter = m_map.begin(); iter != m_map.end(); ++iter) {
-					result << std::endl << "--- " << nimble_command::as_string(
-						iter->second.first, true);
+					result << std::endl << "--- " << iter->second.first.to_string(verbose);
 				}
 			}
 
@@ -454,6 +443,7 @@ namespace NIMBLE {
 				THROW_NIMBLE_COMMAND_EXCEPTION(NIMBLE_COMMAND_EXCEPTION_UNINITIALIZED);
 			}
 
+			m_last = UID_INVALID;
 			m_map.clear();
 			m_initialized = false;
 		}

@@ -63,25 +63,6 @@ namespace NIMBLE {
 	}
 
 	void 
-	_nimble::_result(
-		__in int result
-		)
-	{
-
-		// TODO
-		std::cout << "_nimble::_result entry" << std::endl;
-		// ---
-
-		if(nimble::m_instance) {
-			nimble::m_instance->m_result = result;
-		}
-
-		// TODO
-		std::cout << "_nimble::_result exit" << std::endl;
-		// ---
-	}
-
-	void 
 	_nimble::_signal_abort(
 		__in int sig
 		)
@@ -95,18 +76,16 @@ namespace NIMBLE {
 		__in int sig
 		)
 	{
-		// TODO: kill active command
-		std::cout << std::endl;
-		std::exit(sig);
-		// ---
-	}
+		/*nimble_ptr inst = NULL;
 
-	void 
-	_nimble::_signal_float(
-		__in int sig
-		)
-	{
-		std::cout << std::endl << "Floating-point exception." << std::endl;
+		if(nimble::is_allocated()) {
+
+			inst = nimble::acquire();
+			if(inst && inst->is_initialized()) {
+				inst->acquire_command()->stop_last(SIGKILL);
+			}
+		}*/
+
 		std::exit(sig);
 	}
 
@@ -353,7 +332,6 @@ namespace NIMBLE {
 
 		std::signal(SIGABRT, nimble::_signal_abort);
 		std::signal(SIGINT, nimble::_signal_attention);
-		std::signal(SIGFPE, nimble::_signal_float);
 		std::signal(SIGILL, nimble::_signal_illegal);
 		std::signal(SIGSEGV, nimble::_signal_invalid);
 		std::signal(SIGTERM, nimble::_signal_terminate);
@@ -374,10 +352,6 @@ namespace NIMBLE {
 		__in const char **environment
 		)
 	{
-		// TODO
-		std::cout << "_nimble::run entry" << std::endl;
-		// ---
-
 		int result = 0;
 		bool update = true;
 		std::string home, host, input, pwd, user;
@@ -405,22 +379,8 @@ namespace NIMBLE {
 				std::getline(std::cin, input);
 
 				try {
-
-					/*
-					 * TODO: Calling conventions
-					 * 	1) User calls generate and gets a UID
-					 * 	2) User calls run with UID and command callback
-					 * 	3) User command is run using command::run with factory callback (_remove)
-					 * 	4) When command is complete, factory callback is invoked
-					 * 	5) Factory callback calls user callback with status
-					 *	7) Factory callback deletes instance of command from factory map
-					 */
-
-					// TODO: process command
 					m_factory_command->run(m_factory_command->generate(), input, 
-						nimble::_result);
-					//
-
+						update);
 					result = m_result;
 				} catch(nimble_exception &exc) {
 					std::cerr << exc.to_string(true) << std::endl;
@@ -437,10 +397,6 @@ namespace NIMBLE {
 			std::cerr << exc.what() << std::endl;
 			result = INVALID(int);
 		}
-
-		// TODO
-		std::cout << "_nimble::run exit" << std::endl;
-		// ---
 
 		return result;
 	}

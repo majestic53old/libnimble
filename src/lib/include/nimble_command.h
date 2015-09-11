@@ -20,6 +20,7 @@
 #ifndef NIMBLE_COMMAND_H_
 #define NIMBLE_COMMAND_H_
 
+#include <signal.h>
 #include <unistd.h>
 
 namespace NIMBLE {
@@ -27,10 +28,6 @@ namespace NIMBLE {
 	namespace COMPONENT {
 
 		#define PID_INVALID INVALID(pid_t)
-
-		typedef void (*nimble_cmd_cb)(
-			__in int
-			);
 
 		typedef void (*_nimble_cmd_fact_cb)(
 			__in const nimble_uid &
@@ -64,20 +61,19 @@ namespace NIMBLE {
 
 				void run(
 					__in const std::string &command,
-					__in _nimble_cmd_fact_cb complete
+					__in _nimble_cmd_fact_cb complete,
+					__out bool &update
 					);
 
-				void stop(void);
+				void stop(
+					__in_opt int sig = SIGTERM
+					);
 
 				virtual std::string to_string(
 					__in_opt bool verbose = false
 					);
 
 			protected:
-
-				void run_command(
-					__in const std::string &command
-					);
 
 				bool m_active;
 
@@ -86,8 +82,6 @@ namespace NIMBLE {
 				pid_t m_pid;
 
 				int m_result;
-
-				std::thread m_thread;
 
 			private:
 
@@ -118,10 +112,14 @@ namespace NIMBLE {
 				void run(
 					__in const nimble_uid &uid,
 					__in const std::string &command,
-					__in nimble_cmd_cb complete
+					__out bool &update
 					);
 
 				size_t size(void);
+
+				void stop_last(
+					__in_opt int sig = SIGTERM
+					);
 
 				std::string to_string(
 					__in_opt bool verbose = false
@@ -148,14 +146,16 @@ namespace NIMBLE {
 					);
 
 				std::map<nimble_uid, std::pair<nimble_command, 
-						std::pair<nimble_cmd_cb, _nimble_cmd_fact_cb>>>::iterator find(
+						_nimble_cmd_fact_cb>>::iterator find(
 					__in const nimble_uid &uid
 					);
 
 				std::map<nimble_uid, std::pair<nimble_command, 
-					std::pair<nimble_cmd_cb, _nimble_cmd_fact_cb>>> m_map;
+					_nimble_cmd_fact_cb>> m_map;
 
 				bool m_initialized;
+
+				nimble_uid m_last;
 
 				static _nimble_command_factory *m_instance;
 
