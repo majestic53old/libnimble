@@ -94,25 +94,6 @@ namespace NIMBLE {
 		return result;
 	}
 
-	std::string 
-	_nimble_language::as_string(
-		__in token_t type,
-		__in toksub_t subtype
-		)
-	{
-		std::string result = UNKNOWN;
-
-		if(subtype < TOKEN_STRING_LENGTH(type)) {
-
-			const std::string *tok = TOKEN_STRING_POINTER(type);
-			if(tok) {
-				result = tok[subtype];
-			}
-		}
-
-		return result;
-	}
-
 	double 
 	_nimble_language::as_value(
 		__in const std::string &text,
@@ -173,11 +154,11 @@ namespace NIMBLE {
 	toksub_t 
 	_nimble_language::subtype(
 		__in const std::string &text,
-		__in token_t type
+		__in tok_t type
 		)
 	{
 		size_t iter = 0, len;
-		toksub_t result = INVALID(toksub_t);
+		toksub_t result = TOKSUB_INVALID;
 
 		len = TOKEN_STRING_LENGTH(type);
 
@@ -194,5 +175,32 @@ namespace NIMBLE {
 		}
 
 		return result;
+	}
+
+	std::string 
+	_nimble_language::subtype_as_string(
+		__in tok_t type,
+		__in toksub_t subtype
+		)
+	{
+		std::string result = UNKNOWN;
+
+		if(subtype < TOKEN_STRING_LENGTH(type)) {
+
+			const std::string *tok = TOKEN_STRING_POINTER(type);
+			if(tok) {
+				result = tok[subtype];
+			}
+		}
+
+		return result;
+	}
+
+	std::string 
+	_nimble_language::type_as_string(
+		__in tok_t type
+		)
+	{
+		return TOKEN_STRING(type);
 	}
 }

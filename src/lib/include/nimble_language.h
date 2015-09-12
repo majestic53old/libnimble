@@ -22,7 +22,11 @@
 
 namespace NIMBLE {
 
-	typedef int token_t, toksub_t;
+	#define TOK_INVALID INVALID_TYPE(tok_t)
+
+	#define TOKSUB_INVALID INVALID_TYPE(toksub_t)
+
+	typedef uint32_t tok_t, toksub_t;
 
 	typedef enum {
 		BASE_BINARY = 2,
@@ -64,11 +68,6 @@ namespace NIMBLE {
 
 		public:
 
-			static std::string as_string(
-				__in token_t type,
-				__in toksub_t subtype
-				);
-
 			static double as_value(
 				__in const std::string &text,
 				__in base_t base
@@ -76,7 +75,16 @@ namespace NIMBLE {
 
 			static toksub_t subtype(
 				__in const std::string &text,
-				__in token_t type
+				__in tok_t type
+				);
+
+			static std::string subtype_as_string(
+				__in tok_t type,
+				__in toksub_t subtype
+				);
+
+			static std::string type_as_string(
+				__in tok_t type
 				);
 
 		protected:

@@ -27,7 +27,7 @@ namespace NIMBLE {
 
 	namespace COMPONENT {
 
-		#define PID_INVALID INVALID(pid_t)
+		#define PID_INVALID INVALID_TYPE(pid_t)
 
 		typedef void (*_nimble_cmd_fact_cb)(
 			__in const nimble_uid &

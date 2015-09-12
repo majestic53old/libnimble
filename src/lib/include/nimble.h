@@ -41,6 +41,7 @@ using namespace NIMBLE;
 
 #include "nimble_uid.h"
 #include "nimble_command.h"
+#include "nimble_token.h"
 
 using namespace NIMBLE::COMPONENT;
 
@@ -63,6 +64,8 @@ namespace NIMBLE {
 			static _nimble *acquire(void);
 
 			nimble_command_factory_ptr acquire_command(void);
+
+			nimble_token_factory_ptr acquire_token(void);
 
 			nimble_uid_factory_ptr acquire_uid(void);
 
@@ -143,6 +146,8 @@ namespace NIMBLE {
 			std::map<std::string, std::string> m_environment_map;
 
 			nimble_command_factory_ptr m_factory_command;
+
+			nimble_token_factory_ptr m_factory_token;
 
 			nimble_uid_factory_ptr m_factory_uid;
 

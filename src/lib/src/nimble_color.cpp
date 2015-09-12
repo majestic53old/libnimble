@@ -42,7 +42,7 @@ namespace NIMBLE {
 		bool result = true;
 
 		max = tgetnum(TERM_MAX_COL);
-		if(max != INVALID(int)) {
+		if(max != INVALID_TYPE(int)) {
 			result = (max >= 8);
 		}
 

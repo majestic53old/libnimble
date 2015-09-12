@@ -38,14 +38,15 @@ namespace NIMBLE {
 	#define __inout
 	#define __inout_opt
 
-	#define EMPTY "(EMPTY)"
-	#define UNKNOWN "(UNKNOWN)"
+	#define EMPTY "EMPTY"
+	#define INVALID "INVALID"
+	#define UNKNOWN "UNKNOWN"
 
 	#define REF_INITIAL 1
 
 	#define VER_MAJ 0
 	#define VER_MIN 1
-	#define VER_REV 3
+	#define VER_REV 4
 	#define VER_WEEK 1537
 
 	#define ARR_LEN(_TYPE_, _ARR_) \
@@ -56,7 +57,7 @@ namespace NIMBLE {
 
 	#define CHK_STR(_STR_) (_STR_.empty() ? EMPTY : _STR_.c_str())
 
-	#define INVALID(_TYPE_) ((_TYPE_) -1)
+	#define INVALID_TYPE(_TYPE_) ((_TYPE_) -1)
 
 	#define REF_PARAM(_PARAM_) (void) _PARAM_
 

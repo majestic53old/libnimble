@@ -36,10 +36,10 @@ main(
 		inst->uninitialize();
 	} catch(nimble_exception &exc) {
 		std::cerr << exc.to_string(true) << std::endl;
-		result = INVALID(int);
+		result = INVALID_TYPE(int);
 	} catch(std::exception &exc) {
 		std::cerr << exc.what() << std::endl;
-		result = INVALID(int);
+		result = INVALID_TYPE(int);
 	}
 	
 	return result;

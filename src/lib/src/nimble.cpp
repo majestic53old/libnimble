@@ -37,6 +37,7 @@ namespace NIMBLE {
 
 	_nimble::_nimble(void) :
 		m_factory_command(nimble_command_factory::acquire()),
+		m_factory_token(nimble_token_factory::acquire()),
 		m_factory_uid(nimble_uid_factory::acquire()),
 		m_initialized(false),
 		m_result(0)
@@ -136,6 +137,13 @@ namespace NIMBLE {
 	{
 		SERIALIZE_CALL_RECUR(m_lock);
 		return m_factory_command;
+	}
+
+	nimble_token_factory_ptr 
+	_nimble::acquire_token(void)
+	{
+		SERIALIZE_CALL_RECUR(m_lock);
+		return m_factory_token;
 	}
 
 	nimble_uid_factory_ptr 
@@ -304,6 +312,7 @@ namespace NIMBLE {
 		m_initialized = true;
 		m_environment_map.clear();
 		m_factory_uid->initialize();
+		m_factory_token->initialize();
 		m_factory_command->initialize();
 		m_result = 0;
 	}
@@ -384,18 +393,18 @@ namespace NIMBLE {
 					result = m_result;
 				} catch(nimble_exception &exc) {
 					std::cerr << exc.to_string(true) << std::endl;
-					result = INVALID(int);
+					result = INVALID_TYPE(int);
 				} catch(std::exception &exc) {
 					std::cerr << exc.what() << std::endl;
-					result = INVALID(int);
+					result = INVALID_TYPE(int);
 				}
 			}
 		} catch(nimble_exception &exc) {
 			std::cerr << exc.to_string(true) << std::endl;
-			result = INVALID(int);
+			result = INVALID_TYPE(int);
 		} catch(std::exception &exc) {
 			std::cerr << exc.what() << std::endl;
-			result = INVALID(int);
+			result = INVALID_TYPE(int);
 		}
 
 		return result;
@@ -417,6 +426,7 @@ namespace NIMBLE {
 		}
 
 		result << std::endl << m_factory_uid->to_string(verbose);
+		result << std::endl << m_factory_token->to_string(verbose);
 		result << std::endl << m_factory_command->to_string(verbose);
 
 		return CHK_STR(result.str());
@@ -433,6 +443,7 @@ namespace NIMBLE {
 
 		m_result = 0;
 		m_factory_command->uninitialize();
+		m_factory_token->uninitialize();
 		m_factory_uid->uninitialize();
 		m_environment_map.clear();
 		m_initialized = false;

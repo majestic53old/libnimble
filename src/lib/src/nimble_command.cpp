@@ -191,7 +191,7 @@ namespace NIMBLE {
 
 			if(m_pid > 0) {
 
-				if(kill(m_pid, sig) == INVALID(int)) {
+				if(kill(m_pid, sig) == INVALID_TYPE(int)) {
 					THROW_NIMBLE_COMMAND_EXCEPTION_MESSAGE(NIMBLE_COMMAND_EXCEPTION_PID_KILL,
 						"%s, pid. %x, err. %x", CHK_STR(nimble_uid::as_string(m_uid)), 
 						m_pid, errno);

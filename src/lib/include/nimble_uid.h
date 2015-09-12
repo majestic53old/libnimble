@@ -28,7 +28,8 @@ namespace NIMBLE {
 	namespace COMPONENT {
 
 		#define UID_INITIAL (UID_INVALID + 1)
-		#define UID_INVALID INVALID(nimble_uid_t)
+
+		#define UID_INVALID INVALID_TYPE(nimble_uid_t)
 
 		typedef uintmax_t nimble_uid_t;
 
