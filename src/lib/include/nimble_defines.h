@@ -61,8 +61,8 @@ namespace NIMBLE {
 
 	#define REF_PARAM(_PARAM_) (void) _PARAM_
 
-	#define _SERIALIZE_CALL(_TYPE_, _MUTEX_) \
-		std::lock_guard<_TYPE_> __LOCK ## _MUTEX_(_MUTEX_)
+	#define _SERIALIZE_CALL(_TYPE_, _MUTEX_) /*\
+		std::lock_guard<_TYPE_> __LOCK ## _MUTEX_(_MUTEX_)*/
 	#define SERIALIZE_CALL(_MUTEX_) \
 		_SERIALIZE_CALL(std::mutex, _MUTEX_)
 	#define SERIALIZE_CALL_RECUR(_MUTEX_) \

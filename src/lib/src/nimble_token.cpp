@@ -39,6 +39,7 @@ namespace NIMBLE {
 		_nimble_token::_nimble_token(
 			__in const _nimble_token &other
 			) :
+				nimble_uid_class(other),
 				m_column(other.m_column),
 				m_line(other.m_line),
 				m_path(other.m_path),
@@ -65,6 +66,7 @@ namespace NIMBLE {
 			SERIALIZE_CALL_RECUR(m_lock);
 
 			if(this != &other) {
+				nimble_uid_class::operator=(other);
 				m_column = other.m_column;
 				m_line = other.m_line;
 				m_path = other.m_path;
@@ -440,7 +442,7 @@ namespace NIMBLE {
 				result << " (" << VAL_AS_HEX(nimble_token_factory_ptr, this) << ")";
 
 				for(iter = m_map.begin(); iter != m_map.end(); ++iter) {
-					result << std::endl << "--- " << nimble_token::as_string(iter->second.first)
+					result << std::endl << "--- " << nimble_token::as_string(iter->second.first, true)
 						<< ", ref. " << iter->second.second;
 				}
 			} 

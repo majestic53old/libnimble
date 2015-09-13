@@ -146,23 +146,21 @@ namespace NIMBLE {
 				try {
 
 					// TODO: run command, set m_result
-					nimble_lexer_base base(command);
+					nimble_lexer base(command);
 
-					while(base.has_next_character()) {
+					while(base.has_next_token()) {
 						std::cout << base.to_string(true) << std::endl;
-						base.move_next_character();
+						base.move_next_token();
 					}
 
 					std::cout << base.to_string(true) << std::endl;
 
-					while(base.has_previous_character()) {
-						base.move_previous_character();
+					while(base.has_previous_token()) {
+						base.move_previous_token();
 						std::cout << base.to_string(true) << std::endl;
 					}
-
-					/*std::cout << nimble_language::as_value(command, BASE_DECIMAL, 
-						nimble_token_meta(command, "test.txt", 0, 10, 0, 4)) << std::endl;*/
 					// ---
+
 				} catch(nimble_exception &exc) {
 					std::cerr << exc.to_string(true) << std::endl;
 					m_result = INVALID_TYPE(int);

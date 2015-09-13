@@ -88,6 +88,12 @@ namespace NIMBLE {
 					__in_opt bool verbose = false
 					);
 
+				static std::string character_exception(
+					__in nimble_token_meta &meta,
+					__in_opt size_t tabs = 0,
+					__in_opt bool verbose = false
+					);
+
 				std::string character_line(void);
 
 				size_t character_position(void);
@@ -202,6 +208,10 @@ namespace NIMBLE {
 					__in_opt bool is_file = false
 					);
 
+				virtual void set(
+					__in const _nimble_lexer &other
+					);
+
 				virtual size_t size(void);
 
 				virtual std::string to_string(
@@ -221,6 +231,11 @@ namespace NIMBLE {
 					);
 
 			protected:
+
+				nimble_token &insert_token(
+					__in tok_t type,
+					__in_opt toksub_t subtype = TOKSUB_INVALID
+					);
 
 				void skip_whitespace(void);
 

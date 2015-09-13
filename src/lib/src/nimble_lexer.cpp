@@ -259,6 +259,18 @@ namespace NIMBLE {
 		}
 
 		std::string 
+		_nimble_lexer_base::character_exception(
+			__in nimble_token_meta &meta,
+			__in_opt size_t tabs,
+			__in_opt bool verbose
+			)
+		{
+			return nimble_lexer_base::character_exception(meta.line(), meta.path(), 
+				meta.column(), meta.column_offset(), meta.row(), 
+				meta.row_offset(), tabs, verbose);
+		}
+
+		std::string 
 		_nimble_lexer_base::character_line(void)
 		{
 			SERIALIZE_CALL_RECUR(m_lock);
@@ -609,17 +621,28 @@ namespace NIMBLE {
 
 		_nimble_lexer::_nimble_lexer(
 			__in const _nimble_lexer &other
-			) :
-				nimble_lexer_base(other),
-				m_tok_list(other.m_tok_list),
-				m_tok_position(other.m_tok_position)
+			)
 		{
-			return;
+			nimble_lexer::set(other);
 		}
 
 		_nimble_lexer::~_nimble_lexer(void)
 		{
-			return;
+			std::vector<nimble_uid>::iterator iter;
+			nimble_token_factory_ptr fact = nimble_lexer::acquire_token();
+
+			try {
+
+				if(fact && fact->is_initialized()) {
+
+					for(iter = m_tok_list.begin(); iter != m_tok_list.end(); ++iter) {
+
+						if(fact->contains(*iter)) {
+							fact->decrement_reference(*iter);
+						}
+					}
+				}
+			} catch(...) { }
 		}
 
 		_nimble_lexer &
@@ -630,9 +653,7 @@ namespace NIMBLE {
 			SERIALIZE_CALL_RECUR(m_lock);
 
 			if(this != &other) {
-				nimble_lexer_base::operator=(other);
-				m_tok_list = other.m_tok_list;
-				m_tok_position = other.m_tok_position;
+				nimble_lexer::set(other);
 			}
 
 			return *this;
@@ -658,9 +679,27 @@ namespace NIMBLE {
 		void 
 		_nimble_lexer::clear(void)
 		{
+			nimble_token_factory_ptr fact = NULL;
+			std::vector<nimble_uid>::iterator iter;
+
 			SERIALIZE_CALL_RECUR(m_lock);
 
 			nimble_lexer_base::reset();
+			fact = nimble_lexer::acquire_token();
+
+			try {
+
+				if(fact && fact->is_initialized()) {
+
+					for(iter = m_tok_list.begin(); iter != m_tok_list.end(); ++iter) {
+
+						if(fact->contains(*iter)) {
+							fact->decrement_reference(*iter);
+						}
+					}
+				}
+			} catch(...) { }
+
 			m_tok_list.clear();
 			m_tok_position = 0;
 		}
@@ -693,6 +732,27 @@ namespace NIMBLE {
 		}
 
 		nimble_token &
+		_nimble_lexer::insert_token(
+			__in tok_t type,
+			__in_opt toksub_t subtype
+			)
+		{
+			nimble_uid uid;
+			nimble_token_factory_ptr fact = NULL;
+
+			SERIALIZE_CALL_RECUR(m_lock);
+
+			fact = acquire_token();
+			uid = fact->generate();
+			nimble_token &tok = fact->at(uid);
+			tok.type() = type;
+			tok.subtype() = subtype;
+			m_tok_list.push_back(uid);
+
+			return tok;
+		}
+
+		nimble_token &
 		_nimble_lexer::move_next_token(void)
 		{
 			SERIALIZE_CALL_RECUR(m_lock);
@@ -703,14 +763,18 @@ namespace NIMBLE {
 			}
 
 			if(token().type() == TOKEN_BEGIN) {
-				move_next_token();
+				++m_tok_position;
 			}
 
 			skip_whitespace();
 
-			// TODO
+			if(has_next_token() 
+					&& (m_tok_position <= (m_tok_list.size() - SENTINEL_LEXER))) {
 
-			++m_tok_position;
+				// TODO
+
+				++m_tok_position;
+			}
 
 			return token();
 		}
@@ -747,10 +811,39 @@ namespace NIMBLE {
 
 			nimble_lexer::clear();
 			nimble_lexer_base::set(input, is_file);
-
-			// TODO: add begin, end sentinel tokens
-
+			insert_token(TOKEN_BEGIN);
+			insert_token(TOKEN_END);
 			nimble_lexer::reset();
+		}
+
+		void 
+		_nimble_lexer::set(
+			__in const _nimble_lexer &other
+			)
+		{
+			nimble_token_factory_ptr fact = NULL;
+			std::vector<nimble_uid>::iterator iter;
+
+			SERIALIZE_CALL_RECUR(m_lock);
+
+			nimble_lexer::clear();
+			nimble_lexer_base::operator=(other);
+			m_tok_list = other.m_tok_list;
+			m_tok_position = other.m_tok_position;
+			fact = nimble_lexer::acquire_token();
+
+			try {
+
+				if(fact && fact->is_initialized()) {
+
+					for(iter = m_tok_list.begin(); iter != m_tok_list.end(); ++iter) {
+
+						if(fact->contains(*iter)) {
+							fact->increment_reference(*iter);
+						}
+					}
+				}
+			} catch(...) { }
 		}
 
 		size_t 
@@ -778,10 +871,15 @@ namespace NIMBLE {
 			SERIALIZE_CALL_RECUR(m_lock);
 
 			if(verbose) {
-				result << "(" << m_tok_position << "/" << m_tok_list.size() << ") ";
+				result << "(" << m_tok_position << "/" << (m_tok_list.size() - 1) << ") ";
 			}
 
-			result << nimble_lexer::token_as_string(token(), verbose);
+			if(m_tok_position >= m_tok_list.size()) {
+				THROW_NIMBLE_LEXER_EXCEPTION_MESSAGE(NIMBLE_LEXER_EXCEPTION_INVALID_TOKEN_POSITION,
+					"%lu", m_tok_position);
+			}
+
+			result << nimble_lexer::token_as_string(m_tok_list.at(m_tok_position), verbose);
 
 			return CHK_STR(result.str());
 		}
@@ -805,11 +903,7 @@ namespace NIMBLE {
 			__in_opt bool verbose
 			)
 		{
-			std::stringstream result;
-
-			// TODO
-
-			return CHK_STR(result.str());
+			return nimble_token::as_string(acquire_token()->at(uid), verbose);
 		}
 
 		std::string 
@@ -818,13 +912,16 @@ namespace NIMBLE {
 			__in_opt bool verbose
 			)
 		{
+			nimble_token tok;
+			nimble_token_meta meta;
 			std::stringstream result;
 
 			SERIALIZE_CALL_RECUR(m_lock);
 
-			// TODO
-
-			// USE: character_exception
+			tok = token();
+			meta = tok.meta();
+			result << tok.to_string(verbose) << std::endl
+				<< nimble_lexer_base::character_exception(meta, tabs, verbose);
 
 			return CHK_STR(result.str());
 		}
