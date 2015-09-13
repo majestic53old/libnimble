@@ -143,21 +143,33 @@ namespace NIMBLE {
 
 			if(!m_pid) {
 
-				// TODO: run command, set m_result
-				nimble_lexer_base base(command);
+				try {
 
-				while(base.has_next_character()) {
+					// TODO: run command, set m_result
+					nimble_lexer_base base(command);
+
+					while(base.has_next_character()) {
+						std::cout << base.to_string(true) << std::endl;
+						base.move_next_character();
+					}
+
 					std::cout << base.to_string(true) << std::endl;
-					base.move_next_character();
-				}
 
-				std::cout << base.to_string(true) << std::endl;
+					while(base.has_previous_character()) {
+						base.move_previous_character();
+						std::cout << base.to_string(true) << std::endl;
+					}
 
-				while(base.has_previous_character()) {
-					base.move_previous_character();
-					std::cout << base.to_string(true) << std::endl;
+					/*std::cout << nimble_language::as_value(command, BASE_DECIMAL, 
+						nimble_token_meta(command, "test.txt", 0, 10, 0, 4)) << std::endl;*/
+					// ---
+				} catch(nimble_exception &exc) {
+					std::cerr << exc.to_string(true) << std::endl;
+					m_result = INVALID_TYPE(int);
+				} catch(std::exception &exc) {
+					std::cerr << exc.what() << std::endl;
+					m_result = INVALID_TYPE(int);
 				}
-				// ---
 
 				_exit(m_result);
 			} else {

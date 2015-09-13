@@ -57,6 +57,9 @@ namespace NIMBLE {
 
 	class _nimble_language;
 	typedef _nimble_language nimble_language, *nimble_language_ptr;
+
+	class _nimble_token_meta;
+	typedef _nimble_token_meta nimble_token_meta, *nimble_token_meta_ptr;
 }
 
 #endif // NIMBLE_LANGUAGE_TYPE_H_

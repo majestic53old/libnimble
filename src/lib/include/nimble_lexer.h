@@ -77,6 +77,17 @@ namespace NIMBLE {
 					__in_opt bool verbose = false
 					);
 
+				static std::string character_exception(
+					__in const std::string &line,
+					__in_opt const std::string &path = std::string(),
+					__in_opt size_t column = 0,
+					__in_opt size_t column_offset = 0,
+					__in_opt size_t row = 0,
+					__in_opt size_t row_offset = 0,
+					__in_opt size_t tabs = 0,
+					__in_opt bool verbose = false
+					);
+
 				std::string character_line(void);
 
 				size_t character_position(void);
@@ -207,14 +218,6 @@ namespace NIMBLE {
 				std::string token_exception(
 					__in_opt size_t tabs = 0,
 					__in_opt bool verbose = false
-					);
-
-				void token_insert(
-					__in const nimble_token &tok
-					);
-
-				void token_remove(
-					__in const nimble_uid &uid
 					);
 
 			protected:

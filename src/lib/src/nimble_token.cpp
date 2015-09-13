@@ -157,6 +157,16 @@ namespace NIMBLE {
 			return m_line;
 		}
 
+		nimble_token_meta 
+		_nimble_token::meta(
+			__in_opt size_t column,
+			__in_opt size_t row
+			)
+		{
+			SERIALIZE_CALL_RECUR(m_lock);
+			return nimble_token_meta(m_text, m_path, column, m_column, row, m_row);
+		}
+
 		std::string &
 		_nimble_token::path(void)
 		{

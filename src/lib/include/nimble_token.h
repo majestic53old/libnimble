@@ -52,6 +52,11 @@ namespace NIMBLE {
 
 				size_t &line(void);
 
+				nimble_token_meta meta(
+					__in_opt size_t column = 0,
+					__in_opt size_t row = 0
+					);
+
 				std::string &path(void);
 
 				size_t &position(void);

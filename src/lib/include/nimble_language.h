@@ -22,6 +22,8 @@
 
 namespace NIMBLE {
 
+	#define CHAR_COMMENT '#'
+
 	#define TOK_INVALID INVALID_TYPE(tok_t)
 
 	#define TOKSUB_INVALID INVALID_TYPE(toksub_t)
@@ -64,13 +66,80 @@ namespace NIMBLE {
 
 	#define TOKEN_MAX TOKEN_SYMBOL
 
+	typedef class _nimble_token_meta {
+
+		public:
+
+			_nimble_token_meta(
+				__in_opt const std::string &line = std::string(),
+				__in_opt const std::string &path = std::string(),
+				__in_opt size_t column = 0,
+				__in_opt size_t column_off = 0,
+				__in_opt size_t row = 0,
+				__in_opt size_t row_off = 0
+				);
+
+			_nimble_token_meta(
+				__in const _nimble_token_meta &other
+				);
+
+			virtual ~_nimble_token_meta(void);
+
+			_nimble_token_meta &operator=(
+				__in const _nimble_token_meta &other
+				);
+
+			static std::string as_string(
+				__in const _nimble_token_meta &meta,
+				__in_opt size_t tabs = 0,
+				__in_opt bool verbose = false
+				);
+
+			size_t &column(void);
+
+			size_t &column_offset(void);
+
+			std::string &line(void);
+
+			std::string &path(void);
+
+			size_t &row(void);
+
+			size_t &row_offset(void);
+
+			virtual std::string to_string(
+				__in_opt size_t tabs = 0,
+				__in_opt bool verbose = false
+				);
+
+		protected:
+
+			size_t m_column;
+
+			size_t m_column_offset;
+
+			std::string m_line;
+
+			std::string m_path;
+
+			size_t m_row;
+
+			size_t m_row_offset;
+
+		private:
+
+			std::recursive_mutex m_lock;
+
+	} nimble_token_meta, *nimble_token_meta_ptr;
+
 	typedef class _nimble_language {
 
 		public:
 
 			static double as_value(
 				__in const std::string &text,
-				__in base_t base
+				__in base_t base,
+				__in_opt const nimble_token_meta &meta = nimble_token_meta()
 				);
 
 			static toksub_t subtype(
@@ -92,7 +161,8 @@ namespace NIMBLE {
 			static double _as_value(
 				__in char ch,
 				__in int position,
-				__in base_t base
+				__in base_t base,
+				__in_opt const nimble_token_meta &meta = nimble_token_meta()
 				);
 
 	} nimble_language, *nimble_language_ptr;

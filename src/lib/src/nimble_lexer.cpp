@@ -172,22 +172,36 @@ namespace NIMBLE {
 			__in_opt size_t tabs,
 			__in_opt bool verbose
 			)
-		{						
-			std::string line;
+		{
+			SERIALIZE_CALL_RECUR(m_lock);
+			return character_exception(CHK_STR(character_line()), m_path, 
+				m_char_column, m_char_column, m_char_row, m_char_row, 
+				tabs, verbose);
+		}
+
+		std::string 
+		_nimble_lexer_base::character_exception(
+			__in const std::string &line,
+			__in_opt const std::string &path,
+			__in_opt size_t column,
+			__in_opt size_t column_offset,
+			__in_opt size_t row,
+			__in_opt size_t row_offset,
+			__in_opt size_t tabs,
+			__in_opt bool verbose
+			)
+		{
 			size_t iter, off = 0;
 			std::stringstream result;
-			std::string::iterator ch_iter;
-
-			SERIALIZE_CALL_RECUR(m_lock);
+			std::string::const_iterator ch_iter;
 
 			for(iter = 0; iter < tabs; ++iter) {
 				result << CHAR_TAB;
 			}
 
-			line = CHK_STR(character_line());
 			for(ch_iter = line.begin(), iter = 0; ch_iter != line.end(); ++ch_iter, ++iter) {
 
-				if(iter < m_char_column) {
+				if(iter < column) {
 
 					switch(*ch_iter) {
 						case  CHAR_CARAGE_RETURN:
@@ -211,9 +225,9 @@ namespace NIMBLE {
 
 			SET_TERM_ATTRIB(result, 1, COL_FORE_GREEN);
 
-			for(iter = 0; iter < (m_char_column + off); ++iter) {
+			for(iter = 0; iter < (column + off); ++iter) {
 
-				if(iter != (m_char_column + off - 1)) {
+				if(iter != (column + off - 1)) {
 					result << CHAR_FILL;
 				} else {
 					result << CHAR_SPACE;
@@ -233,11 +247,11 @@ namespace NIMBLE {
 				SET_TERM_ATTRIB(result, 1, COL_FORE_YELLOW);
 				result << "(";
 
-				if(has_path()) {
-					result << CHK_STR(m_path) << ":";
+				if(!path.empty()) {
+					result << CHK_STR(path) << ":";
 				}
 
-				result << m_char_row << ":" << m_char_column << ")";
+				result << row_offset << ":" << column_offset << ")";
 				CLEAR_TERM_ATTRIB(result);
 			}
 
@@ -731,7 +745,12 @@ namespace NIMBLE {
 		{
 			SERIALIZE_CALL_RECUR(m_lock);
 
-			// TODO
+			nimble_lexer::clear();
+			nimble_lexer_base::set(input, is_file);
+
+			// TODO: add begin, end sentinel tokens
+
+			nimble_lexer::reset();
 		}
 
 		size_t 
@@ -758,7 +777,11 @@ namespace NIMBLE {
 
 			SERIALIZE_CALL_RECUR(m_lock);
 
-			// TODO
+			if(verbose) {
+				result << "(" << m_tok_position << "/" << m_tok_list.size() << ") ";
+			}
+
+			result << nimble_lexer::token_as_string(token(), verbose);
 
 			return CHK_STR(result.str());
 		}
@@ -801,27 +824,9 @@ namespace NIMBLE {
 
 			// TODO
 
+			// USE: character_exception
+
 			return CHK_STR(result.str());
-		}
-
-		void 
-		_nimble_lexer::token_insert(
-			__in const nimble_token &tok
-			)
-		{
-			SERIALIZE_CALL_RECUR(m_lock);
-
-			// TODO
-		}
-
-		void 
-		_nimble_lexer::token_remove(
-			__in const nimble_uid &uid
-			)
-		{
-			SERIALIZE_CALL_RECUR(m_lock);
-
-			// TODO
 		}
 	}
 }
