@@ -20,7 +20,7 @@
 #ifndef NIMBLE_LEXER_H_
 #define NIMBLE_LEXER_H_
 
-#include <map>
+#include <vector>
 
 namespace NIMBLE {
 
@@ -61,12 +61,12 @@ namespace NIMBLE {
 					__in const _nimble_lexer_base &other
 					);
 
-				static std::string as_string(
+				char character(void);
+
+				static std::string character_as_string(
 					__in char ch,
 					__in_opt bool verbose = false
 					);
-
-				char character(void);
 
 				char_cls_t character_class(void);
 
@@ -152,7 +152,86 @@ namespace NIMBLE {
 
 		} nimble_lexer_base, *nimble_lexer_base_ptr;
 
-		// TODO: implement lexer class
+		typedef class _nimble_lexer :
+				protected _nimble_lexer_base {
+
+			public:
+
+				_nimble_lexer(
+					__in_opt const std::string &input = std::string(),
+					__in_opt bool is_file = false
+					);
+
+				_nimble_lexer(
+					__in const _nimble_lexer &other
+					);
+
+				virtual ~_nimble_lexer(void);
+
+				_nimble_lexer &operator=(
+					__in const _nimble_lexer &other
+					);
+
+				virtual void clear(void);
+
+				virtual size_t discover(void);
+
+				bool has_next_token(void);
+
+				bool has_previous_token(void);
+
+				nimble_token &move_next_token(void);
+
+				nimble_token &move_previous_token(void);
+
+				virtual void reset(void);
+
+				virtual void set(
+					__in_opt const std::string &input = std::string(),
+					__in_opt bool is_file = false
+					);
+
+				virtual size_t size(void);
+
+				virtual std::string to_string(
+					__in_opt bool verbose = false
+					);
+
+				nimble_token &token(void);
+
+				static std::string token_as_string(
+					__in const nimble_uid &uid,
+					__in_opt bool verbose = false
+					);
+
+				std::string token_exception(
+					__in_opt size_t tabs = 0,
+					__in_opt bool verbose = false
+					);
+
+				void token_insert(
+					__in const nimble_token &tok
+					);
+
+				void token_remove(
+					__in const nimble_uid &uid
+					);
+
+			protected:
+
+				void skip_whitespace(void);
+
+				static nimble_token_factory_ptr acquire_token(void);
+
+				std::vector<nimble_uid> m_tok_list;
+
+				size_t m_tok_position;
+
+			private:
+
+				std::recursive_mutex m_lock;
+
+		} nimble_lexer, *nimble_lexer_ptr;
 	}
 }
 

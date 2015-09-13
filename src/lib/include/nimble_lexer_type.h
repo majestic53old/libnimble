@@ -33,20 +33,30 @@ namespace NIMBLE {
 		#endif // NDEBUG
 
 		enum {
-			NIMBLE_LEXER_EXCEPTION_FILE_NOT_FOUND = 0,
+			NIMBLE_LEXER_EXCEPTION_COMPONENT_NOT_READY = 0,
+			NIMBLE_LEXER_EXCEPTION_FILE_NOT_FOUND,
 			NIMBLE_LEXER_EXCEPTION_INVALID_CHARACTER_POSITION,
+			NIMBLE_LEXER_EXCEPTION_INVALID_COMPONENT,
+			NIMBLE_LEXER_EXCEPTION_INVALID_TOKEN_POSITION,
 			NIMBLE_LEXER_EXCEPTION_NO_NEXT_CHARACTER,
+			NIMBLE_LEXER_EXCEPTION_NO_NEXT_TOKEN,
 			NIMBLE_LEXER_EXCEPTION_NO_PREVIOUS_CHARACTER,
+			NIMBLE_LEXER_EXCEPTION_NO_PREVIOUS_TOKEN,
 			NIMBLE_LEXER_EXCEPTION_ROW_NOT_FOUND,
 		};
 
 		#define NIMBLE_LEXER_EXCEPTION_MAX NIMBLE_LEXER_EXCEPTION_ROW_NOT_FOUND
 
 		static const std::string NIMBLE_LEXER_EXCEPTION_STR[] = {
+			"Token component is not ready",
 			"File does not exist",
 			"Invalid character position",
+			"Invalid token component",
+			"Invalid token position",
 			"No next character in stream",
+			"No next token in stream",
 			"No previous character in stream",
+			"No previous token in stream",
 			"Row does not exist",
 			};
 

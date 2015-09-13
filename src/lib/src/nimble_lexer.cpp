@@ -30,6 +30,7 @@ namespace NIMBLE {
 		#define CHAR_NEWLINE_LEN 1
 		#define CHAR_NEWLINE_LONG_LEN 2
 		#define CHAR_UNPRINTABLE CHAR_SPACE
+		#define SENTINEL_LEXER 2
 		#define SENTINEL_LEXER_BASE 1
 
 		static const std::string CHAR_CLASS_STR[] = {
@@ -88,8 +89,21 @@ namespace NIMBLE {
 			return *this;
 		}
 
+		char 
+		_nimble_lexer_base::character(void)
+		{
+			SERIALIZE_CALL_RECUR(m_lock);
+
+			if(m_char_position >= m_source.size()) {
+				THROW_NIMBLE_LEXER_EXCEPTION_MESSAGE(NIMBLE_LEXER_EXCEPTION_INVALID_CHARACTER_POSITION,
+					"%lu", m_char_position);
+			}
+
+			return m_source.at(m_char_position);
+		}
+
 		std::string 
-		_nimble_lexer_base::as_string(
+		_nimble_lexer_base::character_as_string(
 			__in char ch,
 			__in_opt bool verbose
 			)
@@ -122,19 +136,6 @@ namespace NIMBLE {
 			}
 
 			return CHK_STR(result.str());
-		}
-
-		char 
-		_nimble_lexer_base::character(void)
-		{
-			SERIALIZE_CALL_RECUR(m_lock);
-
-			if(m_char_position >= m_source.size()) {
-				THROW_NIMBLE_LEXER_EXCEPTION_MESSAGE(NIMBLE_LEXER_EXCEPTION_INVALID_CHARACTER_POSITION,
-					"%lu", m_char_position);
-			}
-
-			return m_source.at(m_char_position);
 		}
 
 		char_cls_t 
@@ -197,7 +198,7 @@ namespace NIMBLE {
 					}
 				}
 
-				result << nimble_lexer_base::as_string(*ch_iter, verbose);
+				result << nimble_lexer_base::character_as_string(*ch_iter, verbose);
 			}
 
 			if(result.str().back() != CHAR_LINE_FEED) {
@@ -569,17 +570,258 @@ namespace NIMBLE {
 
 			ch = character();
 			result << "[" << CHAR_CLASS_STRING(character_class()) << "] \'"
-				<< nimble_lexer_base::as_string(ch, verbose) 
+				<< nimble_lexer_base::character_as_string(ch, verbose) 
 				<< "\' (" << VAL_AS_HEX(uint8_t, ch) << ") \'";
 
 			line = CHK_STR(character_line());
 			for(iter = line.begin(); iter != line.end(); ++iter) {
-				result << nimble_lexer_base::as_string(*iter, verbose);
+				result << nimble_lexer_base::character_as_string(
+					*iter, verbose);
 			}
 
 			result << "\' [" << m_char_row << ", " << m_char_column << "]";
 
 			return CHK_STR(result.str());
+		}
+
+		_nimble_lexer::_nimble_lexer(
+			__in_opt const std::string &input,
+			__in_opt bool is_file
+			) :
+				m_tok_position(0)
+		{
+			nimble_lexer::set(input, is_file);
+		}
+
+		_nimble_lexer::_nimble_lexer(
+			__in const _nimble_lexer &other
+			) :
+				nimble_lexer_base(other),
+				m_tok_list(other.m_tok_list),
+				m_tok_position(other.m_tok_position)
+		{
+			return;
+		}
+
+		_nimble_lexer::~_nimble_lexer(void)
+		{
+			return;
+		}
+
+		_nimble_lexer &
+		_nimble_lexer::operator=(
+			__in const _nimble_lexer &other
+			)
+		{
+			SERIALIZE_CALL_RECUR(m_lock);
+
+			if(this != &other) {
+				nimble_lexer_base::operator=(other);
+				m_tok_list = other.m_tok_list;
+				m_tok_position = other.m_tok_position;
+			}
+
+			return *this;
+		}
+
+		nimble_token_factory_ptr 
+		_nimble_lexer::acquire_token(void)
+		{
+			nimble_token_factory_ptr result = NULL;
+
+			if(!nimble_token_factory::is_allocated()) {
+				THROW_NIMBLE_LEXER_EXCEPTION(NIMBLE_LEXER_EXCEPTION_COMPONENT_NOT_READY);
+			}
+
+			result = nimble_token_factory::acquire();
+			if(!result) {
+				THROW_NIMBLE_LEXER_EXCEPTION(NIMBLE_LEXER_EXCEPTION_INVALID_COMPONENT);
+			}
+
+			return result;
+		}
+
+		void 
+		_nimble_lexer::clear(void)
+		{
+			SERIALIZE_CALL_RECUR(m_lock);
+
+			nimble_lexer_base::reset();
+			m_tok_list.clear();
+			m_tok_position = 0;
+		}
+
+		size_t 
+		_nimble_lexer::discover(void)
+		{
+			SERIALIZE_CALL_RECUR(m_lock);
+
+			while(has_next_token()) {
+				move_next_token();
+			}
+
+			return nimble_lexer::size();
+		}
+
+		bool 
+		_nimble_lexer::has_next_token(void)
+		{
+			SERIALIZE_CALL_RECUR(m_lock);
+			return ((m_tok_position < m_tok_list.size()) 
+				&& (token().type() != TOKEN_END));
+		}
+
+		bool 
+		_nimble_lexer::has_previous_token(void)
+		{
+			SERIALIZE_CALL_RECUR(m_lock);
+			return (m_tok_position > 0);
+		}
+
+		nimble_token &
+		_nimble_lexer::move_next_token(void)
+		{
+			SERIALIZE_CALL_RECUR(m_lock);
+
+			if(!has_next_token()) {
+				THROW_NIMBLE_LEXER_EXCEPTION_MESSAGE(NIMBLE_LEXER_EXCEPTION_NO_NEXT_TOKEN,
+					"%lu", m_tok_position);
+			}
+
+			if(token().type() == TOKEN_BEGIN) {
+				move_next_token();
+			}
+
+			skip_whitespace();
+
+			// TODO
+
+			++m_tok_position;
+
+			return token();
+		}
+
+		nimble_token &
+		_nimble_lexer::move_previous_token(void)
+		{
+			SERIALIZE_CALL_RECUR(m_lock);
+
+			if(!has_previous_token()) {
+				THROW_NIMBLE_LEXER_EXCEPTION_MESSAGE(NIMBLE_LEXER_EXCEPTION_NO_PREVIOUS_TOKEN,
+					"%lu", m_tok_position);
+			}
+
+			--m_tok_position;
+
+			return token();
+		}
+
+		void 
+		_nimble_lexer::reset(void)
+		{
+			SERIALIZE_CALL_RECUR(m_lock);
+			m_tok_position = 0;
+		}
+
+		void 
+		_nimble_lexer::set(
+			__in_opt const std::string &input,
+			__in_opt bool is_file
+			)
+		{
+			SERIALIZE_CALL_RECUR(m_lock);
+
+			// TODO
+		}
+
+		size_t 
+		_nimble_lexer::size(void)
+		{
+			SERIALIZE_CALL_RECUR(m_lock);
+			return (m_tok_list.size() - SENTINEL_LEXER);
+		}
+
+		void 
+		_nimble_lexer::skip_whitespace(void)
+		{
+			SERIALIZE_CALL_RECUR(m_lock);
+
+			// TODO
+		}
+
+		std::string 
+		_nimble_lexer::to_string(
+			__in_opt bool verbose
+			)
+		{
+			std::stringstream result;
+
+			SERIALIZE_CALL_RECUR(m_lock);
+
+			// TODO
+
+			return CHK_STR(result.str());
+		}
+
+		nimble_token &
+		_nimble_lexer::token(void)
+		{
+			SERIALIZE_CALL_RECUR(m_lock);
+
+			if(m_tok_position >= m_tok_list.size()) {
+				THROW_NIMBLE_LEXER_EXCEPTION_MESSAGE(NIMBLE_LEXER_EXCEPTION_INVALID_TOKEN_POSITION,
+					"%lu", m_tok_position);
+			}
+
+			return acquire_token()->at(m_tok_list.at(m_tok_position));
+		}
+
+		std::string 
+		_nimble_lexer::token_as_string(
+			__in const nimble_uid &uid,
+			__in_opt bool verbose
+			)
+		{
+			std::stringstream result;
+
+			// TODO
+
+			return CHK_STR(result.str());
+		}
+
+		std::string 
+		_nimble_lexer::token_exception(
+			__in_opt size_t tabs,
+			__in_opt bool verbose
+			)
+		{
+			std::stringstream result;
+
+			SERIALIZE_CALL_RECUR(m_lock);
+
+			// TODO
+
+			return CHK_STR(result.str());
+		}
+
+		void 
+		_nimble_lexer::token_insert(
+			__in const nimble_token &tok
+			)
+		{
+			SERIALIZE_CALL_RECUR(m_lock);
+
+			// TODO
+		}
+
+		void 
+		_nimble_lexer::token_remove(
+			__in const nimble_uid &uid
+			)
+		{
+			SERIALIZE_CALL_RECUR(m_lock);
+
+			// TODO
 		}
 	}
 }
