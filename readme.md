@@ -13,6 +13,10 @@ Changelog
 =========
 
 ##Version 0.1.1537
+*Updated:9/13/2015*
+
+* Added token metadata class
+
 *Updated:9/12/2015*
 
 * Implemented lexer class (partial)
