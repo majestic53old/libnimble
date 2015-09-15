@@ -41,8 +41,7 @@ namespace NIMBLE {
 		CHK_STR(SYMBOL_STR[_TYPE_]))
 
 	static const std::string TOKEN_STR[] = {
-		"BEGIN", "END", "IDENTIFIER", "IMMEDIATE", 
-		"LITERAL", "SYMBOL",
+		"BEGIN", "END", "IMMEDIATE", "LITERAL", "SYMBOL",
 		};
 
 	#define TOKEN_STRING(_TYPE_) \
@@ -50,7 +49,7 @@ namespace NIMBLE {
 		CHK_STR(TOKEN_STR[_TYPE_]))
 
 	static const std::string *TOKEN_STR_PTR[] = {
-		NULL, NULL, NULL, NULL, NULL, SYMBOL_STR,
+		NULL, NULL, NULL, NULL, SYMBOL_STR,
 		};
 
 	#define TOKEN_STRING_POINTER(_TYPE_) \
@@ -58,7 +57,7 @@ namespace NIMBLE {
 		TOKEN_STR_PTR[_TYPE_])
 
 	static const size_t TOKEN_STR_LEN[] = {
-		0, 0, 0, 0, 0, (SYMBOL_MAX + 1),
+		0, 0, 0, 0, (SYMBOL_MAX + 1),
 		};
 
 	#define TOKEN_STRING_LENGTH(_TYPE_) \
@@ -84,9 +83,9 @@ namespace NIMBLE {
 		}
 
 		if(val >= base) {
-			THROW_NIMBLE_LANGUAGE_EXCEPTION_MESSAGE(
-				NIMBLE_LANGUAGE_EXCEPTION_INVALID_BASE,
-				"\n%s", CHK_STR(nimble_token_meta::as_string(meta, 0, true)));
+			THROW_NIMBLE_LANGUAGE_EXCEPTION_MESSAGE(NIMBLE_LANGUAGE_EXCEPTION_INVALID_BASE,
+				"Expecting base (%lu)\n%s", base,
+				CHK_STR(nimble_token_meta::as_string(meta, 0, true)));
 		}
 
 		result = val * std::pow((double) base, (double) (position + 
@@ -116,7 +115,8 @@ namespace NIMBLE {
 				if(base != BASE_DECIMAL) {
 					THROW_NIMBLE_LANGUAGE_EXCEPTION_MESSAGE(
 						NIMBLE_LANGUAGE_EXCEPTION_INVALID_BASE,
-						"\n%s", CHK_STR(nimble_token_meta::as_string(info, 0, true)));
+						"Expecting base (%lu)\n%s", base,
+						CHK_STR(nimble_token_meta::as_string(info, 0, true)));
 				}
 
 				if(has_frac) {

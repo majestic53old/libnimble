@@ -26,7 +26,6 @@ namespace NIMBLE {
 
 	namespace LANGUAGE {
 
-		#define CHAR_FILL '~'
 		#define CHAR_NEWLINE_LEN 1
 		#define CHAR_NEWLINE_LONG_LEN 2
 		#define CHAR_UNPRINTABLE CHAR_SPACE
@@ -364,6 +363,15 @@ namespace NIMBLE {
 
 		bool 
 		_nimble_lexer_base::is_newline(
+			__out_opt size_t *length
+			)
+		{
+			SERIALIZE_CALL_RECUR(m_lock);
+			return is_newline(m_char_position, true, length);
+		}
+
+		bool 
+		_nimble_lexer_base::is_newline(
 			__in size_t position,
 			__in bool forward,
 			__out_opt size_t *length
@@ -427,6 +435,7 @@ namespace NIMBLE {
 			}
 
 			ch = character();
+
 			if(is_newline(m_char_position, true, &len)) {
 
 				if(len == CHAR_NEWLINE_LEN) {
@@ -716,6 +725,85 @@ namespace NIMBLE {
 			return nimble_lexer::size();
 		}
 
+		void 
+		_nimble_lexer::enumerate_token(
+			__inout nimble_token &tok
+			)
+		{
+			SERIALIZE_CALL_RECUR(m_lock);
+
+			tok.column() = character_column();
+			tok.path() = path();
+			tok.position() = character_position();
+			tok.row() = character_row();
+
+			switch(character_class()) {
+				case CHAR_CLASS_ALPHA:
+					enumerate_token_alpha(tok);
+					break;
+				case CHAR_CLASS_DIGIT:
+					enumerate_token_digit(tok);
+					break;
+				case CHAR_CLASS_SYMBOL:
+					enumerate_token_symbol(tok);
+					break;
+				default:
+					THROW_NIMBLE_LEXER_EXCEPTION_MESSAGE(NIMBLE_LEXER_EXCEPTION_EXPECTING_COMMAND,
+						"%s", CHK_STR(token_exception(0, true)));
+			}
+		}
+
+		void 
+		_nimble_lexer::enumerate_token_alpha(
+			__inout nimble_token &tok,
+			__in_opt bool literal
+			)
+		{
+			SERIALIZE_CALL_RECUR(m_lock);
+
+			// TODO
+
+			// add support for escape characters
+
+			tok.type() = TOKEN_LITERAL;
+			tok.text() += character();
+			move_next_character();
+			// ---
+		}
+
+		void 
+		_nimble_lexer::enumerate_token_digit(
+			__inout nimble_token &tok
+			)
+		{
+			SERIALIZE_CALL_RECUR(m_lock);
+
+			// TODO
+			tok.type() = TOKEN_IMMEDIATE;
+			tok.text() += character();
+			tok.value() = nimble_language::as_value(tok.text(), BASE_DECIMAL, tok.meta());
+			move_next_character();
+			// ---
+		}
+
+		void 
+		_nimble_lexer::enumerate_token_symbol(
+			__inout nimble_token &tok
+			)
+		{
+			SERIALIZE_CALL_RECUR(m_lock);
+
+			// TODO
+
+			// \" --> alpha(tok, true)
+			// (\. | \/ | \\) --> alpha(tok, false)
+
+			tok.type() = TOKEN_SYMBOL;
+			tok.text() += character();
+			move_next_character();
+			// ---
+		}
+
 		bool 
 		_nimble_lexer::has_next_token(void)
 		{
@@ -734,7 +822,8 @@ namespace NIMBLE {
 		nimble_token &
 		_nimble_lexer::insert_token(
 			__in tok_t type,
-			__in_opt toksub_t subtype
+			__in_opt toksub_t subtype,
+			__in_opt size_t position
 			)
 		{
 			nimble_uid uid;
@@ -747,9 +836,23 @@ namespace NIMBLE {
 			nimble_token &tok = fact->at(uid);
 			tok.type() = type;
 			tok.subtype() = subtype;
-			m_tok_list.push_back(uid);
 
-			return tok;
+			if(position == POS_INVALID) {
+				position = m_tok_position;
+			}
+
+			if(position > m_tok_list.size()) {
+				THROW_NIMBLE_LEXER_EXCEPTION_MESSAGE(NIMBLE_LEXER_EXCEPTION_INVALID_TOKEN_POSITION,
+					"%lu", position);
+			}
+
+			if(position < m_tok_list.size()) {
+				m_tok_list.insert(m_tok_list.begin() + position, uid);
+			} else {
+				m_tok_list.push_back(uid);
+			}
+
+			return tok;	
 		}
 
 		nimble_token &
@@ -762,19 +865,14 @@ namespace NIMBLE {
 					"%lu", m_tok_position);
 			}
 
-			if(token().type() == TOKEN_BEGIN) {
-				++m_tok_position;
-			}
-
 			skip_whitespace();
 
-			if(has_next_token() 
+			if(has_next_character() 
 					&& (m_tok_position <= (m_tok_list.size() - SENTINEL_LEXER))) {
-
-				// TODO
-
-				++m_tok_position;
+				enumerate_token(insert_token(TOK_INVALID, TOKSUB_INVALID, m_tok_position + 1));
 			}
+
+			++m_tok_position;
 
 			return token();
 		}
@@ -811,8 +909,8 @@ namespace NIMBLE {
 
 			nimble_lexer::clear();
 			nimble_lexer_base::set(input, is_file);
-			insert_token(TOKEN_BEGIN);
-			insert_token(TOKEN_END);
+			insert_token(TOKEN_BEGIN, TOKSUB_INVALID, 0);
+			insert_token(TOKEN_END, TOKSUB_INVALID, 1);
 			nimble_lexer::reset();
 		}
 
@@ -856,9 +954,43 @@ namespace NIMBLE {
 		void 
 		_nimble_lexer::skip_whitespace(void)
 		{
+			size_t len;
+
 			SERIALIZE_CALL_RECUR(m_lock);
 
-			// TODO
+			while(has_next_character()) {
+
+				if(character_class() != CHAR_CLASS_SPACE) {
+					break;
+				}
+
+				move_next_character();
+			}
+
+			if(character() == CHAR_COMMENT) {
+
+				while(has_next_character()) {
+					len = 0;
+
+					if(is_newline(&len)) {
+
+						if(len == CHAR_NEWLINE_LONG_LEN) {
+							move_next_character();
+						}
+
+						move_next_character();
+						break;
+					}
+
+					move_next_character();
+				}
+			}
+
+			if(has_next_character() 
+					&& ((character() == CHAR_COMMENT) 
+					|| (character_class() == CHAR_CLASS_SPACE))) {
+				skip_whitespace();
+			}
 		}
 
 		std::string 

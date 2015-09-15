@@ -26,11 +26,7 @@ namespace NIMBLE {
 
 	namespace LANGUAGE {
 
-		#define CHAR_CARAGE_RETURN '\r'
-		#define CHAR_END_OF_FILE '\0'
-		#define CHAR_LINE_FEED '\n'
-		#define CHAR_SPACE ' '
-		#define CHAR_TAB '\t'
+		#define POS_INVALID (INVALID_TYPE(size_t))
 
 		typedef enum {
 			CHAR_CLASS_ALPHA = 0,
@@ -113,6 +109,10 @@ namespace NIMBLE {
 				bool has_path(void);
 
 				bool has_previous_character(void);
+
+				bool is_newline(
+					__out_opt size_t *length = NULL
+					);
 
 				char move_next_character(
 					__out_opt char_cls_t *cls = NULL
@@ -232,9 +232,27 @@ namespace NIMBLE {
 
 			protected:
 
+				void enumerate_token(
+					__inout nimble_token &tok
+					);
+
+				void enumerate_token_alpha(
+					__inout nimble_token &tok,
+					__in_opt bool literal = false
+					);
+
+				void enumerate_token_digit(
+					__inout nimble_token &tok
+					);
+
+				void enumerate_token_symbol(
+					__inout nimble_token &tok
+					);
+
 				nimble_token &insert_token(
 					__in tok_t type,
-					__in_opt toksub_t subtype = TOKSUB_INVALID
+					__in_opt toksub_t subtype = TOKSUB_INVALID,
+					__in size_t position = POS_INVALID
 					);
 
 				void skip_whitespace(void);

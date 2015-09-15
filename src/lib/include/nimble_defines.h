@@ -46,8 +46,8 @@ namespace NIMBLE {
 
 	#define VER_MAJ 0
 	#define VER_MIN 1
-	#define VER_REV 6
-	#define VER_WEEK 1537
+	#define VER_REV 1
+	#define VER_WEEK 1538
 
 	#define ARR_LEN(_TYPE_, _ARR_) \
 		sizeof(_ARR_) / sizeof(_TYPE_)

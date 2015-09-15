@@ -50,8 +50,6 @@ namespace NIMBLE {
 
 				size_t &column(void);
 
-				size_t &line(void);
-
 				nimble_token_meta meta(
 					__in_opt size_t column = 0,
 					__in_opt size_t row = 0
@@ -78,8 +76,6 @@ namespace NIMBLE {
 			protected:
 
 				size_t m_column;
-
-				size_t m_line;
 
 				std::string m_path;
 

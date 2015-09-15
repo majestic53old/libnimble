@@ -34,6 +34,7 @@ namespace NIMBLE {
 
 		enum {
 			NIMBLE_LEXER_EXCEPTION_COMPONENT_NOT_READY = 0,
+			NIMBLE_LEXER_EXCEPTION_EXPECTING_COMMAND,
 			NIMBLE_LEXER_EXCEPTION_FILE_NOT_FOUND,
 			NIMBLE_LEXER_EXCEPTION_INVALID_CHARACTER_POSITION,
 			NIMBLE_LEXER_EXCEPTION_INVALID_COMPONENT,
@@ -49,6 +50,7 @@ namespace NIMBLE {
 
 		static const std::string NIMBLE_LEXER_EXCEPTION_STR[] = {
 			"Token component is not ready",
+			"Expecting command",
 			"File does not exist",
 			"Invalid character position",
 			"Invalid token component",

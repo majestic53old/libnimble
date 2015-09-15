@@ -22,10 +22,15 @@
 
 namespace NIMBLE {
 
+	#define CHAR_CARAGE_RETURN '\r'
 	#define CHAR_COMMENT '#'
+	#define CHAR_END_OF_FILE '\0'
+	#define CHAR_FILL '~'
+	#define CHAR_LINE_FEED '\n'
+	#define CHAR_SPACE ' '
+	#define CHAR_TAB '\t'
 
 	#define TOK_INVALID INVALID_TYPE(tok_t)
-
 	#define TOKSUB_INVALID INVALID_TYPE(toksub_t)
 
 	typedef uint32_t tok_t, toksub_t;
@@ -58,7 +63,6 @@ namespace NIMBLE {
 	enum {
 		TOKEN_BEGIN = 0,
 		TOKEN_END,
-		TOKEN_IDENTIFIER,
 		TOKEN_IMMEDIATE,
 		TOKEN_LITERAL,
 		TOKEN_SYMBOL,

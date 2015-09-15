@@ -26,7 +26,6 @@ namespace NIMBLE {
 
 		_nimble_token::_nimble_token(void) :
 			m_column(0),
-			m_line(0),
 			m_position(0),
 			m_row(0),
 			m_subtype(TOKSUB_INVALID),
@@ -41,7 +40,6 @@ namespace NIMBLE {
 			) :
 				nimble_uid_class(other),
 				m_column(other.m_column),
-				m_line(other.m_line),
 				m_path(other.m_path),
 				m_position(other.m_position),
 				m_row(other.m_row),
@@ -68,7 +66,6 @@ namespace NIMBLE {
 			if(this != &other) {
 				nimble_uid_class::operator=(other);
 				m_column = other.m_column;
-				m_line = other.m_line;
 				m_path = other.m_path;
 				m_position = other.m_position;
 				m_row = other.m_row;
@@ -110,13 +107,17 @@ namespace NIMBLE {
 					result << " \'" << tok.m_text << "\'";
 				}
 
-				result << " =" << tok.m_value << " (";
+				if(tok.m_type == TOKEN_IMMEDIATE) {
+					result << " = " << tok.m_value << "(10)";
+				}
+
+				result << " (";
 
 				if(!tok.m_path.empty()) {
 					result << tok.m_path << ":";
 				}
 
-				result << tok.m_line;
+				result << tok.m_row;
 
 				if(verbose) {
 					result << " (" << tok.m_position << ":" << tok.m_row 
@@ -135,7 +136,6 @@ namespace NIMBLE {
 			SERIALIZE_CALL_RECUR(m_lock);
 
 			m_column = 0;
-			m_line = 0;
 			m_path.clear();
 			m_position = 0;
 			m_row = 0;
@@ -150,13 +150,6 @@ namespace NIMBLE {
 		{
 			SERIALIZE_CALL_RECUR(m_lock);
 			return m_column;
-		}
-
-		size_t &
-		_nimble_token::line(void)
-		{
-			SERIALIZE_CALL_RECUR(m_lock);
-			return m_line;
 		}
 
 		nimble_token_meta 
