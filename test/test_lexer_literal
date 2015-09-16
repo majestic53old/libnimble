@@ -1,0 +1,27 @@
+# Nimble Lexer Literal Test
+
+../bin/test
+
+./../\..\.
+
+"../bin/test folder"
+
+test
+
+test/bin
+
+test\bin/folder
+
+"test/bin folder"
+
+-a
+
+--b
+
+--test_flag
+
+034234
+
+324.34
+
+0x034

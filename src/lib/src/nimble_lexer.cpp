@@ -739,10 +739,8 @@ namespace NIMBLE {
 
 			switch(character_class()) {
 				case CHAR_CLASS_ALPHA:
-					enumerate_token_alpha(tok);
-					break;
 				case CHAR_CLASS_DIGIT:
-					enumerate_token_digit(tok);
+					enumerate_token_literal(tok);
 					break;
 				case CHAR_CLASS_SYMBOL:
 					enumerate_token_symbol(tok);
@@ -754,36 +752,64 @@ namespace NIMBLE {
 		}
 
 		void 
-		_nimble_lexer::enumerate_token_alpha(
-			__inout nimble_token &tok,
-			__in_opt bool literal
-			)
-		{
-			SERIALIZE_CALL_RECUR(m_lock);
-
-			// TODO
-
-			// add support for escape characters
-
-			tok.type() = TOKEN_LITERAL;
-			tok.text() += character();
-			move_next_character();
-			// ---
-		}
-
-		void 
-		_nimble_lexer::enumerate_token_digit(
+		_nimble_lexer::enumerate_token_literal(
 			__inout nimble_token &tok
 			)
 		{
+			char ch;
+			char_cls_t cls;
+			bool delim = false;
+
 			SERIALIZE_CALL_RECUR(m_lock);
 
-			// TODO
-			tok.type() = TOKEN_IMMEDIATE;
-			tok.text() += character();
-			tok.value() = nimble_language::as_value(tok.text(), BASE_DECIMAL, tok.meta());
-			move_next_character();
-			// ---
+			ch = character();
+			switch(character_class()) {
+				case CHAR_CLASS_ALPHA:
+				case CHAR_CLASS_DIGIT:
+				case CHAR_CLASS_SYMBOL:
+					tok.type() = TOKEN_LITERAL;
+
+					delim = (ch == CHAR_LITERAL_STRING_DELIMITER);
+					if(!delim) {
+						tok.text() += ch;
+					}
+
+					while(has_next_character()) {
+						ch = move_next_character();
+
+						if(delim && (ch == CHAR_LITERAL_STRING_DELIMITER)) {
+
+							if(has_next_character()) {
+								move_next_character();
+							}
+
+							delim = false;
+							break;
+						}
+
+						cls = character_class();
+						if(!delim
+								&& ((cls == CHAR_CLASS_END) 
+								|| (cls == CHAR_CLASS_SPACE)
+								|| ((cls == CHAR_CLASS_SYMBOL)
+								&& ((ch != CHAR_DIRECTORY_MARKER)
+								&& (ch != CHAR_DIRECTORY_SEPERATOR_BACKWARD)
+								&& (ch != CHAR_DIRECTORY_SEPERATOR_FOREWORD))))) {
+							break;
+						}
+
+						tok.text() += ch;
+					}
+
+					if(delim) {
+						THROW_NIMBLE_LEXER_EXCEPTION_MESSAGE(NIMBLE_LEXER_EXCEPTION_UNTERMINATED_LITERAL,
+							"\n%s", CHK_STR(character_exception(0, true)));
+					}
+					break;
+				default:
+					THROW_NIMBLE_LEXER_EXCEPTION_MESSAGE(NIMBLE_LEXER_EXCEPTION_EXPECTING_LITERAL,
+						"\n%s", CHK_STR(character_exception(0, true)));
+			}
 		}
 
 		void 
@@ -791,17 +817,47 @@ namespace NIMBLE {
 			__inout nimble_token &tok
 			)
 		{
+			char ch;
+
 			SERIALIZE_CALL_RECUR(m_lock);
 
-			// TODO
+			if(character_class() != CHAR_CLASS_SYMBOL) {
+				THROW_NIMBLE_LEXER_EXCEPTION_MESSAGE(NIMBLE_LEXER_EXCEPTION_EXPECTING_SYMBOL,
+					"\n%s", CHK_STR(character_exception(0, true)));
+			}
 
-			// \" --> alpha(tok, true)
-			// (\. | \/ | \\) --> alpha(tok, false)
+			ch = character();
+			switch(ch) {
+				case CHAR_DIRECTORY_MARKER:
+				case CHAR_DIRECTORY_SEPERATOR_BACKWARD:
+				case CHAR_DIRECTORY_SEPERATOR_FOREWORD:
+				case CHAR_LITERAL_STRING_DELIMITER:
+					enumerate_token_literal(tok);
+					break;
+				default:
+					tok.type() = TOKEN_SYMBOL;
+					tok.text() += ch;
 
-			tok.type() = TOKEN_SYMBOL;
-			tok.text() += character();
-			move_next_character();
-			// ---
+					if(nimble_language::is_symbol(tok.text())) {
+
+						while(has_next_character()) {
+							ch = move_next_character();
+
+							tok.text() += ch;
+							if(!nimble_language::is_symbol(tok.text())) {
+								tok.text() = tok.text().substr(0, tok.text().size() - 1);
+								break;
+							}
+						}
+
+						tok.subtype() = nimble_language::subtype(
+							tok.text(), tok.type());
+					} else {
+						tok.text().clear();
+						enumerate_token_literal(tok);
+					}
+					break;
+			}
 		}
 
 		bool 

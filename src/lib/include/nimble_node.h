@@ -17,95 +17,83 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef NIMBLE_TOKEN_H_
-#define NIMBLE_TOKEN_H_
+#ifndef NIMBLE_NODE_H_
+#define NIMBLE_NODE_H_
+
+#include <vector>
 
 namespace NIMBLE {
 
 	namespace COMPONENT {
 
-		typedef class _nimble_token :
+		#define PAR_INVALID INVALID_TYPE(size_t)
+
+		typedef class _nimble_node :
 				public nimble_uid_class {
 
 			public:
 
-				_nimble_token(void);
-
-				_nimble_token(
-					__in const _nimble_token &other
+				_nimble_node(
+					__in_opt const nimble_uid &token = UID_INVALID,
+					__in_opt size_t parent = PAR_INVALID
 					);
 
-				virtual ~_nimble_token(void);
+				_nimble_node(
+					__in const _nimble_node &other
+					);
 
-				_nimble_token &operator=(
-					__in const _nimble_token &other
+				virtual ~_nimble_node(void);
+
+				_nimble_node &operator=(
+					__in const _nimble_node &other
 					);
 
 				static std::string as_string(
-					__in const _nimble_token &tok,
+					__in const _nimble_node &node,
 					__in_opt bool verbose = false
 					);
 
+				std::vector<size_t> &children(void);
+
 				virtual void clear(void);
 
-				size_t &column(void);
+				bool is_leaf(void);
 
-				nimble_token_meta meta(
-					__in_opt size_t column = 0,
-					__in_opt size_t row = 0
-					);
+				bool is_root(void);
 
-				std::string &path(void);
-
-				size_t &position(void);
-
-				size_t &row(void);
-
-				toksub_t &subtype(void);
-
-				std::string &text(void);
+				size_t &parent(void);
 
 				virtual std::string to_string(
 					__in_opt bool verbose = false
 					);
 
-				tok_t &type(void);
-
-				double &value(void);
+				nimble_uid &token(void);
 
 			protected:
 
-				size_t m_column;
+				nimble_token_factory_ptr acquire_token(void);
 
-				std::string m_path;
+				std::vector<size_t> m_children;
 
-				size_t m_position;
+				size_t m_parent;
 
-				size_t m_row;
-
-				toksub_t m_subtype;
-
-				std::string m_text;
-
-				tok_t m_type;
-
-				double m_value;
+				nimble_uid m_token;
 
 			private:
 
 				std::recursive_mutex m_lock;
 
-		} nimble_token, *nimble_token_ptr;
+		} nimble_node, *nimble_node_ptr;
 
-		typedef class _nimble_token_factory {
+		typedef class _nimble_node_factory {
 
 			public:
 
-				~_nimble_token_factory(void);
+				~_nimble_node_factory(void);
 
-				static _nimble_token_factory *acquire(void);
+				static _nimble_node_factory *acquire(void);
 
-				nimble_token &at(
+				nimble_node &at(
 					__in const nimble_uid &uid
 					);
 
@@ -143,34 +131,34 @@ namespace NIMBLE {
 
 			protected:
 
-				_nimble_token_factory(void);
+				_nimble_node_factory(void);
 
-				_nimble_token_factory(
-					__in const _nimble_token_factory &other
+				_nimble_node_factory(
+					__in const _nimble_node_factory &other
 					);
 
-				_nimble_token_factory &operator=(
-					__in const _nimble_token_factory &other
+				_nimble_node_factory &operator=(
+					__in const _nimble_node_factory &other
 					);
 
 				static void _delete(void);
 
-				std::map<nimble_uid, std::pair<nimble_token, size_t>>::iterator find(
+				std::map<nimble_uid, std::pair<nimble_node, size_t>>::iterator find(
 					__in const nimble_uid &uid
 					);
 
 				bool m_initialized;
 
-				static _nimble_token_factory *m_instance;
+				static _nimble_node_factory *m_instance;
 
-				std::map<nimble_uid, std::pair<nimble_token, size_t>> m_map;
+				std::map<nimble_uid, std::pair<nimble_node, size_t>> m_map;
 
 			private:
 
 				std::recursive_mutex m_lock;
 
-		} nimble_token_factory, *nimble_token_factory_ptr;
+		} nimble_node_factory, *nimble_node_factory_ptr;
 	}
 }
 
-#endif // NIMBLE_TOKEN_H_
+#endif // NIMBLE_NODE_H_

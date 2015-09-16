@@ -13,6 +13,11 @@ Changelog
 =========
 
 ##Version 0.1.1538
+*Updated:9/15/2015*
+
+* Implemented token enumeration routines
+* Added node class (partial)
+
 *Updated:9/14/2015*
 
 * Added token enumeration routines (partial)

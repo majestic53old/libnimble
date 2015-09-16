@@ -236,12 +236,7 @@ namespace NIMBLE {
 					__inout nimble_token &tok
 					);
 
-				void enumerate_token_alpha(
-					__inout nimble_token &tok,
-					__in_opt bool literal = false
-					);
-
-				void enumerate_token_digit(
+				void enumerate_token_literal(
 					__inout nimble_token &tok
 					);
 

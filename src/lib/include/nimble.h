@@ -42,6 +42,7 @@ using namespace NIMBLE;
 #include "nimble_uid.h"
 #include "nimble_command.h"
 #include "nimble_token.h"
+#include "nimble_node.h"
 
 using namespace NIMBLE::COMPONENT;
 

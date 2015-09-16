@@ -35,6 +35,8 @@ namespace NIMBLE {
 		enum {
 			NIMBLE_LEXER_EXCEPTION_COMPONENT_NOT_READY = 0,
 			NIMBLE_LEXER_EXCEPTION_EXPECTING_COMMAND,
+			NIMBLE_LEXER_EXCEPTION_EXPECTING_LITERAL,
+			NIMBLE_LEXER_EXCEPTION_EXPECTING_SYMBOL,
 			NIMBLE_LEXER_EXCEPTION_FILE_NOT_FOUND,
 			NIMBLE_LEXER_EXCEPTION_INVALID_CHARACTER_POSITION,
 			NIMBLE_LEXER_EXCEPTION_INVALID_COMPONENT,
@@ -44,13 +46,16 @@ namespace NIMBLE {
 			NIMBLE_LEXER_EXCEPTION_NO_PREVIOUS_CHARACTER,
 			NIMBLE_LEXER_EXCEPTION_NO_PREVIOUS_TOKEN,
 			NIMBLE_LEXER_EXCEPTION_ROW_NOT_FOUND,
+			NIMBLE_LEXER_EXCEPTION_UNTERMINATED_LITERAL,
 		};
 
-		#define NIMBLE_LEXER_EXCEPTION_MAX NIMBLE_LEXER_EXCEPTION_ROW_NOT_FOUND
+		#define NIMBLE_LEXER_EXCEPTION_MAX NIMBLE_LEXER_EXCEPTION_UNTERMINATED_LITERAL
 
 		static const std::string NIMBLE_LEXER_EXCEPTION_STR[] = {
 			"Token component is not ready",
 			"Expecting command",
+			"Expecting literal",
+			"Expecting symbol",
 			"File does not exist",
 			"Invalid character position",
 			"Invalid token component",
@@ -60,6 +65,7 @@ namespace NIMBLE {
 			"No previous character in stream",
 			"No previous token in stream",
 			"Row does not exist",
+			"Unterminated literal",
 			};
 
 		#define NIMBLE_LEXER_EXCEPTION_STRING(_TYPE_) \

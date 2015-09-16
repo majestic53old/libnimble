@@ -103,7 +103,8 @@ namespace NIMBLE {
 			if((tok.m_type != TOKEN_BEGIN) 
 					&& (tok.m_type != TOKEN_END)) {
 
-				if(!tok.m_text.empty()) {
+				if(!tok.m_text.empty()
+						&& (tok.m_type == TOKEN_LITERAL)) {
 					result << " \'" << tok.m_text << "\'";
 				}
 

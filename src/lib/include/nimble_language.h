@@ -24,9 +24,13 @@ namespace NIMBLE {
 
 	#define CHAR_CARAGE_RETURN '\r'
 	#define CHAR_COMMENT '#'
+	#define CHAR_DIRECTORY_MARKER '.'
+	#define CHAR_DIRECTORY_SEPERATOR_BACKWARD '\\'
+	#define CHAR_DIRECTORY_SEPERATOR_FOREWORD '/'
 	#define CHAR_END_OF_FILE '\0'
 	#define CHAR_FILL '~'
 	#define CHAR_LINE_FEED '\n'
+	#define CHAR_LITERAL_STRING_DELIMITER '\"'
 	#define CHAR_SPACE ' '
 	#define CHAR_TAB '\t'
 
@@ -56,9 +60,10 @@ namespace NIMBLE {
 		SYMBOL_REDIRECT_OUT_ERR_OVERWRITE,
 		SYMBOL_REDIRECT_OUT_OVERWRITE,
 		SYMBOL_SEPERATOR,
+		SYMBOL_UNARY_NEGATION,
 	};
 
-	#define SYMBOL_MAX SYMBOL_SEPERATOR
+	#define SYMBOL_MAX SYMBOL_UNARY_NEGATION
 
 	enum {
 		TOKEN_BEGIN = 0,
@@ -144,6 +149,10 @@ namespace NIMBLE {
 				__in const std::string &text,
 				__in base_t base,
 				__in_opt const nimble_token_meta &meta = nimble_token_meta()
+				);
+
+			static bool is_symbol(
+				__in const std::string &text
 				);
 
 			static toksub_t subtype(

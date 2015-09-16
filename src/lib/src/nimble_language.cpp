@@ -19,6 +19,7 @@
 
 #include <cmath>
 #include <cctype>
+#include <set>
 #include "../include/nimble.h"
 #include "../include/nimble_language_type.h"
 
@@ -33,12 +34,18 @@ namespace NIMBLE {
 
 	static const std::string SYMBOL_STR[] = {
 		")", "&", "$", "(", "|", "<", ">", ">>",
-		">&", ">>&", ">&!", ">!", ";",
+		">&", ">>&", ">&!", ">!", ";", "!",
 		};
 
 	#define SYMBOL_STRING(_TYPE_) \
 		((_TYPE_) > SYMBOL_MAX ? UNKNOWN : \
 		CHK_STR(SYMBOL_STR[_TYPE_]))
+
+	static const std::set<std::string> SYMBOL_SET = {
+		SYMBOL_STR, SYMBOL_STR + (SYMBOL_MAX + 1)
+		};
+
+	#define IS_SYMBOL(_STR_) (SYMBOL_SET.find(_STR_) != SYMBOL_SET.end())
 
 	static const std::string TOKEN_STR[] = {
 		"BEGIN", "END", "IMMEDIATE", "LITERAL", "SYMBOL",
@@ -155,6 +162,14 @@ namespace NIMBLE {
 		}
 
 		return result;
+	}
+
+	bool 
+	_nimble_language::is_symbol(
+		__in const std::string &text
+		)
+	{
+		return IS_SYMBOL(text);
 	}
 
 	toksub_t 
