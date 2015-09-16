@@ -17,6 +17,7 @@ Changelog
 
 * Implemented token enumeration routines
 * Added node class (partial)
+* Added tracing (partial)
 
 *Updated:9/14/2015*
 

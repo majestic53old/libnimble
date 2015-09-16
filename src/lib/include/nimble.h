@@ -30,6 +30,7 @@
 
 #include "nimble_defines.h"
 #include "nimble_color.h"
+#include "nimble_trace.h"
 #include "nimble_language.h"
 #include "nimble_exception.h"
 
