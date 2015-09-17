@@ -20,10 +20,9 @@
 #ifndef NIMBLE_TRACE_H_
 #define NIMBLE_TRACE_H_
 
-namespace NIMBLE {
+#include <fstream>
 
-	#define TRACE_HEADER_ENTRY "+"
-	#define TRACE_HEADER_EXIT "-"
+namespace NIMBLE {
 
 	typedef enum {
 		TRACE_NONE = 0,
@@ -39,13 +38,25 @@ namespace NIMBLE {
 	#define TLEVEL TRACE_VERBOSE
 	#endif // TLEVEL
 
+	#ifndef TLOGOUT
+	#define TLOGOUT "./log"
+	#endif // TLOGOUT
+
 	#ifndef NDEBUG
-	#define _TRACE(_LEVEL_, _MESSAGE_) \
-		nimble_trace::generate(_LEVEL_, _MESSAGE_, __FILE__, __LINE__, \
-		NULL)
-	#define _TRACE_MESSAGE(_LEVEL_, _MESSAGE_, _FORMAT_, ...) \
-		nimble_trace::generate(_LEVEL_, _MESSAGE_, __FILE__, __LINE__, \
-		_FORMAT_, __VA_ARGS__)
+	#define TRACE_HEADER_ENTRY "+"
+	#define TRACE_HEADER_EXIT "-"
+	#define _TRACE(_LEVEL_, _HEADER_) {\
+		if(((TLEVEL) > TRACE_NONE) && ((TLEVEL) >= (_LEVEL_))) { \
+		nimble_trace::generate(_LEVEL_, _HEADER_, __FUNCTION__, \
+		__FILE__, __LINE__, NULL); \
+		} \
+		}
+	#define _TRACE_MESSAGE(_LEVEL_, _HEADER_, _FORMAT_, ...) { \
+		if(((TLEVEL) > TRACE_NONE) && ((TLEVEL) >= (_LEVEL_))) { \
+		nimble_trace::generate(_LEVEL_, _HEADER_, __FUNCTION__, \
+		__FILE__, __LINE__, _FORMAT_, __VA_ARGS__); \
+		} \
+		}
 	#define TRACE_ENTRY(_LEVEL_) _TRACE(_LEVEL_, TRACE_HEADER_ENTRY)
 	#define TRACE_ENTRY_MESSAGE(_LEVEL_, _FORMAT_, ...) \
 		_TRACE_MESSAGE(_LEVEL_, TRACE_HEADER_ENTRY, _FORMAT_, \
@@ -57,14 +68,20 @@ namespace NIMBLE {
 	#define TRACE_MESSAGE(_LEVEL_, _FORMAT_, ...) \
 		_TRACE_MESSAGE(_LEVEL_, std::string(), _FORMAT_, \
 		__VA_ARGS__)
+	#define TRACE_START() nimble_trace::start(TLEVEL, TLOGOUT)
+	#define TRACE_STARTED() nimble_trace::is_started()
+	#define TRACE_STOP() nimble_trace::stop()
 	#else
-	#define _TRACE(_LEVEL_, _MESSAGE_)
-	#define _TRACE_MESSAGE(_LEVEL_, _MESSAGE_, _FORMAT_, ...)
+	#define _TRACE(_LEVEL_, _HEADER_)
+	#define _TRACE_MESSAGE(_LEVEL_, _HEADER_, _FORMAT_, ...)
 	#define TRACE_ENTRY(_LEVEL_)
 	#define TRACE_ENTRY_MESSAGE(_LEVEL_, _FORMAT_, ...)
 	#define TRACE_EXIT(_LEVEL_)
 	#define TRACE_EXIT_MESSAGE(_LEVEL_, _FORMAT_, ...)
 	#define TRACE_MESSAGE(_LEVEL_, _FORMAT_, ...)
+	#define TRACE_START()
+	#define TRACE_STARTED()
+	#define TRACE_STOP()
 	#endif
 
 	typedef class _nimble_trace {
@@ -73,12 +90,28 @@ namespace NIMBLE {
 
 			static void generate(
 				__in nimble_lvl_t level,
-				__in const std::string &message,
+				__in const std::string &header,
+				__in const std::string &funct,
 				__in const std::string &source,
 				__in size_t line,
 				__in const char *format,
 				...
 				);
+
+			static bool is_started(void);
+
+			static void start(
+				__in nimble_lvl_t level,
+				__in const std::string &output
+				);
+
+			static void stop(void);
+
+		protected:
+
+			static bool m_started;
+
+			static std::ofstream m_stream;
 
 	} nimble_trace, *nimble_trace_ptr;
 }

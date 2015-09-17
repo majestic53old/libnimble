@@ -33,7 +33,8 @@ namespace NIMBLE {
 			m_pid(PID_INVALID),
 			m_result(0)
 		{
-			return;
+			TRACE_ENTRY(TRACE_VERBOSE);
+			TRACE_EXIT(TRACE_VERBOSE);
 		}
 
 		_nimble_command::_nimble_command(
@@ -45,15 +46,19 @@ namespace NIMBLE {
 				m_pid(other.m_pid),
 				m_result(other.m_result)
 		{
-			return;
+			TRACE_ENTRY(TRACE_VERBOSE);
+			TRACE_EXIT(TRACE_VERBOSE);
 		}
 
 		_nimble_command::~_nimble_command(void)
 		{
+			TRACE_ENTRY(TRACE_VERBOSE);
 
 			if(m_active) {
 				stop();
 			}
+
+			TRACE_EXIT(TRACE_VERBOSE);
 		}
 
 		_nimble_command &
@@ -61,6 +66,7 @@ namespace NIMBLE {
 			__in const _nimble_command &other
 			)
 		{
+			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
 
 			if(this != &other) {
@@ -71,6 +77,7 @@ namespace NIMBLE {
 				m_result = other.m_result;
 			}
 
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "ptr. 0x%p", this);
 			return *this;
 		}
 
@@ -81,6 +88,8 @@ namespace NIMBLE {
 			)
 		{
 			std::stringstream result;
+
+			TRACE_ENTRY(TRACE_VERBOSE);
 
 			if(verbose) {
 				result << nimble_uid::as_string(command.m_uid) << " ";
@@ -94,20 +103,25 @@ namespace NIMBLE {
 					<< ", res. " << VAL_AS_HEX(int, command.m_result);
 			}
 
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %s", CHK_STR(result.str()));
 			return CHK_STR(result.str());
 		}
 
 		bool 
 		_nimble_command::is_active(void)
 		{
+			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. 0x%x", m_active);
 			return m_active;
 		}
 
 		int 
 		_nimble_command::result(void)
 		{
+			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. 0x%x", m_result);
 			return m_result;
 		}
 
@@ -118,14 +132,19 @@ namespace NIMBLE {
 			__out bool &update
 			)
 		{
+			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
 
 			if(m_active) {
+				TRACE_MESSAGE(TRACE_ERROR, "%s, %s", NIMBLE_COMMAND_EXCEPTION_STRING(
+					NIMBLE_COMMAND_EXCEPTION_ACTIVE), CHK_STR(nimble_uid::as_string(m_uid)));
 				THROW_NIMBLE_COMMAND_EXCEPTION_MESSAGE(NIMBLE_COMMAND_EXCEPTION_ACTIVE,
 					"%s", CHK_STR(nimble_uid::as_string(m_uid)));
 			}
 
 			if(!complete) {
+				TRACE_MESSAGE(TRACE_ERROR, "%s, %s", NIMBLE_COMMAND_EXCEPTION_STRING(
+					NIMBLE_COMMAND_EXCEPTION_INVALID_CALLBACK), CHK_STR(nimble_uid::as_string(m_uid)));
 				THROW_NIMBLE_COMMAND_EXCEPTION_MESSAGE(NIMBLE_COMMAND_EXCEPTION_INVALID_CALLBACK,
 					"%s", CHK_STR(nimble_uid::as_string(m_uid)));
 			}
@@ -137,6 +156,8 @@ namespace NIMBLE {
 
 			m_pid = fork();
 			if(m_pid == PID_INVALID) {
+				TRACE_MESSAGE(TRACE_ERROR, "%s, %s", NIMBLE_COMMAND_EXCEPTION_STRING(
+					NIMBLE_COMMAND_EXCEPTION_INVALID_PID), CHK_STR(nimble_uid::as_string(m_uid)));
 				THROW_NIMBLE_COMMAND_EXCEPTION_MESSAGE(NIMBLE_COMMAND_EXCEPTION_INVALID_PID,
 					"%s", CHK_STR(nimble_uid::as_string(m_uid)));
 			}
@@ -162,9 +183,11 @@ namespace NIMBLE {
 					// ---
 
 				} catch(nimble_exception &exc) {
+					TRACE_MESSAGE(TRACE_ERROR, "%s", CHK_STR(exc.to_string(true)));
 					std::cerr << exc.to_string(true) << std::endl;
 					m_result = INVALID_TYPE(int);
 				} catch(std::exception &exc) {
+					TRACE_MESSAGE(TRACE_ERROR, "%s", exc.what());
 					std::cerr << exc.what() << std::endl;
 					m_result = INVALID_TYPE(int);
 				}
@@ -173,6 +196,9 @@ namespace NIMBLE {
 			} else {
 
 				if(waitpid(m_pid, &m_result, 0) == PID_INVALID) {
+					TRACE_MESSAGE(TRACE_ERROR, "%s, %s, pid. %x", NIMBLE_COMMAND_EXCEPTION_STRING(
+						NIMBLE_COMMAND_EXCEPTION_PID_WAIT), CHK_STR(nimble_uid::as_string(m_uid)), 
+						m_pid);
 					THROW_NIMBLE_COMMAND_EXCEPTION_MESSAGE(NIMBLE_COMMAND_EXCEPTION_PID_WAIT,
 						"%s, pid. %x", CHK_STR(nimble_uid::as_string(m_uid)), m_pid);
 				}
@@ -185,6 +211,8 @@ namespace NIMBLE {
 				m_complete(*this);
 				m_complete = NULL;
 			}
+
+			TRACE_EXIT(TRACE_VERBOSE);
 		}
 
 		void 
@@ -192,9 +220,13 @@ namespace NIMBLE {
 			__in_opt int sig
 			)
 		{
+			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
 
 			if(!m_active) {
+				TRACE_MESSAGE(TRACE_ERROR, "%s, %s", NIMBLE_COMMAND_EXCEPTION_STRING(
+					NIMBLE_COMMAND_EXCEPTION_NOT_ACTIVE),
+					CHK_STR(nimble_uid::as_string(m_uid)));
 				THROW_NIMBLE_COMMAND_EXCEPTION_MESSAGE(NIMBLE_COMMAND_EXCEPTION_NOT_ACTIVE,
 					"%s", CHK_STR(nimble_uid::as_string(m_uid)));
 			}
@@ -202,6 +234,9 @@ namespace NIMBLE {
 			if(m_pid > 0) {
 
 				if(kill(m_pid, sig) == INVALID_TYPE(int)) {
+					TRACE_MESSAGE(TRACE_ERROR, "%s, %s, pid. %x, err. %x", 
+						NIMBLE_COMMAND_EXCEPTION_STRING(NIMBLE_COMMAND_EXCEPTION_PID_KILL),
+						CHK_STR(nimble_uid::as_string(m_uid)), m_pid, errno);
 					THROW_NIMBLE_COMMAND_EXCEPTION_MESSAGE(NIMBLE_COMMAND_EXCEPTION_PID_KILL,
 						"%s, pid. %x, err. %x", CHK_STR(nimble_uid::as_string(m_uid)), 
 						m_pid, errno);
@@ -216,6 +251,8 @@ namespace NIMBLE {
 				m_complete(*this);
 				m_complete = NULL;
 			}
+
+			TRACE_EXIT(TRACE_VERBOSE);
 		}
 
 		std::string 
@@ -223,8 +260,15 @@ namespace NIMBLE {
 			__in_opt bool verbose
 			)
 		{
+			std::string result;
+
+			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
-			return nimble_command::as_string(*this, verbose);
+
+			result = nimble_command::as_string(*this, verbose);
+
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %s", CHK_STR(result));
+			return CHK_STR(result);
 		}
 
 		nimble_command_factory_ptr nimble_command_factory::m_instance = NULL;
@@ -233,25 +277,37 @@ namespace NIMBLE {
 			m_initialized(false),
 			m_last(UID_INVALID)
 		{
+			TRACE_ENTRY(TRACE_VERBOSE);
+
 			std::atexit(nimble_command_factory::_delete);
+
+			TRACE_EXIT(TRACE_VERBOSE);
 		}
 
 		_nimble_command_factory::~_nimble_command_factory(void)
 		{
+			TRACE_ENTRY(TRACE_VERBOSE);
 
 			if(m_initialized) {
 				uninitialize();
 			}
+
+			TRACE_EXIT(TRACE_VERBOSE);
 		}
 
 		void 
 		_nimble_command_factory::_delete(void)
 		{
+			TRACE_ENTRY(TRACE_VERBOSE);
 
 			if(nimble_command_factory::m_instance) {
 				delete nimble_command_factory::m_instance;
+				TRACE_MESSAGE(TRACE_INFORMATION, "Deleted command component instance, ptr. 0x%p", 
+					nimble_command_factory::m_instance);
 				nimble_command_factory::m_instance = NULL;
 			}
+
+			TRACE_EXIT(TRACE_VERBOSE);
 		}
 
 		void 
@@ -261,30 +317,47 @@ namespace NIMBLE {
 		{
 			nimble_command_factory_ptr inst = NULL;
 
+			TRACE_ENTRY(TRACE_VERBOSE);
+
 			if(nimble_command_factory::is_allocated()) {
 
 				inst = nimble_command_factory::acquire();
 				if(inst 
 						&& inst->is_initialized()
 						&& inst->contains(uid)) {
+					TRACE_MESSAGE(TRACE_INFORMATION, "Removing command instance, %s", 
+						CHK_STR(nimble_uid::as_string(uid, true)));
 					inst->m_map.erase(inst->find(uid));
 				}
 			}
+
+			TRACE_EXIT(TRACE_VERBOSE);
 		}
 
 		nimble_command_factory_ptr 
 		_nimble_command_factory::acquire(void)
 		{
+			nimble_command_factory_ptr result = NULL;
+
+			TRACE_ENTRY(TRACE_VERBOSE);
 
 			if(!nimble_command_factory::m_instance) {
 
 				nimble_command_factory::m_instance = new nimble_command_factory;
 				if(!nimble_command_factory::m_instance) {
+					TRACE_MESSAGE(TRACE_ERROR, "%s", NIMBLE_COMMAND_EXCEPTION_STRING(
+						NIMBLE_COMMAND_EXCEPTION_ALLOCATED));
 					THROW_NIMBLE_COMMAND_EXCEPTION(NIMBLE_COMMAND_EXCEPTION_ALLOCATED);
+				} else {
+					TRACE_MESSAGE(TRACE_INFORMATION, "Allocated command component instance, ptr. 0x%p", 
+						nimble_command_factory::m_instance);
 				}
 			}
 
-			return nimble_command_factory::m_instance;
+			result = nimble_command_factory::m_instance;
+
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "ptr. 0x%p", result);
+			return result;
 		}
 
 		bool 
@@ -292,13 +365,21 @@ namespace NIMBLE {
 			__in const nimble_uid &uid
 			)
 		{
+			bool result;
+
+			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
 
 			if(!m_initialized) {
+				TRACE_MESSAGE(TRACE_ERROR, "%s", NIMBLE_COMMAND_EXCEPTION_STRING(
+					NIMBLE_COMMAND_EXCEPTION_UNINITIALIZED));
 				THROW_NIMBLE_COMMAND_EXCEPTION(NIMBLE_COMMAND_EXCEPTION_UNINITIALIZED);
 			}
 
-			return (m_map.find(uid) != m_map.end());
+			result = (m_map.find(uid) != m_map.end());
+
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. 0x%x", result);
+			return result;
 		}
 
 		std::map<nimble_uid, std::pair<nimble_command, 
@@ -310,18 +391,25 @@ namespace NIMBLE {
 			std::map<nimble_uid, std::pair<nimble_command, 
 					_nimble_cmd_fact_cb>>::iterator result;
 
+			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
 
 			if(!m_initialized) {
+				TRACE_MESSAGE(TRACE_ERROR, "%s", NIMBLE_COMMAND_EXCEPTION_STRING(
+					NIMBLE_COMMAND_EXCEPTION_UNINITIALIZED));
 				THROW_NIMBLE_COMMAND_EXCEPTION(NIMBLE_COMMAND_EXCEPTION_UNINITIALIZED);
 			}
 
 			result = m_map.find(uid);
 			if(result == m_map.end()) {
+				TRACE_MESSAGE(TRACE_ERROR, "%s, %s", NIMBLE_COMMAND_EXCEPTION_STRING(
+					NIMBLE_COMMAND_EXCEPTION_NOT_FOUND), 
+					CHK_STR(nimble_uid::as_string(uid)));
 				THROW_NIMBLE_COMMAND_EXCEPTION_MESSAGE(NIMBLE_COMMAND_EXCEPTION_NOT_FOUND,
 					"%s", CHK_STR(nimble_uid::as_string(uid)));
 			}
 
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "ptr. 0x%p", result);
 			return result;
 		}
 
@@ -330,44 +418,64 @@ namespace NIMBLE {
 		{
 			nimble_command command;
 
+			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
 
 			if(!m_initialized) {
+				TRACE_MESSAGE(TRACE_ERROR, "%s", NIMBLE_COMMAND_EXCEPTION_STRING(
+					NIMBLE_COMMAND_EXCEPTION_UNINITIALIZED));
 				THROW_NIMBLE_COMMAND_EXCEPTION(NIMBLE_COMMAND_EXCEPTION_UNINITIALIZED);
 			}
 
 			m_last = command.uid();
+			TRACE_MESSAGE(TRACE_INFORMATION, "Generating new command: %s", 
+				CHK_STR(m_last.to_string(true)));
 			m_map.insert(std::pair<nimble_uid, std::pair<nimble_command, _nimble_cmd_fact_cb>>(
 				m_last, std::pair<nimble_command, _nimble_cmd_fact_cb>(command, 
 				nimble_command_factory::_remove)));
 
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %s", CHK_STR(m_last.to_string(true)));
 			return m_last;
 		}
 
 		void 
 		_nimble_command_factory::initialize(void)
 		{
+			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
 
 			if(m_initialized) {
+				TRACE_MESSAGE(TRACE_ERROR, "%s", NIMBLE_COMMAND_EXCEPTION_STRING(
+					NIMBLE_COMMAND_EXCEPTION_INITIALIZED));
 				THROW_NIMBLE_COMMAND_EXCEPTION(NIMBLE_COMMAND_EXCEPTION_INITIALIZED);
 			}
 
 			m_initialized = true;
 			m_last = UID_INVALID;
 			m_map.clear();
+
+			TRACE_EXIT(TRACE_VERBOSE);
 		}
 
 		bool 
 		_nimble_command_factory::is_allocated(void)
 		{
-			return (nimble_command_factory::m_instance != NULL);
+			bool result;
+
+			TRACE_ENTRY(TRACE_VERBOSE);
+
+			result = (nimble_command_factory::m_instance != NULL);
+
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. 0x%x", result);
+			return result;
 		}
 
 		bool 
 		_nimble_command_factory::is_initialized(void)
 		{
+			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. 0x%x", m_initialized);
 			return m_initialized;
 		}
 
@@ -381,26 +489,40 @@ namespace NIMBLE {
 			std::map<nimble_uid, std::pair<nimble_command, 
 					_nimble_cmd_fact_cb>>::iterator iter;
 
+			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
 
 			if(!m_initialized) {
+				TRACE_MESSAGE(TRACE_ERROR, "%s", NIMBLE_COMMAND_EXCEPTION_STRING(
+					NIMBLE_COMMAND_EXCEPTION_UNINITIALIZED));
 				THROW_NIMBLE_COMMAND_EXCEPTION(NIMBLE_COMMAND_EXCEPTION_UNINITIALIZED);
 			}
 
 			iter = find(uid);
+			TRACE_MESSAGE(TRACE_INFORMATION, "Running command \'%s\'", CHK_STR(command));
 			iter->second.first.run(command, iter->second.second, update);
+
+			TRACE_EXIT(TRACE_VERBOSE);
 		}
 
 		size_t 
 		_nimble_command_factory::size(void)
 		{
+			size_t result;
+
+			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
 
 			if(!m_initialized) {
+				TRACE_MESSAGE(TRACE_ERROR, "%s", NIMBLE_COMMAND_EXCEPTION_STRING(
+					NIMBLE_COMMAND_EXCEPTION_UNINITIALIZED));
 				THROW_NIMBLE_COMMAND_EXCEPTION(NIMBLE_COMMAND_EXCEPTION_UNINITIALIZED);
 			}
 
-			return m_map.size();
+			result = m_map.size();
+
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %lu", result);
+			return result;
 		}
 
 		void 
@@ -408,15 +530,21 @@ namespace NIMBLE {
 			__in_opt int sig
 			)
 		{
+			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
 
 			if(!m_initialized) {
+				TRACE_MESSAGE(TRACE_ERROR, "%s", NIMBLE_COMMAND_EXCEPTION_STRING(
+					NIMBLE_COMMAND_EXCEPTION_UNINITIALIZED));
 				THROW_NIMBLE_COMMAND_EXCEPTION(NIMBLE_COMMAND_EXCEPTION_UNINITIALIZED);
 			}
 
 			if(contains(m_last)) {
+				TRACE_MESSAGE(TRACE_INFORMATION, "Stopping last process, sig. 0x%x", sig);
 				find(m_last)->second.first.stop(sig);
 			}
+
+			TRACE_EXIT(TRACE_VERBOSE);
 		}
 
 		std::string 
@@ -428,6 +556,7 @@ namespace NIMBLE {
 			std::map<nimble_uid, std::pair<nimble_command, 
 					_nimble_cmd_fact_cb>>::iterator iter;
 
+			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
 
 			result << "(" << (m_initialized ? "INIT" : "UNINIT") << ") " << NIMBLE_COMMAND_HEADER 
@@ -441,21 +570,27 @@ namespace NIMBLE {
 				}
 			}
 
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %s", CHK_STR(result.str()));
 			return CHK_STR(result.str());
 		}
 
 		void 
 		_nimble_command_factory::uninitialize(void)
 		{
+			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
 
 			if(!m_initialized) {
+				TRACE_MESSAGE(TRACE_ERROR, "%s", NIMBLE_COMMAND_EXCEPTION_STRING(
+					NIMBLE_COMMAND_EXCEPTION_UNINITIALIZED));
 				THROW_NIMBLE_COMMAND_EXCEPTION(NIMBLE_COMMAND_EXCEPTION_UNINITIALIZED);
 			}
 
 			m_last = UID_INVALID;
 			m_map.clear();
 			m_initialized = false;
+
+			TRACE_EXIT(TRACE_VERBOSE);
 		}
 	}
 }

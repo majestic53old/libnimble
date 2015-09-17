@@ -37,30 +37,43 @@ namespace NIMBLE {
 
 	_nimble::_nimble(void) :
 		m_factory_command(nimble_command_factory::acquire()),
+		m_factory_node(nimble_node_factory::acquire()),
 		m_factory_token(nimble_token_factory::acquire()),
 		m_factory_uid(nimble_uid_factory::acquire()),
 		m_initialized(false),
 		m_result(0)
 	{
+		TRACE_ENTRY(TRACE_VERBOSE);
+
 		std::atexit(nimble::_delete);
+
+		TRACE_EXIT(TRACE_VERBOSE);
 	}
 
 	_nimble::~_nimble(void)
 	{
+		TRACE_ENTRY(TRACE_VERBOSE);
 
 		if(m_initialized) {
 			uninitialize();
 		}
+
+		TRACE_EXIT(TRACE_VERBOSE);
 	}
 
 	void 
 	_nimble::_delete(void)
 	{
+		TRACE_ENTRY(TRACE_VERBOSE);
 
 		if(nimble::m_instance) {
 			delete nimble::m_instance;
+			TRACE_MESSAGE(TRACE_INFORMATION, "Deleted library instance, ptr. 0x%p", 
+				nimble::m_instance);
 			nimble::m_instance = NULL;
 		}
+
+		TRACE_EXIT(TRACE_VERBOSE);
 	}
 
 	void 
@@ -68,7 +81,11 @@ namespace NIMBLE {
 		__in int sig
 		)
 	{
+		TRACE_ENTRY(TRACE_VERBOSE);
+
 		std::cout << std::endl << "Aborted." << std::endl;
+
+		TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "sig. 0x%x", sig);
 		std::exit(sig);
 	}
 
@@ -79,6 +96,8 @@ namespace NIMBLE {
 	{
 		/*nimble_ptr inst = NULL;
 
+		TRACE_ENTRY(TRACE_VERBOSE);
+
 		if(nimble::is_allocated()) {
 
 			inst = nimble::acquire();
@@ -87,6 +106,7 @@ namespace NIMBLE {
 			}
 		}*/
 
+		TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "sig. 0x%x", sig);
 		std::exit(sig);
 	}
 
@@ -95,7 +115,11 @@ namespace NIMBLE {
 		__in int sig
 		)
 	{
+		TRACE_ENTRY(TRACE_VERBOSE);
+
 		std::cout << std::endl << "Illegal operation." << std::endl;
+
+		TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "sig. 0x%x", sig);
 		std::exit(sig);
 	}
 
@@ -104,7 +128,11 @@ namespace NIMBLE {
 		__in int sig
 		)
 	{
+		TRACE_ENTRY(TRACE_VERBOSE);
+
 		std::cout << std::endl << "Segmentation fault." << std::endl;
+
+		TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "sig. 0x%x", sig);
 		std::exit(sig);
 	}
 
@@ -113,43 +141,73 @@ namespace NIMBLE {
 		__in int sig
 		)
 	{
+		TRACE_ENTRY(TRACE_VERBOSE);
+
 		std::cout << std::endl << "Terminated." << std::endl;
+
+		TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "sig. 0x%x", sig);
 		std::exit(sig);
 	}
 
 	nimble_ptr 
 	_nimble::acquire(void)
 	{
+		nimble_ptr result = NULL;
+
+		TRACE_ENTRY(TRACE_VERBOSE);
 
 		if(!nimble::m_instance) {
 
 			nimble::m_instance = new nimble;
 			if(!nimble::m_instance) {
+				TRACE_MESSAGE(TRACE_ERROR, "%s", NIMBLE_EXCEPTION_STRING(
+					NIMBLE_EXCEPTION_ALLOCATION));
 				THROW_NIMBLE_EXCEPTION(NIMBLE_EXCEPTION_ALLOCATION);
+			} else {
+				TRACE_MESSAGE(TRACE_INFORMATION, "Allocated library instance, ptr. 0x%p", 
+					nimble::m_instance);
 			}
 		}
+		
+		result = nimble::m_instance;
 
-		return nimble::m_instance;
+		TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "ptr. 0x%p", result);
+		return result;
 	}
 
 	nimble_command_factory_ptr 
 	_nimble::acquire_command(void)
 	{
+		TRACE_ENTRY(TRACE_VERBOSE);
 		SERIALIZE_CALL_RECUR(m_lock);
+		TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "ptr. 0x%p", m_factory_command);
 		return m_factory_command;
+	}
+
+	nimble_node_factory_ptr 
+	_nimble::acquire_node(void)
+	{
+		TRACE_ENTRY(TRACE_VERBOSE);
+		SERIALIZE_CALL_RECUR(m_lock);
+		TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "ptr. 0x%p", m_factory_node);
+		return m_factory_node;
 	}
 
 	nimble_token_factory_ptr 
 	_nimble::acquire_token(void)
 	{
+		TRACE_ENTRY(TRACE_VERBOSE);
 		SERIALIZE_CALL_RECUR(m_lock);
+		TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "ptr. 0x%p", m_factory_token);
 		return m_factory_token;
 	}
 
 	nimble_uid_factory_ptr 
 	_nimble::acquire_uid(void)
 	{
+		TRACE_ENTRY(TRACE_VERBOSE);
 		SERIALIZE_CALL_RECUR(m_lock);
+		TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "ptr. 0x%p", m_factory_uid);
 		return m_factory_uid;
 	}
 
@@ -166,9 +224,12 @@ namespace NIMBLE {
 		size_t pos = 0;
 		std::map<std::string, std::string>::iterator iter;
 
+		TRACE_ENTRY(TRACE_VERBOSE);
 		SERIALIZE_CALL_RECUR(m_lock);
 
 		if(!m_initialized) {
+			TRACE_MESSAGE(TRACE_ERROR, "%s", NIMBLE_EXCEPTION_STRING(
+				NIMBLE_EXCEPTION_UNINITIALIZED));
 			THROW_NIMBLE_EXCEPTION(NIMBLE_EXCEPTION_UNINITIALIZED);
 		}
 
@@ -233,6 +294,8 @@ namespace NIMBLE {
 		SET_TERM_ATTRIB(std::cout, 2, COL_FORM_BOLD, COL_FORE_YELLOW);
 		std::cout << " -> ";
 		CLEAR_TERM_ATTRIB(std::cout);
+
+		TRACE_EXIT(TRACE_VERBOSE);
 	}
 
 	std::map<std::string, std::string>::iterator 
@@ -240,13 +303,21 @@ namespace NIMBLE {
 		__in const std::string &field
 		)
 	{
+		std::map<std::string, std::string>::iterator result;
+
+		TRACE_ENTRY(TRACE_VERBOSE);
 		SERIALIZE_CALL_RECUR(m_lock);
 
 		if(!m_initialized) {
+			TRACE_MESSAGE(TRACE_ERROR, "%s", NIMBLE_EXCEPTION_STRING(
+				NIMBLE_EXCEPTION_UNINITIALIZED));
 			THROW_NIMBLE_EXCEPTION(NIMBLE_EXCEPTION_UNINITIALIZED);
 		}
 
-		return m_environment_map.find(field);
+		result = m_environment_map.find(field);
+
+		TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. 0x%p", result);
+		return result;
 	}
 
 	void 
@@ -255,14 +326,17 @@ namespace NIMBLE {
 		__in_opt const char *entry
 		)
 	{
-		size_t len;
-		std::string field;
+		size_t len;		
 		const char *value = NULL;
+		std::string field, field_entry, field_value;
 		std::map<std::string, std::string>::iterator iter;
 
+		TRACE_ENTRY(TRACE_VERBOSE);
 		SERIALIZE_CALL_RECUR(m_lock);
 
 		if(!m_initialized) {
+			TRACE_MESSAGE(TRACE_ERROR, "%s", NIMBLE_EXCEPTION_STRING(
+				NIMBLE_EXCEPTION_UNINITIALIZED));
 			THROW_NIMBLE_EXCEPTION(NIMBLE_EXCEPTION_UNINITIALIZED);
 		}
 
@@ -275,9 +349,14 @@ namespace NIMBLE {
 
 					iter = environment_find(entry);
 					if(iter == m_environment_map.end()) {
+						TRACE_MESSAGE(TRACE_INFORMATION, "Adding environment pair <%s, %s>", 
+							entry, value);
 						m_environment_map.insert(std::pair<std::string, std::string>(
 							entry, value));
 					} else {
+						TRACE_MESSAGE(TRACE_INFORMATION, 
+							"Changing environment pair <%s, %s> -> <%s, %s>", 
+							entry, CHK_STR(iter->second), entry, value);
 						iter->second = value;
 					}
 				}
@@ -293,19 +372,27 @@ namespace NIMBLE {
 
 				field = *environment;
 				len = field.find_first_of(CHAR_ENV_ASSIGN);
+				field_entry = field.substr(0, len);
+				field_value = field.substr(len + 1, field.size());
+				TRACE_MESSAGE(TRACE_INFORMATION, "Adding environment pair <%s, %s>", 
+					CHK_STR(field_entry), CHK_STR(field_value));
 				m_environment_map.insert(std::pair<std::string, std::string>(
-					field.substr(0, len),
-					field.substr(len + 1, field.size())));
+					field_entry, field_value));
 			}
 		}
+
+		TRACE_EXIT(TRACE_VERBOSE);
 	}
 
 	void 
 	_nimble::initialize(void)
 	{
+		TRACE_ENTRY(TRACE_VERBOSE);
 		SERIALIZE_CALL_RECUR(m_lock);
 
 		if(m_initialized) {
+			TRACE_MESSAGE(TRACE_ERROR, "%s", NIMBLE_EXCEPTION_STRING(
+				NIMBLE_EXCEPTION_INITIALIZED));
 			THROW_NIMBLE_EXCEPTION(NIMBLE_EXCEPTION_INITIALIZED);
 		}
 
@@ -313,29 +400,44 @@ namespace NIMBLE {
 		m_environment_map.clear();
 		m_factory_uid->initialize();
 		m_factory_token->initialize();
+		m_factory_node->initialize();
 		m_factory_command->initialize();
 		m_result = 0;
+
+		TRACE_EXIT(TRACE_VERBOSE);
 	}
 
 	bool 
 	_nimble::is_allocated(void)
 	{
-		return (nimble::m_instance != NULL);
+		bool result;
+
+		TRACE_ENTRY(TRACE_VERBOSE);
+
+		result = (nimble::m_instance != NULL);
+
+		TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. 0x%x", result);
+		return result;
 	}
 
 	bool 
 	_nimble::is_initialized(void)
 	{
+		TRACE_ENTRY(TRACE_VERBOSE);
 		SERIALIZE_CALL_RECUR(m_lock);
+		TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. 0x%x", m_initialized);
 		return m_initialized;
 	}
 
 	void 
 	_nimble::signal_set(void)
 	{
+		TRACE_ENTRY(TRACE_VERBOSE);
 		SERIALIZE_CALL_RECUR(m_lock);
 
 		if(!m_initialized) {
+			TRACE_MESSAGE(TRACE_ERROR, "%s", NIMBLE_EXCEPTION_STRING(
+				NIMBLE_EXCEPTION_UNINITIALIZED));
 			THROW_NIMBLE_EXCEPTION(NIMBLE_EXCEPTION_UNINITIALIZED);
 		}
 
@@ -344,14 +446,8 @@ namespace NIMBLE {
 		std::signal(SIGILL, nimble::_signal_illegal);
 		std::signal(SIGSEGV, nimble::_signal_invalid);
 		std::signal(SIGTERM, nimble::_signal_terminate);
-	}
 
-	void 
-	test_callback(
-		__in const nimble_uid &uid
-		)
-	{
-		std::cout << "UID: " << nimble_uid::as_string(uid) << std::endl;
+		TRACE_EXIT(TRACE_VERBOSE);
 	}
 
 	int 
@@ -365,9 +461,12 @@ namespace NIMBLE {
 		bool update = true;
 		std::string home, host, input, pwd, user;
 
+		TRACE_ENTRY(TRACE_VERBOSE);
 		SERIALIZE_CALL_RECUR(m_lock);
 
 		if(!m_initialized) {
+			TRACE_MESSAGE(TRACE_ERROR, "%s", NIMBLE_EXCEPTION_STRING(
+				NIMBLE_EXCEPTION_UNINITIALIZED));
 			THROW_NIMBLE_EXCEPTION(NIMBLE_EXCEPTION_UNINITIALIZED);
 		}
 
@@ -386,27 +485,36 @@ namespace NIMBLE {
 				}
 
 				std::getline(std::cin, input);
+				TRACE_MESSAGE(TRACE_INFORMATION, "Command: \'%s\'[%lu]", 
+					CHK_STR(input), input.size());
 
 				try {
 					m_factory_command->run(m_factory_command->generate(), input, 
 						update);
 					result = m_result;
+					TRACE_MESSAGE(TRACE_INFORMATION, "Command result: 0x%x", 
+						result);					
 				} catch(nimble_exception &exc) {
+					TRACE_MESSAGE(TRACE_ERROR, "%s", CHK_STR(exc.to_string(true)));
 					std::cerr << exc.to_string(true) << std::endl;
 					result = INVALID_TYPE(int);
 				} catch(std::exception &exc) {
+					TRACE_MESSAGE(TRACE_ERROR, "%s", exc.what());
 					std::cerr << exc.what() << std::endl;
 					result = INVALID_TYPE(int);
 				}
 			}
 		} catch(nimble_exception &exc) {
+			TRACE_MESSAGE(TRACE_ERROR, "%s", CHK_STR(exc.to_string(true)));
 			std::cerr << exc.to_string(true) << std::endl;
 			result = INVALID_TYPE(int);
 		} catch(std::exception &exc) {
+			TRACE_MESSAGE(TRACE_ERROR, "%s", exc.what());
 			std::cerr << exc.what() << std::endl;
 			result = INVALID_TYPE(int);
 		}
 
+		TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. 0x%x", result);
 		return result;
 	}
 
@@ -417,6 +525,7 @@ namespace NIMBLE {
 	{
 		std::stringstream result;
 
+		TRACE_ENTRY(TRACE_VERBOSE);
 		SERIALIZE_CALL_RECUR(m_lock);
 
 		result << "(" << (m_initialized ? "INIT" : "UNINIT") << ") " << NIMBLE_HEADER;
@@ -427,31 +536,46 @@ namespace NIMBLE {
 
 		result << std::endl << m_factory_uid->to_string(verbose);
 		result << std::endl << m_factory_token->to_string(verbose);
+		result << std::endl << m_factory_node->to_string(verbose);
 		result << std::endl << m_factory_command->to_string(verbose);
 
+		TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %s", CHK_STR(result.str()));
 		return CHK_STR(result.str());
 	}
 
 	void 
 	_nimble::uninitialize(void)
 	{
+		TRACE_ENTRY(TRACE_VERBOSE);
 		SERIALIZE_CALL_RECUR(m_lock);
 
 		if(!m_initialized) {
+			TRACE_MESSAGE(TRACE_ERROR, "%s", NIMBLE_EXCEPTION_STRING(
+				NIMBLE_EXCEPTION_UNINITIALIZED));
 			THROW_NIMBLE_EXCEPTION(NIMBLE_EXCEPTION_UNINITIALIZED);
 		}
 
 		m_result = 0;
 		m_factory_command->uninitialize();
+		m_factory_node->uninitialize();
 		m_factory_token->uninitialize();
 		m_factory_uid->uninitialize();
 		m_environment_map.clear();
 		m_initialized = false;
+
+		TRACE_EXIT(TRACE_VERBOSE);
 	}
 
 	std::string 
 	_nimble::version(void)
 	{
-		return VER_STR;
+		std::string result;
+
+		TRACE_ENTRY(TRACE_VERBOSE);
+
+		result = VER_STR;
+
+		TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %s", CHK_STR(result));
+		return CHK_STR(result);
 	}
 }

@@ -173,6 +173,240 @@ namespace NIMBLE {
 			return m_token;
 		}
 
-		// TODO: implement node factory
+		nimble_node_factory_ptr nimble_node_factory::m_instance = NULL;
+
+		_nimble_node_factory::_nimble_node_factory(void) :
+			m_initialized(false)
+		{
+			std::atexit(nimble_node_factory::_delete);
+		}
+
+		_nimble_node_factory::~_nimble_node_factory(void)
+		{
+
+			if(m_initialized) {
+				uninitialize();
+			}
+		}
+
+		void 
+		_nimble_node_factory::_delete(void)
+		{
+
+			if(nimble_node_factory::m_instance) {
+				delete nimble_node_factory::m_instance;
+				nimble_node_factory::m_instance = NULL;
+			}
+		}
+
+		nimble_node_factory_ptr 
+		_nimble_node_factory::acquire(void)
+		{
+
+			if(!nimble_node_factory::m_instance) {
+
+				nimble_node_factory::m_instance = new nimble_node_factory;
+				if(!nimble_node_factory::m_instance) {
+					THROW_NIMBLE_NODE_EXCEPTION(NIMBLE_NODE_EXCEPTION_ALLOCATED);
+				}
+			}
+
+			return nimble_node_factory::m_instance;
+		}
+
+		nimble_node &
+		_nimble_node_factory::at(
+			__in const nimble_uid &uid
+			)
+		{
+			SERIALIZE_CALL_RECUR(m_lock);
+
+			if(!m_initialized) {
+				THROW_NIMBLE_NODE_EXCEPTION(NIMBLE_NODE_EXCEPTION_UNINITIALIZED);
+			}
+
+			return find(uid)->second.first;
+		}
+
+		bool 
+		_nimble_node_factory::contains(
+			__in const nimble_uid &uid
+			)
+		{
+			SERIALIZE_CALL_RECUR(m_lock);
+
+			if(!m_initialized) {
+				THROW_NIMBLE_NODE_EXCEPTION(NIMBLE_NODE_EXCEPTION_UNINITIALIZED);
+			}
+
+			return (m_map.find(uid) != m_map.end());
+		}
+
+		size_t 
+		_nimble_node_factory::decrement_reference(
+			__in const nimble_uid &uid
+			)
+		{
+			size_t result;
+			std::map<nimble_uid, std::pair<nimble_node, size_t>>::iterator iter;
+
+			SERIALIZE_CALL_RECUR(m_lock);
+
+			if(!m_initialized) {
+				THROW_NIMBLE_NODE_EXCEPTION(NIMBLE_NODE_EXCEPTION_UNINITIALIZED);
+			}
+
+			iter = find(uid);
+
+			result = --iter->second.second;
+			if(result < REF_INITIAL) {
+				m_map.erase(iter);
+			}
+
+			return result;
+		}
+
+		std::map<nimble_uid, std::pair<nimble_node, size_t>>::iterator 
+		_nimble_node_factory::find(
+			__in const nimble_uid &uid
+			)
+		{
+			std::map<nimble_uid, std::pair<nimble_node, size_t>>::iterator result;
+
+			SERIALIZE_CALL_RECUR(m_lock);
+
+			if(!m_initialized) {
+				THROW_NIMBLE_NODE_EXCEPTION(NIMBLE_NODE_EXCEPTION_UNINITIALIZED);
+			}
+
+			result = m_map.find(uid);
+			if(result == m_map.end()) {
+				THROW_NIMBLE_NODE_EXCEPTION_MESSAGE(NIMBLE_NODE_EXCEPTION_NOT_FOUND,
+					"%s", CHK_STR(nimble_uid::as_string(uid, true)));
+			}
+
+			return result;
+		}
+
+		nimble_uid 
+		_nimble_node_factory::generate(void)
+		{
+			nimble_node node;
+
+			SERIALIZE_CALL_RECUR(m_lock);
+
+			if(!m_initialized) {
+				THROW_NIMBLE_NODE_EXCEPTION(NIMBLE_NODE_EXCEPTION_UNINITIALIZED);
+			}
+
+			m_map.insert(std::pair<nimble_uid, std::pair<nimble_node, size_t>>(node.uid(),
+				std::pair<nimble_node, size_t>(node, REF_INITIAL)));
+
+			return node.uid();
+		}
+
+		size_t 
+		_nimble_node_factory::increment_reference(
+			__in const nimble_uid &uid
+			)
+		{
+			SERIALIZE_CALL_RECUR(m_lock);
+
+			if(!m_initialized) {
+				THROW_NIMBLE_NODE_EXCEPTION(NIMBLE_NODE_EXCEPTION_UNINITIALIZED);
+			}
+
+			return ++find(uid)->second.second;
+		}
+
+		void 
+		_nimble_node_factory::initialize(void)
+		{
+			SERIALIZE_CALL_RECUR(m_lock);
+
+			if(m_initialized) {
+				THROW_NIMBLE_NODE_EXCEPTION(NIMBLE_NODE_EXCEPTION_INITIALIZED);
+			}
+
+			m_initialized = true;
+			m_map.clear();
+		}
+
+		bool 
+		_nimble_node_factory::is_allocated(void)
+		{
+			return (nimble_node_factory::m_instance != NULL);
+		}
+
+		bool 
+		_nimble_node_factory::is_initialized(void)
+		{
+			SERIALIZE_CALL_RECUR(m_lock);
+			return m_initialized;
+		}
+
+		size_t 
+		_nimble_node_factory::reference_count(
+			__in const nimble_uid &uid
+			)
+		{
+			SERIALIZE_CALL_RECUR(m_lock);
+
+			if(!m_initialized) {
+				THROW_NIMBLE_NODE_EXCEPTION(NIMBLE_NODE_EXCEPTION_UNINITIALIZED);
+			}
+
+			return find(uid)->second.second;
+		}
+
+		size_t 
+		_nimble_node_factory::size(void)
+		{
+			SERIALIZE_CALL_RECUR(m_lock);
+
+			if(!m_initialized) {
+				THROW_NIMBLE_NODE_EXCEPTION(NIMBLE_NODE_EXCEPTION_UNINITIALIZED);
+			}
+
+			return m_map.size();
+		}
+
+		std::string 
+		_nimble_node_factory::to_string(
+			__in_opt bool verbose
+			)
+		{
+			std::stringstream result;
+			std::map<nimble_uid, std::pair<nimble_node, size_t>>::iterator iter;
+
+			SERIALIZE_CALL_RECUR(m_lock);
+
+			result << "(" << (m_initialized ? "INIT" : "UNINIT") << ") " << NIMBLE_NODE_HEADER 
+				<< "[" << m_map.size() << "]";
+
+			if(verbose) {
+				result << " (" << VAL_AS_HEX(nimble_node_factory_ptr, this) << ")";
+
+				for(iter = m_map.begin(); iter != m_map.end(); ++iter) {
+					result << std::endl << "--- " << nimble_node::as_string(iter->second.first, true)
+						<< ", ref. " << iter->second.second;
+				}
+			} 
+
+			return CHK_STR(result.str());
+		}
+
+		void 
+		_nimble_node_factory::uninitialize(void)
+		{
+			SERIALIZE_CALL_RECUR(m_lock);
+
+			if(!m_initialized) {
+				THROW_NIMBLE_NODE_EXCEPTION(NIMBLE_NODE_EXCEPTION_UNINITIALIZED);
+			}
+
+			m_map.clear();
+			m_initialized = false;
+		}
 	}
 }

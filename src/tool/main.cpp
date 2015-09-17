@@ -29,18 +29,26 @@ main(
 	int result = 0;
 	nimble_ptr inst = NULL;
 
+	TRACE_START();
+	TRACE_ENTRY(TRACE_VERBOSE);
+
 	try {
 		inst = nimble::acquire();
 		inst->initialize();
 		result = inst->run(argc, argv, envp);
 		inst->uninitialize();
 	} catch(nimble_exception &exc) {
+		TRACE_MESSAGE(TRACE_ERROR, "%s", CHK_STR(exc.to_string(true)));
 		std::cerr << exc.to_string(true) << std::endl;
 		result = INVALID_TYPE(int);
 	} catch(std::exception &exc) {
+		TRACE_MESSAGE(TRACE_ERROR, "%s", exc.what());
 		std::cerr << exc.what() << std::endl;
 		result = INVALID_TYPE(int);
 	}
 	
+	TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. 0x%x", result);
+	TRACE_STOP();
+
 	return result;
 }

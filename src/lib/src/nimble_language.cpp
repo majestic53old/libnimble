@@ -82,6 +82,8 @@ namespace NIMBLE {
 		int val = 0;
 		double result = 0.0;
 
+		TRACE_ENTRY(TRACE_VERBOSE);
+
 		for(; val < base; ++val) {
 
 			if(ch == BASE_CHAR_VAL[val]) {
@@ -90,6 +92,9 @@ namespace NIMBLE {
 		}
 
 		if(val >= base) {
+			TRACE_MESSAGE(TRACE_ERROR, "%s, expecting base (%lu)\n%s", NIMBLE_LANGUAGE_EXCEPTION_STRING(
+				NIMBLE_LANGUAGE_EXCEPTION_INVALID_BASE), base,
+				CHK_STR(nimble_token_meta::as_string(meta, 0, true)));
 			THROW_NIMBLE_LANGUAGE_EXCEPTION_MESSAGE(NIMBLE_LANGUAGE_EXCEPTION_INVALID_BASE,
 				"Expecting base (%lu)\n%s", base,
 				CHK_STR(nimble_token_meta::as_string(meta, 0, true)));
@@ -98,6 +103,7 @@ namespace NIMBLE {
 		result = val * std::pow((double) base, (double) (position + 
 			((position >= 0) ? -1 : 0)));
 
+		TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %.8f", result);
 		return result;
 	}
 
@@ -114,12 +120,17 @@ namespace NIMBLE {
 		bool has_frac = false;
 		nimble_token_meta info = meta;
 
+		TRACE_ENTRY(TRACE_VERBOSE);
+
 		for(iter = 0; iter < text.size(); ++iter, ++info.column()) {
 
 			ch = text.at(iter);
 			if(ch == CHAR_DECIMAL) {
 
 				if(base != BASE_DECIMAL) {
+					TRACE_MESSAGE(TRACE_ERROR, "%s, expecting base (%lu)\n%s", NIMBLE_LANGUAGE_EXCEPTION_STRING(
+						NIMBLE_LANGUAGE_EXCEPTION_INVALID_BASE), base,
+						CHK_STR(nimble_token_meta::as_string(meta, 0, true)));
 					THROW_NIMBLE_LANGUAGE_EXCEPTION_MESSAGE(
 						NIMBLE_LANGUAGE_EXCEPTION_INVALID_BASE,
 						"Expecting base (%lu)\n%s", base,
@@ -127,6 +138,9 @@ namespace NIMBLE {
 				}
 
 				if(has_frac) {
+					TRACE_MESSAGE(TRACE_ERROR, "%s\n%s", NIMBLE_LANGUAGE_EXCEPTION_STRING(
+						NIMBLE_LANGUAGE_EXCEPTION_MALFORMED_VALUE),
+						CHK_STR(nimble_token_meta::as_string(meta, 0, true)));
 					THROW_NIMBLE_LANGUAGE_EXCEPTION_MESSAGE(
 						NIMBLE_LANGUAGE_EXCEPTION_MALFORMED_VALUE,
 						"\n%s", CHK_STR(nimble_token_meta::as_string(info, 0, true)));
@@ -135,6 +149,9 @@ namespace NIMBLE {
 				has_frac = true;
 				frac = iter;
 			} else if(!std::isxdigit(ch)) {
+				TRACE_MESSAGE(TRACE_ERROR, "%s\n%s", NIMBLE_LANGUAGE_EXCEPTION_STRING(
+					NIMBLE_LANGUAGE_EXCEPTION_INVALID_DIGIT),
+					CHK_STR(nimble_token_meta::as_string(meta, 0, true)));
 				THROW_NIMBLE_LANGUAGE_EXCEPTION_MESSAGE(
 					NIMBLE_LANGUAGE_EXCEPTION_INVALID_DIGIT,
 					"\n%s", CHK_STR(nimble_token_meta::as_string(info, 0, true)));
@@ -161,6 +178,7 @@ namespace NIMBLE {
 			}
 		}
 
+		TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %.8f", result);
 		return result;
 	}
 
@@ -169,7 +187,14 @@ namespace NIMBLE {
 		__in const std::string &text
 		)
 	{
-		return IS_SYMBOL(text);
+		bool result;
+
+		TRACE_ENTRY(TRACE_VERBOSE);
+
+		result = IS_SYMBOL(text);
+
+		TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. 0x%x", result);
+		return result;
 	}
 
 	toksub_t 
@@ -180,6 +205,8 @@ namespace NIMBLE {
 	{
 		size_t iter = 0, len;
 		toksub_t result = TOKSUB_INVALID;
+
+		TRACE_ENTRY(TRACE_VERBOSE);
 
 		len = TOKEN_STRING_LENGTH(type);
 
@@ -195,6 +222,8 @@ namespace NIMBLE {
 			}
 		}
 
+		TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %s (0x%x)", 
+			CHK_STR(nimble_language::subtype_as_string(type, result)), result);
 		return result;
 	}
 
@@ -206,6 +235,8 @@ namespace NIMBLE {
 	{
 		std::string result = UNKNOWN;
 
+		TRACE_ENTRY(TRACE_VERBOSE);
+
 		if(subtype < TOKEN_STRING_LENGTH(type)) {
 
 			const std::string *tok = TOKEN_STRING_POINTER(type);
@@ -214,7 +245,8 @@ namespace NIMBLE {
 			}
 		}
 
-		return result;
+		TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %s", CHK_STR(result));
+		return CHK_STR(result);
 	}
 
 	std::string 
@@ -222,7 +254,14 @@ namespace NIMBLE {
 		__in tok_t type
 		)
 	{
-		return TOKEN_STRING(type);
+		std::string result;
+
+		TRACE_ENTRY(TRACE_VERBOSE);
+
+		result = TOKEN_STRING(type);
+
+		TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %s", CHK_STR(result));
+		return CHK_STR(result);
 	}
 
 	_nimble_token_meta::_nimble_token_meta(
@@ -240,7 +279,8 @@ namespace NIMBLE {
 			m_row(row),
 			m_row_offset(row_off)
 	{
-		return;
+		TRACE_ENTRY(TRACE_VERBOSE);
+		TRACE_EXIT(TRACE_VERBOSE);
 	}
 
 	_nimble_token_meta::_nimble_token_meta(
@@ -253,12 +293,14 @@ namespace NIMBLE {
 			m_row(other.m_row),
 			m_row_offset(other.m_row_offset)
 	{
-		return;
+		TRACE_ENTRY(TRACE_VERBOSE);
+		TRACE_EXIT(TRACE_VERBOSE);
 	}
 
 	_nimble_token_meta::~_nimble_token_meta(void)
 	{
-		return;
+		TRACE_ENTRY(TRACE_VERBOSE);
+		TRACE_EXIT(TRACE_VERBOSE);
 	}
 
 	_nimble_token_meta &
@@ -266,6 +308,7 @@ namespace NIMBLE {
 		__in const _nimble_token_meta &other
 		)
 	{
+		TRACE_ENTRY(TRACE_VERBOSE);
 		SERIALIZE_CALL_RECUR(m_lock);
 
 		if(this != &other) {
@@ -276,7 +319,8 @@ namespace NIMBLE {
 			m_row = other.m_row;
 			m_row_offset = other.m_row_offset;
 		}
-
+		
+		TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "ptr. 0x%p", this);
 		return *this;
 	}
 
@@ -287,50 +331,69 @@ namespace NIMBLE {
 		__in_opt bool verbose
 		)
 	{
-		return nimble_lexer_base::character_exception(meta.m_line, meta.m_path, 
+		std::string result;
+
+		TRACE_ENTRY(TRACE_VERBOSE);
+
+		result = nimble_lexer_base::character_exception(meta.m_line, meta.m_path, 
 			meta.m_column, meta.m_column_offset, meta.m_row, meta.m_row_offset, 
 			tabs, verbose);
+
+		TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %s", CHK_STR(result));
+		return CHK_STR(result);
 	}
 
 	size_t &
 	_nimble_token_meta::column(void)
 	{
+		TRACE_ENTRY(TRACE_VERBOSE);
 		SERIALIZE_CALL_RECUR(m_lock);
+		TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %lu", m_column);
 		return m_column;
 	}
 
 	size_t &
 	_nimble_token_meta::column_offset(void)
 	{
+		TRACE_ENTRY(TRACE_VERBOSE);
 		SERIALIZE_CALL_RECUR(m_lock);
+		TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %lu", m_column_offset);
 		return m_column_offset;
 	}
 
 	std::string &
 	_nimble_token_meta::line(void)
 	{
+		TRACE_ENTRY(TRACE_VERBOSE);
 		SERIALIZE_CALL_RECUR(m_lock);
+		TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %s", CHK_STR(m_line));
 		return m_line;
 	}
 
 	std::string &
 	_nimble_token_meta::path(void)
 	{
+		TRACE_ENTRY(TRACE_VERBOSE);
 		SERIALIZE_CALL_RECUR(m_lock);
+		TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %s", CHK_STR(m_path));
 		return m_path;
 	}
 
 	size_t &
 	_nimble_token_meta::row(void)
 	{
+		TRACE_ENTRY(TRACE_VERBOSE);
 		SERIALIZE_CALL_RECUR(m_lock);
+		TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %lu", m_row);
 		return m_row;
 	}
 
 	size_t &
 	_nimble_token_meta::row_offset(void)
 	{
+		TRACE_ENTRY(TRACE_VERBOSE);
 		SERIALIZE_CALL_RECUR(m_lock);
+		TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %lu", m_row_offset);
 		return m_row_offset;
 	}
 
@@ -340,7 +403,14 @@ namespace NIMBLE {
 		__in_opt bool verbose
 		)
 	{
+		std::string result;
+
+		TRACE_ENTRY(TRACE_VERBOSE);
 		SERIALIZE_CALL_RECUR(m_lock);
-		return nimble_token_meta::as_string(*this, tabs, verbose);
+
+		result = nimble_token_meta::as_string(*this, tabs, verbose);;
+
+		TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %s", CHK_STR(result));
+		return CHK_STR(result);
 	}
 }

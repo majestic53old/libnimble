@@ -22,6 +22,14 @@
 
 //#define NDEBUG
 
+#ifndef TLEVEL
+#define TLEVEL TRACE_INFORMATION
+#endif // TLEVEL
+
+#ifndef TLOGOUT
+#define TLOGOUT "./nimble"
+#endif // TLOGOUT
+
 #include <map>
 
 #ifndef NIMBLE
@@ -66,6 +74,8 @@ namespace NIMBLE {
 			static _nimble *acquire(void);
 
 			nimble_command_factory_ptr acquire_command(void);
+
+			nimble_node_factory_ptr acquire_node(void);
 
 			nimble_token_factory_ptr acquire_token(void);
 
@@ -148,6 +158,8 @@ namespace NIMBLE {
 			std::map<std::string, std::string> m_environment_map;
 
 			nimble_command_factory_ptr m_factory_command;
+
+			nimble_node_factory_ptr m_factory_node;
 
 			nimble_token_factory_ptr m_factory_token;
 

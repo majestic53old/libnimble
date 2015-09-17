@@ -13,6 +13,11 @@ Changelog
 =========
 
 ##Version 0.1.1538
+*Updated:9/16/2015*
+
+* Implmeneted node factory class
+* Improved tracing facilities (partial)
+
 *Updated:9/15/2015*
 
 * Implemented token enumeration routines
