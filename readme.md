@@ -13,6 +13,10 @@ Changelog
 =========
 
 ##Version 0.1.1538
+*Updated:9/17/2015*
+
+* Improved tracing facilities
+
 *Updated:9/16/2015*
 
 * Implemeneted node factory class

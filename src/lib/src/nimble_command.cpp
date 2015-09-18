@@ -325,7 +325,7 @@ namespace NIMBLE {
 				if(inst 
 						&& inst->is_initialized()
 						&& inst->contains(uid)) {
-					TRACE_MESSAGE(TRACE_INFORMATION, "Removing command instance, %s", 
+					TRACE_MESSAGE(TRACE_INFORMATION, "Removing command: %s", 
 						CHK_STR(nimble_uid::as_string(uid, true)));
 					inst->m_map.erase(inst->find(uid));
 				}
@@ -453,6 +453,7 @@ namespace NIMBLE {
 			m_initialized = true;
 			m_last = UID_INVALID;
 			m_map.clear();
+			TRACE_MESSAGE(TRACE_INFORMATION, "%s", "Command component instance initialized");
 
 			TRACE_EXIT(TRACE_VERBOSE);
 		}
@@ -589,6 +590,7 @@ namespace NIMBLE {
 			m_last = UID_INVALID;
 			m_map.clear();
 			m_initialized = false;
+			TRACE_MESSAGE(TRACE_INFORMATION, "%s", "Command component instance uninitialized");
 
 			TRACE_EXIT(TRACE_VERBOSE);
 		}

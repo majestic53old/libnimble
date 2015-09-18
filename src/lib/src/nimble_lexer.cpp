@@ -48,7 +48,11 @@ namespace NIMBLE {
 				m_char_position(0),
 				m_char_row(0)
 		{
+			TRACE_ENTRY(TRACE_VERBOSE);
+
 			nimble_lexer_base::set(input, is_file);
+
+			TRACE_EXIT(TRACE_VERBOSE);
 		}
 
 		_nimble_lexer_base::_nimble_lexer_base(
@@ -61,12 +65,14 @@ namespace NIMBLE {
 				m_path(other.m_path),
 				m_source(other.m_source)
 		{
-			return;
+			TRACE_ENTRY(TRACE_VERBOSE);
+			TRACE_EXIT(TRACE_VERBOSE);
 		}
 
 		_nimble_lexer_base::~_nimble_lexer_base(void)
 		{
-			return;
+			TRACE_ENTRY(TRACE_VERBOSE);
+			TRACE_EXIT(TRACE_VERBOSE);
 		}
 
 		_nimble_lexer_base &
@@ -74,6 +80,7 @@ namespace NIMBLE {
 			__in const _nimble_lexer_base &other
 			)
 		{
+			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
 
 			if(this != &other) {
@@ -85,20 +92,31 @@ namespace NIMBLE {
 				m_source = other.m_source;
 			}
 
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "ptr. 0x%p", this);
 			return *this;
 		}
 
 		char 
 		_nimble_lexer_base::character(void)
 		{
+			char result;
+
+			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
 
 			if(m_char_position >= m_source.size()) {
+				TRACE_MESSAGE(TRACE_ERROR, "%s, pos. %lu", 
+					NIMBLE_LEXER_EXCEPTION_STRING(NIMBLE_LEXER_EXCEPTION_INVALID_CHARACTER_POSITION),
+					m_char_position);
 				THROW_NIMBLE_LEXER_EXCEPTION_MESSAGE(NIMBLE_LEXER_EXCEPTION_INVALID_CHARACTER_POSITION,
 					"%lu", m_char_position);
 			}
 
-			return m_source.at(m_char_position);
+			result = m_source.at(m_char_position);
+
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. \'%c\' (0x%x)", 
+				std::isprint(result) ? result : ' ', result);
+			return result;
 		}
 
 		std::string 
@@ -108,6 +126,8 @@ namespace NIMBLE {
 			)
 		{
 			std::stringstream result;
+
+			TRACE_ENTRY(TRACE_VERBOSE);
 
 			if(std::isspace(ch)) {
 
@@ -134,6 +154,7 @@ namespace NIMBLE {
 				result << (std::isprint(ch) ? ch : CHAR_UNPRINTABLE);
 			}
 
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %s", CHK_STR(result.str()));
 			return CHK_STR(result.str());
 		}
 
@@ -143,6 +164,7 @@ namespace NIMBLE {
 			char ch;
 			char_cls_t result = CHAR_CLASS_SYMBOL;
 
+			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
 
 			ch = character();
@@ -156,13 +178,17 @@ namespace NIMBLE {
 				result = CHAR_CLASS_SPACE;
 			}
 
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. \'%c\' (0x%x)", 
+				std::isprint(result) ? result : ' ', result);
 			return result;
 		}
 
 		size_t 
 		_nimble_lexer_base::character_column(void)
 		{
+			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %lu", m_char_column);
 			return m_char_column;
 		}
 
@@ -172,10 +198,17 @@ namespace NIMBLE {
 			__in_opt bool verbose
 			)
 		{
+			std::string result;
+
+			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
-			return character_exception(CHK_STR(character_line()), m_path, 
-				m_char_column, m_char_column, m_char_row, m_char_row, 
-				tabs, verbose);
+
+			result = character_exception(CHK_STR(character_line()), m_path, 
+					m_char_column, m_char_column, m_char_row, m_char_row, 
+					tabs, verbose);
+
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %s", CHK_STR(result));
+			return CHK_STR(result);
 		}
 
 		std::string 
@@ -193,6 +226,8 @@ namespace NIMBLE {
 			size_t iter, off = 0;
 			std::stringstream result;
 			std::string::const_iterator ch_iter;
+
+			TRACE_ENTRY(TRACE_VERBOSE);
 
 			for(iter = 0; iter < tabs; ++iter) {
 				result << CHAR_TAB;
@@ -254,6 +289,7 @@ namespace NIMBLE {
 				CLEAR_TERM_ATTRIB(result);
 			}
 
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %s", CHK_STR(result.str()));
 			return CHK_STR(result.str());
 		}
 
@@ -264,29 +300,47 @@ namespace NIMBLE {
 			__in_opt bool verbose
 			)
 		{
-			return nimble_lexer_base::character_exception(meta.line(), meta.path(), 
-				meta.column(), meta.column_offset(), meta.row(), 
-				meta.row_offset(), tabs, verbose);
+			std::string result;
+
+			TRACE_ENTRY(TRACE_VERBOSE);
+
+			result = nimble_lexer_base::character_exception(meta.line(), meta.path(), 
+					meta.column(), meta.column_offset(), meta.row(), 
+					meta.row_offset(), tabs, verbose);
+
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %s", CHK_STR(result));
+			return CHK_STR(result);
 		}
 
 		std::string 
 		_nimble_lexer_base::character_line(void)
 		{
+			std::string result;
+
+			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
-			return find_line(m_char_row)->second.second;
+
+			result = find_line(m_char_row)->second.second;
+
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %s", CHK_STR(result));
+			return CHK_STR(result);
 		}
 
 		size_t 
 		_nimble_lexer_base::character_position(void)
 		{
+			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %lu", m_char_position);
 			return m_char_position;
 		}
 
 		size_t 
 		_nimble_lexer_base::character_row(void)
 		{
+			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %lu", m_char_row);
 			return m_char_row;
 		}
 
@@ -295,12 +349,20 @@ namespace NIMBLE {
 			__in char_cls_t cls
 			)
 		{
-			return CHAR_CLASS_STRING(cls);
+			std::string result;
+
+			TRACE_ENTRY(TRACE_VERBOSE);
+
+			result = CHAR_CLASS_STRING(cls);
+
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %s", CHK_STR(result));
+			return CHK_STR(result);
 		}
 
 		void 
 		_nimble_lexer_base::clear(void)
 		{
+			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
 
 			m_char_column = 0;
@@ -309,16 +371,26 @@ namespace NIMBLE {
 			m_char_row = 0;
 			m_path.clear();
 			m_source.clear();
+			TRACE_MESSAGE(TRACE_INFORMATION, "%s", "Lexer base cleared");
+
+			TRACE_EXIT(TRACE_VERBOSE);
 		}
 
 		size_t 
 		_nimble_lexer_base::discover(void)
 		{
+			size_t result;
+
+			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
 
 			nimble_lexer_base::reset();
+			result = nimble_lexer_base::size();
+			TRACE_MESSAGE(TRACE_INFORMATION, "Lexer base discovered %lu characters",
+				result);
 
-			return nimble_lexer_base::size();
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %lu", result);
+			return result;
 		}
 
 		std::map<size_t, std::pair<size_t, std::string>>::iterator 
@@ -328,37 +400,63 @@ namespace NIMBLE {
 		{
 			std::map<size_t, std::pair<size_t, std::string>>::iterator result;
 
+			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
 
 			result = m_char_line.find(row);
 			if(result == m_char_line.end()) {
+				TRACE_MESSAGE(TRACE_ERROR, "%s, row. %lu", 
+					NIMBLE_LEXER_EXCEPTION_STRING(NIMBLE_LEXER_EXCEPTION_ROW_NOT_FOUND),
+					row);
 				THROW_NIMBLE_LEXER_EXCEPTION_MESSAGE(NIMBLE_LEXER_EXCEPTION_ROW_NOT_FOUND,
 					"%lu", row);
 			}
 
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "ptr. 0x%p", result);
 			return result;
 		}
 
 		bool 
 		_nimble_lexer_base::has_next_character(void)
 		{
+			bool result;
+
+			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
-			return ((m_char_position < m_source.size()) 
+
+			result = ((m_char_position < m_source.size()) 
 				&& (character_class() != CHAR_CLASS_END));
+
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. 0x%x", result);
+			return result;
 		}
 
 		bool 
 		_nimble_lexer_base::has_path(void)
 		{
+			bool result;
+
+			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
-			return !m_path.empty();
+
+			result = !m_path.empty();
+
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. 0x%x", result);
+			return result;
 		}
 
 		bool 
 		_nimble_lexer_base::has_previous_character(void)
 		{
+			bool result;
+
+			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
-			return (m_char_position > 0);
+
+			result = (m_char_position > 0);
+
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. 0x%x", result);
+			return result;
 		}
 
 		bool 
@@ -366,8 +464,15 @@ namespace NIMBLE {
 			__out_opt size_t *length
 			)
 		{
+			bool result;
+
+			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
-			return is_newline(m_char_position, true, length);
+
+			result = is_newline(m_char_position, true, length);
+
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. 0x%x", result);
+			return result;
 		}
 
 		bool 
@@ -381,6 +486,7 @@ namespace NIMBLE {
 			char ch, cmp0, cmp1;
 			bool result = false, valid;
 
+			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
 
 			valid = (forward ? (position < m_source.size()) : true);
@@ -415,6 +521,7 @@ namespace NIMBLE {
 				*length = len;
 			}
 
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. 0x%x", result);
 			return result;
 		}
 
@@ -427,9 +534,13 @@ namespace NIMBLE {
 			size_t col, len;
 			std::string line;
 
+			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
 
 			if(!has_next_character()) {
+				TRACE_MESSAGE(TRACE_ERROR, "%s, pos. %lu", 
+					NIMBLE_LEXER_EXCEPTION_STRING(NIMBLE_LEXER_EXCEPTION_NO_NEXT_CHARACTER),
+					m_char_position);
 				THROW_NIMBLE_LEXER_EXCEPTION_MESSAGE(NIMBLE_LEXER_EXCEPTION_NO_NEXT_CHARACTER,
 					"%lu", m_char_position);
 			}
@@ -470,7 +581,15 @@ namespace NIMBLE {
 				*cls = character_class();
 			}
 
-			return character();
+			ch = character();
+			TRACE_MESSAGE(TRACE_INFORMATION, 
+				"Moved to next character[%lu] -> \'%c\' (0x%x), cls. %s", 
+				m_char_position, std::isprint(ch) ? ch : ' ', ch, 
+				CHAR_CLASS_STRING(character_class()));
+
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. \'%c\' (0x%x)", 
+				std::isprint(ch) ? ch : ' ', ch);
+			return ch;
 		}
 
 		char 
@@ -481,9 +600,13 @@ namespace NIMBLE {
 			char ch;
 			size_t len;
 
+			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
 
 			if(!has_previous_character()) {
+				TRACE_MESSAGE(TRACE_ERROR, "%s, pos. %lu", 
+					NIMBLE_LEXER_EXCEPTION_STRING(NIMBLE_LEXER_EXCEPTION_NO_PREVIOUS_CHARACTER),
+					m_char_position);
 				THROW_NIMBLE_LEXER_EXCEPTION_MESSAGE(NIMBLE_LEXER_EXCEPTION_NO_PREVIOUS_CHARACTER,
 					"%lu", m_char_position);
 			}
@@ -502,24 +625,37 @@ namespace NIMBLE {
 				*cls = character_class();
 			}
 
+			TRACE_MESSAGE(TRACE_INFORMATION, 
+				"Moved to previous character[%lu] -> \'%c\' (0x%x), cls. %s", 
+				m_char_position, std::isprint(ch) ? ch : ' ', ch, 
+				CHAR_CLASS_STRING(character_class()));
+
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. \'%c\' (0x%x)", 
+				std::isprint(ch) ? ch : ' ', ch);
 			return ch;
 		}
 
 		std::string 
 		_nimble_lexer_base::path(void)
 		{
+			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
-			return m_path;
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %s", CHK_STR(m_path));
+			return CHK_STR(m_path);
 		}
 
 		void 
 		_nimble_lexer_base::reset(void)
 		{
+			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
 
 			m_char_column = 0;
 			m_char_position = 0;
 			m_char_row = 0;
+			TRACE_MESSAGE(TRACE_INFORMATION, "%s", "Lexer base reset");
+
+			TRACE_EXIT(TRACE_VERBOSE);
 		}
 
 		void 
@@ -533,14 +669,21 @@ namespace NIMBLE {
 			int len, col = 0;
 			std::string line;
 
+			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
 
 			nimble_lexer_base::clear();
+			TRACE_MESSAGE(TRACE_INFORMATION, "%s", "Lexer base set");
 
 			if(is_file) {
+				TRACE_MESSAGE(TRACE_INFORMATION, "Set input as path -> \'%s\'", 
+					CHK_STR(input));
 
 				std::ifstream file(input.c_str(), std::ios::in);
 				if(!file) {
+					TRACE_MESSAGE(TRACE_ERROR, "%s, %s", 
+						NIMBLE_LEXER_EXCEPTION_STRING(NIMBLE_LEXER_EXCEPTION_FILE_NOT_FOUND),
+						CHK_STR(input));
 					THROW_NIMBLE_LEXER_EXCEPTION_MESSAGE(NIMBLE_LEXER_EXCEPTION_FILE_NOT_FOUND,
 						"%s", CHK_STR(input));
 				}
@@ -553,6 +696,7 @@ namespace NIMBLE {
 				file.close();
 				m_path = input;
 			} else {
+				TRACE_MESSAGE(TRACE_INFORMATION, "Set input -> \'%s\'", CHK_STR(input));
 				m_source = input;
 			}
 
@@ -569,22 +713,39 @@ namespace NIMBLE {
 				}
 			}
 
+			ch = character();
+			TRACE_MESSAGE(TRACE_INFORMATION, 
+				"Initial character[%lu] -> \'%c\' (0x%x), cls. %s", 
+				m_char_position, std::isprint(ch) ? ch : ' ', ch, 
+				CHAR_CLASS_STRING(character_class()));
+
 			m_char_line.insert(std::pair<size_t, std::pair<size_t, std::string>>(m_char_row, 
 				std::pair<size_t, std::string>(col, line)));
+
+			TRACE_EXIT(TRACE_VERBOSE);
 		}
 
 		size_t 
 		_nimble_lexer_base::size(void)
 		{
+			size_t result;
+
+			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
-			return (m_source.size() - SENTINEL_LEXER_BASE);
+
+			result = (m_source.size() - SENTINEL_LEXER_BASE);
+
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %lu", result);
+			return result;
 		}
 
 		std::string 
 		_nimble_lexer_base::source(void)
 		{
+			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
-			return m_source;
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %s", CHK_STR(m_source));
+			return CHK_STR(m_source);
 		}
 
 		std::string 
@@ -597,6 +758,7 @@ namespace NIMBLE {
 			std::stringstream result;
 			std::string::iterator iter;
 
+			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
 
 			if(verbose) {
@@ -616,6 +778,7 @@ namespace NIMBLE {
 
 			result << "\' [" << m_char_row << ", " << m_char_column << "]";
 
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %s", CHK_STR(result.str()));
 			return CHK_STR(result.str());
 		}
 
@@ -625,20 +788,30 @@ namespace NIMBLE {
 			) :
 				m_tok_position(0)
 		{
+			TRACE_ENTRY(TRACE_VERBOSE);
+
 			nimble_lexer::set(input, is_file);
+
+			TRACE_EXIT(TRACE_VERBOSE);
 		}
 
 		_nimble_lexer::_nimble_lexer(
 			__in const _nimble_lexer &other
 			)
 		{
+			TRACE_ENTRY(TRACE_VERBOSE);
+
 			nimble_lexer::set(other);
+
+			TRACE_EXIT(TRACE_VERBOSE);
 		}
 
 		_nimble_lexer::~_nimble_lexer(void)
 		{
 			std::vector<nimble_uid>::iterator iter;
 			nimble_token_factory_ptr fact = nimble_lexer::acquire_token();
+
+			TRACE_ENTRY(TRACE_VERBOSE);
 
 			try {
 
@@ -652,6 +825,8 @@ namespace NIMBLE {
 					}
 				}
 			} catch(...) { }
+
+			TRACE_EXIT(TRACE_VERBOSE);
 		}
 
 		_nimble_lexer &
@@ -659,12 +834,14 @@ namespace NIMBLE {
 			__in const _nimble_lexer &other
 			)
 		{
+			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
 
 			if(this != &other) {
 				nimble_lexer::set(other);
 			}
 
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "ptr. 0x%p", this);
 			return *this;
 		}
 
@@ -673,15 +850,22 @@ namespace NIMBLE {
 		{
 			nimble_token_factory_ptr result = NULL;
 
+			TRACE_ENTRY(TRACE_VERBOSE);
+
 			if(!nimble_token_factory::is_allocated()) {
+				TRACE_MESSAGE(TRACE_ERROR, "%s", 
+					NIMBLE_LEXER_EXCEPTION_STRING(NIMBLE_LEXER_EXCEPTION_COMPONENT_NOT_READY));
 				THROW_NIMBLE_LEXER_EXCEPTION(NIMBLE_LEXER_EXCEPTION_COMPONENT_NOT_READY);
 			}
 
 			result = nimble_token_factory::acquire();
 			if(!result) {
+				TRACE_MESSAGE(TRACE_ERROR, "%s", 
+					NIMBLE_LEXER_EXCEPTION_STRING(NIMBLE_LEXER_EXCEPTION_INVALID_COMPONENT));
 				THROW_NIMBLE_LEXER_EXCEPTION(NIMBLE_LEXER_EXCEPTION_INVALID_COMPONENT);
 			}
 
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "ptr. 0x%p", result);
 			return result;
 		}
 
@@ -691,6 +875,7 @@ namespace NIMBLE {
 			nimble_token_factory_ptr fact = NULL;
 			std::vector<nimble_uid>::iterator iter;
 
+			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
 
 			nimble_lexer_base::reset();
@@ -711,18 +896,30 @@ namespace NIMBLE {
 
 			m_tok_list.clear();
 			m_tok_position = 0;
+			TRACE_MESSAGE(TRACE_INFORMATION, "%s", "Lexer cleared");
+
+			TRACE_EXIT(TRACE_VERBOSE);
 		}
 
 		size_t 
 		_nimble_lexer::discover(void)
 		{
+			size_t result;
+
+			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
 
 			while(has_next_token()) {
 				move_next_token();
 			}
 
-			return nimble_lexer::size();
+			result = nimble_lexer::size();
+			nimble_lexer::reset();
+			TRACE_MESSAGE(TRACE_INFORMATION, "Lexer discovered %lu tokens",
+				result);
+
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %lu", result);
+			return result;
 		}
 
 		void 
@@ -730,6 +927,7 @@ namespace NIMBLE {
 			__inout nimble_token &tok
 			)
 		{
+			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
 
 			tok.column() = character_column();
@@ -746,9 +944,14 @@ namespace NIMBLE {
 					enumerate_token_symbol(tok);
 					break;
 				default:
+					TRACE_MESSAGE(TRACE_ERROR, "%s, %s", 
+						NIMBLE_LEXER_EXCEPTION_STRING(NIMBLE_LEXER_EXCEPTION_EXPECTING_COMMAND),
+						CHK_STR(token_exception(0, true)));
 					THROW_NIMBLE_LEXER_EXCEPTION_MESSAGE(NIMBLE_LEXER_EXCEPTION_EXPECTING_COMMAND,
 						"%s", CHK_STR(token_exception(0, true)));
 			}
+
+			TRACE_EXIT(TRACE_VERBOSE);
 		}
 
 		void 
@@ -760,6 +963,7 @@ namespace NIMBLE {
 			char_cls_t cls;
 			bool delim = false;
 
+			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
 
 			ch = character();
@@ -802,14 +1006,22 @@ namespace NIMBLE {
 					}
 
 					if(delim) {
+						TRACE_MESSAGE(TRACE_ERROR, "%s\n%s", 
+							NIMBLE_LEXER_EXCEPTION_STRING(NIMBLE_LEXER_EXCEPTION_UNTERMINATED_LITERAL),
+							CHK_STR(character_exception(0, true)));
 						THROW_NIMBLE_LEXER_EXCEPTION_MESSAGE(NIMBLE_LEXER_EXCEPTION_UNTERMINATED_LITERAL,
 							"\n%s", CHK_STR(character_exception(0, true)));
 					}
 					break;
 				default:
+					TRACE_MESSAGE(TRACE_ERROR, "%s\n%s", 
+						NIMBLE_LEXER_EXCEPTION_STRING(NIMBLE_LEXER_EXCEPTION_EXPECTING_LITERAL),
+						CHK_STR(character_exception(0, true)));
 					THROW_NIMBLE_LEXER_EXCEPTION_MESSAGE(NIMBLE_LEXER_EXCEPTION_EXPECTING_LITERAL,
 						"\n%s", CHK_STR(character_exception(0, true)));
 			}
+
+			TRACE_EXIT(TRACE_VERBOSE);
 		}
 
 		void 
@@ -819,9 +1031,13 @@ namespace NIMBLE {
 		{
 			char ch;
 
+			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
 
 			if(character_class() != CHAR_CLASS_SYMBOL) {
+				TRACE_MESSAGE(TRACE_ERROR, "%s\n%s", 
+					NIMBLE_LEXER_EXCEPTION_STRING(NIMBLE_LEXER_EXCEPTION_EXPECTING_SYMBOL),
+					CHK_STR(character_exception(0, true)));
 				THROW_NIMBLE_LEXER_EXCEPTION_MESSAGE(NIMBLE_LEXER_EXCEPTION_EXPECTING_SYMBOL,
 					"\n%s", CHK_STR(character_exception(0, true)));
 			}
@@ -858,21 +1074,37 @@ namespace NIMBLE {
 					}
 					break;
 			}
+
+			TRACE_EXIT(TRACE_VERBOSE);
 		}
 
 		bool 
 		_nimble_lexer::has_next_token(void)
 		{
+			bool result;
+
+			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
-			return ((m_tok_position < m_tok_list.size()) 
+
+			result = ((m_tok_position < m_tok_list.size()) 
 				&& (token().type() != TOKEN_END));
+
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. 0x%x", result);
+			return result;
 		}
 
 		bool 
 		_nimble_lexer::has_previous_token(void)
 		{
+			bool result;
+
+			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
-			return (m_tok_position > 0);
+
+			result = (m_tok_position > 0);
+
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. 0x%x", result);
+			return result;
 		}
 
 		nimble_token &
@@ -885,6 +1117,7 @@ namespace NIMBLE {
 			nimble_uid uid;
 			nimble_token_factory_ptr fact = NULL;
 
+			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
 
 			fact = acquire_token();
@@ -898,6 +1131,9 @@ namespace NIMBLE {
 			}
 
 			if(position > m_tok_list.size()) {
+				TRACE_MESSAGE(TRACE_ERROR, "%s, pos. %lu", 
+					NIMBLE_LEXER_EXCEPTION_STRING(NIMBLE_LEXER_EXCEPTION_INVALID_TOKEN_POSITION),
+					position);
 				THROW_NIMBLE_LEXER_EXCEPTION_MESSAGE(NIMBLE_LEXER_EXCEPTION_INVALID_TOKEN_POSITION,
 					"%lu", position);
 			}
@@ -908,15 +1144,21 @@ namespace NIMBLE {
 				m_tok_list.push_back(uid);
 			}
 
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %s", 
+				CHK_STR(nimble_token::as_string(tok, true)));
 			return tok;	
 		}
 
 		nimble_token &
 		_nimble_lexer::move_next_token(void)
 		{
+			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
 
 			if(!has_next_token()) {
+				TRACE_MESSAGE(TRACE_ERROR, "%s, pos. %lu", 
+					NIMBLE_LEXER_EXCEPTION_STRING(NIMBLE_LEXER_EXCEPTION_NO_NEXT_TOKEN),
+					m_tok_position);
 				THROW_NIMBLE_LEXER_EXCEPTION_MESSAGE(NIMBLE_LEXER_EXCEPTION_NO_NEXT_TOKEN,
 					"%lu", m_tok_position);
 			}
@@ -929,30 +1171,49 @@ namespace NIMBLE {
 			}
 
 			++m_tok_position;
+			nimble_token &tok = token();
+			TRACE_MESSAGE(TRACE_INFORMATION, "Moved to next token[%lu] -> %s", m_tok_position, 
+				CHK_STR(tok.to_string(true)));
 
-			return token();
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %s", 
+				CHK_STR(nimble_token::as_string(tok, true)));			
+			return tok;
 		}
 
 		nimble_token &
 		_nimble_lexer::move_previous_token(void)
 		{
+			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
 
 			if(!has_previous_token()) {
+				TRACE_MESSAGE(TRACE_ERROR, "%s, pos. %lu", 
+					NIMBLE_LEXER_EXCEPTION_STRING(NIMBLE_LEXER_EXCEPTION_NO_PREVIOUS_TOKEN),
+					m_tok_position);
 				THROW_NIMBLE_LEXER_EXCEPTION_MESSAGE(NIMBLE_LEXER_EXCEPTION_NO_PREVIOUS_TOKEN,
 					"%lu", m_tok_position);
 			}
 
 			--m_tok_position;
+			nimble_token &tok = token();
+			TRACE_MESSAGE(TRACE_INFORMATION, "Moved to previous token[%lu] -> %s", m_tok_position, 
+				CHK_STR(tok.to_string(true)));
 
-			return token();
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %s", 
+				CHK_STR(nimble_token::as_string(tok, true)));			
+			return tok;
 		}
 
 		void 
 		_nimble_lexer::reset(void)
 		{
+			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
+
 			m_tok_position = 0;
+			TRACE_MESSAGE(TRACE_INFORMATION, "%s", "Lexer reset");
+
+			TRACE_EXIT(TRACE_VERBOSE);
 		}
 
 		void 
@@ -961,6 +1222,7 @@ namespace NIMBLE {
 			__in_opt bool is_file
 			)
 		{
+			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
 
 			nimble_lexer::clear();
@@ -968,6 +1230,10 @@ namespace NIMBLE {
 			insert_token(TOKEN_BEGIN, TOKSUB_INVALID, 0);
 			insert_token(TOKEN_END, TOKSUB_INVALID, 1);
 			nimble_lexer::reset();
+			TRACE_MESSAGE(TRACE_INFORMATION, "Lexer set input -> \'%s\', file -> 0x%x", 
+				CHK_STR(input), is_file);
+
+			TRACE_EXIT(TRACE_VERBOSE);
 		}
 
 		void 
@@ -978,6 +1244,7 @@ namespace NIMBLE {
 			nimble_token_factory_ptr fact = NULL;
 			std::vector<nimble_uid>::iterator iter;
 
+			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
 
 			nimble_lexer::clear();
@@ -998,13 +1265,22 @@ namespace NIMBLE {
 					}
 				}
 			} catch(...) { }
+
+			TRACE_EXIT(TRACE_VERBOSE);
 		}
 
 		size_t 
 		_nimble_lexer::size(void)
 		{
+			size_t result;
+
+			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
-			return (m_tok_list.size() - SENTINEL_LEXER);
+
+			result = (m_tok_list.size() - SENTINEL_LEXER);
+
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %lu", result);
+			return result;
 		}
 
 		void 
@@ -1012,6 +1288,7 @@ namespace NIMBLE {
 		{
 			size_t len;
 
+			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
 
 			while(has_next_character()) {
@@ -1047,6 +1324,8 @@ namespace NIMBLE {
 					|| (character_class() == CHAR_CLASS_SPACE))) {
 				skip_whitespace();
 			}
+
+			TRACE_EXIT(TRACE_VERBOSE);
 		}
 
 		std::string 
@@ -1056,6 +1335,7 @@ namespace NIMBLE {
 		{
 			std::stringstream result;
 
+			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
 
 			if(verbose) {
@@ -1063,26 +1343,38 @@ namespace NIMBLE {
 			}
 
 			if(m_tok_position >= m_tok_list.size()) {
+				TRACE_MESSAGE(TRACE_ERROR, "%s, pos. %lu", 
+					NIMBLE_LEXER_EXCEPTION_STRING(NIMBLE_LEXER_EXCEPTION_INVALID_TOKEN_POSITION),
+					m_tok_position);
 				THROW_NIMBLE_LEXER_EXCEPTION_MESSAGE(NIMBLE_LEXER_EXCEPTION_INVALID_TOKEN_POSITION,
 					"%lu", m_tok_position);
 			}
 
 			result << nimble_lexer::token_as_string(m_tok_list.at(m_tok_position), verbose);
 
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %s", CHK_STR(result.str()));
 			return CHK_STR(result.str());
 		}
 
 		nimble_token &
 		_nimble_lexer::token(void)
 		{
+			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
 
 			if(m_tok_position >= m_tok_list.size()) {
+				TRACE_MESSAGE(TRACE_ERROR, "%s, pos. %lu", 
+					NIMBLE_LEXER_EXCEPTION_STRING(NIMBLE_LEXER_EXCEPTION_INVALID_TOKEN_POSITION),
+					m_tok_position);
 				THROW_NIMBLE_LEXER_EXCEPTION_MESSAGE(NIMBLE_LEXER_EXCEPTION_INVALID_TOKEN_POSITION,
 					"%lu", m_tok_position);
 			}
 
-			return acquire_token()->at(m_tok_list.at(m_tok_position));
+			nimble_token &tok = acquire_token()->at(m_tok_list.at(m_tok_position));
+
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %s", 
+				CHK_STR(nimble_token::as_string(tok, true)));
+			return tok;
 		}
 
 		std::string 
@@ -1091,7 +1383,14 @@ namespace NIMBLE {
 			__in_opt bool verbose
 			)
 		{
-			return nimble_token::as_string(acquire_token()->at(uid), verbose);
+			std::string result;
+
+			TRACE_ENTRY(TRACE_VERBOSE);
+
+			result = nimble_token::as_string(acquire_token()->at(uid), verbose);
+
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %s", CHK_STR(result));
+			return CHK_STR(result);
 		}
 
 		std::string 
@@ -1104,6 +1403,7 @@ namespace NIMBLE {
 			nimble_token_meta meta;
 			std::stringstream result;
 
+			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
 
 			tok = token();
@@ -1111,6 +1411,7 @@ namespace NIMBLE {
 			result << tok.to_string(verbose) << std::endl
 				<< nimble_lexer_base::character_exception(meta, tabs, verbose);
 
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %s", CHK_STR(result.str()));
 			return CHK_STR(result.str());
 		}
 	}
