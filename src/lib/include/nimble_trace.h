@@ -109,6 +109,8 @@ namespace NIMBLE {
 
 		protected:
 
+			static std::mutex m_lock;
+
 			static bool m_started;
 
 			static std::ofstream m_stream;

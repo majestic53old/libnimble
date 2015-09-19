@@ -47,9 +47,11 @@ namespace NIMBLE {
 		CHK_STR(NIMBLE_TRACE_LEVEL_STR[((_TYPE_) > NIMBLE_LEVEL_MAX ? 0 : \
 		(_TYPE_))])
 		
-	bool _nimble_trace::m_started = false;
+	std::mutex nimble_trace::m_lock;
 
-	std::ofstream _nimble_trace::m_stream;
+	bool nimble_trace::m_started = false;
+
+	std::ofstream nimble_trace::m_stream;
 
 	void 
 	_nimble_trace::generate(
@@ -65,6 +67,7 @@ namespace NIMBLE {
 		std::time_t tm;
 		std::string buf, tmstr;
 		std::stringstream result;
+		SERIALIZE_CALL(m_lock);
 
 		if(nimble_trace::m_started) {
 			tm = std::time(NULL);

@@ -29,11 +29,12 @@ namespace NIMBLE {
 		_nimble_parser::_nimble_parser(
 			__in_opt const std::string &input,
 			__in_opt bool is_file
-			)
+			) :
+				m_stmt_position(0)
 		{
 			TRACE_ENTRY(TRACE_VERBOSE);
 
-			// TODO
+			nimble_parser::set(input, is_file);
 
 			TRACE_EXIT(TRACE_VERBOSE);
 		}
@@ -44,7 +45,7 @@ namespace NIMBLE {
 		{
 			TRACE_ENTRY(TRACE_VERBOSE);
 
-			// TODO
+			nimble_parser::set(other);
 
 			TRACE_EXIT(TRACE_VERBOSE);
 		}
@@ -53,7 +54,7 @@ namespace NIMBLE {
 		{
 			TRACE_ENTRY(TRACE_VERBOSE);
 
-			// TODO
+			nimble_parser::clear();
 
 			TRACE_EXIT(TRACE_VERBOSE);
 		}
@@ -67,22 +68,69 @@ namespace NIMBLE {
 			SERIALIZE_CALL_RECUR(m_lock);
 
 			if(this != &other) {
-
-				// TODO
-
+				nimble_parser::set(other);
 			}
 
 			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "ptr. 0x%p", this);
 			return *this;
 		}
 
+		nimble_node_factory_ptr 
+		_nimble_parser::acquire_node(void)
+		{
+			nimble_node_factory_ptr result = NULL;
+
+			TRACE_ENTRY(TRACE_VERBOSE);
+
+			if(!nimble_node_factory::is_allocated()) {
+				TRACE_MESSAGE(TRACE_ERROR, "%s", 
+					NIMBLE_PARSER_EXCEPTION_STRING(NIMBLE_PARSER_EXCEPTION_COMPONENT_NOT_READY));
+				THROW_NIMBLE_PARSER_EXCEPTION(NIMBLE_PARSER_EXCEPTION_COMPONENT_NOT_READY);
+			}
+
+			result = nimble_node_factory::acquire();
+			if(!result) {
+				TRACE_MESSAGE(TRACE_ERROR, "%s", 
+					NIMBLE_PARSER_EXCEPTION_STRING(NIMBLE_PARSER_EXCEPTION_INVALID_COMPONENT));
+				THROW_NIMBLE_PARSER_EXCEPTION(NIMBLE_PARSER_EXCEPTION_INVALID_COMPONENT);
+			}
+
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "ptr. 0x%p", result);
+			return result;
+		}
+
 		void 
 		_nimble_parser::clear(void)
 		{
+			nimble_node_factory_ptr fact = NULL;
+			nimble_statement::iterator node_iter;
+			std::vector<nimble_statement>::iterator stmt_iter;
+
 			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
 
-			// TODO
+			try {
+
+				fact = nimble_parser::acquire_node();
+				if(fact && fact->is_initialized()) {
+
+					for(stmt_iter = m_stmt_list.begin(); 
+							stmt_iter != m_stmt_list.end(); ++stmt_iter) {
+
+						for(node_iter = stmt_iter->begin(); 
+								node_iter != stmt_iter->end(); ++node_iter) {
+
+							if(fact->contains(*node_iter)) {
+								fact->decrement_reference(*node_iter);
+							}
+						}
+					}
+				}
+			} catch(...) { }
+
+			m_stmt_list.clear();
+			m_stmt_position = 0;
+			TRACE_MESSAGE(TRACE_INFORMATION, "%s", "Parser cleared");
 
 			TRACE_EXIT(TRACE_VERBOSE);
 		}
@@ -101,6 +149,8 @@ namespace NIMBLE {
 
 			result = nimble_parser::size();
 			nimble_parser::reset();
+			TRACE_MESSAGE(TRACE_INFORMATION, "Parser discovered %lu statements", 
+				result);
 
 			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %lu", result);
 			return result;
@@ -110,11 +160,15 @@ namespace NIMBLE {
 		_nimble_parser::has_next_statement(void)
 		{
 			bool result;
+			nimble_node_factory_ptr node_fact = NULL;
+			nimble_token_factory_ptr tok_fact = NULL;
 
 			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
 
-			// TODO
+			node_fact = nimble_parser::acquire_node();
+			tok_fact = nimble_lexer::acquire_token();
+			result = (node_token(statement().front()).type() != TOKEN_END);
 
 			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. 0x%x", result);
 			return result;
@@ -134,6 +188,51 @@ namespace NIMBLE {
 			return result;
 		}
 
+		size_t 
+		_nimble_parser::insert_node(
+			__in nimble_statement &stmt,
+			__in const nimble_uid &token,
+			__in_opt size_t parent
+			)
+		{
+			size_t result;
+			nimble_uid uid;
+			nimble_node_factory_ptr fact = NULL;
+
+			TRACE_ENTRY(TRACE_VERBOSE);
+
+			fact = nimble_parser::acquire_node();
+			uid = fact->generate();
+			nimble_node &node = fact->at(uid);
+			node.set(token);
+			node.parent() = parent;
+			result = stmt.size();
+			stmt.push_back(uid);
+
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %lu", result);
+			return result;
+		}
+
+		void 
+		_nimble_parser::insert_statement(
+			__in const nimble_statement &stmt
+			)
+		{
+			size_t position;
+
+			TRACE_ENTRY(TRACE_VERBOSE);
+			SERIALIZE_CALL_RECUR(m_lock);
+
+			position = m_stmt_position + 1;
+			if(position < m_stmt_list.size()) {
+				m_stmt_list.insert(m_stmt_list.begin() + position, stmt);
+			} else {
+				m_stmt_list.push_back(stmt);
+			}
+
+			TRACE_EXIT(TRACE_VERBOSE);
+		}
+
 		nimble_statement &
 		_nimble_parser::move_next_statement(void)
 		{
@@ -148,9 +247,16 @@ namespace NIMBLE {
 					"%lu", m_stmt_position);
 			}
 
-			// TODO
+			if(has_next_token()
+					&& (m_stmt_position <= (m_stmt_list.size() - SENTINEL_PARSER))) {
 
+				// TODO
+			}
+
+			++m_stmt_position;
 			nimble_statement &stmt = statement();
+			TRACE_MESSAGE(TRACE_INFORMATION, "Moved to next statement[%lu] -> %s", m_stmt_position, 
+				CHK_STR(nimble_parser::statement_as_string(stmt, true)));
 
 			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %s", 
 				CHK_STR(nimble_parser::statement_as_string(stmt, true)));
@@ -171,13 +277,32 @@ namespace NIMBLE {
 					"%lu", m_stmt_position);
 			}
 
-			// TODO
-
+			--m_stmt_position;
 			nimble_statement &stmt = statement();
+			TRACE_MESSAGE(TRACE_INFORMATION, "Moved to previous statement[%lu] -> %s", m_stmt_position, 
+				CHK_STR(nimble_parser::statement_as_string(stmt, true)));
 
 			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %s", 
 				CHK_STR(nimble_parser::statement_as_string(stmt, true)));
 			return stmt;
+		}
+
+		nimble_token &
+		_nimble_parser::node_token(
+			__in const nimble_uid &uid
+			)
+		{
+			nimble_node_factory_ptr node_fact = NULL;
+			nimble_token_factory_ptr tok_fact = NULL;
+
+			TRACE_ENTRY(TRACE_VERBOSE);
+
+			node_fact = nimble_parser::acquire_node();
+			tok_fact = nimble_lexer::acquire_token();
+			nimble_token &tok = tok_fact->at(node_fact->at(uid).token());
+
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "%s", CHK_STR(tok.to_string(true)));
+			return tok;
 		}
 
 		void 
@@ -187,6 +312,7 @@ namespace NIMBLE {
 			SERIALIZE_CALL_RECUR(m_lock);
 
 			m_stmt_position = 0;
+			TRACE_MESSAGE(TRACE_INFORMATION, "%s", "Parser reset");
 
 			TRACE_EXIT(TRACE_VERBOSE);
 		}
@@ -197,10 +323,21 @@ namespace NIMBLE {
 			__in_opt bool is_file
 			)
 		{
+			nimble_statement stmt_beg, stmt_end;
+
 			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
 
-			// TODO
+			nimble_parser::clear();
+			nimble_lexer::set(input, is_file);
+			insert_node(stmt_beg, token_begin());
+			insert_node(stmt_end, token_end());
+			insert_statement(stmt_beg);
+			insert_statement(stmt_end);
+
+			nimble_parser::reset();
+			TRACE_MESSAGE(TRACE_INFORMATION, "Parser set input -> \'%s\', file -> 0x%x", 
+				CHK_STR(input), is_file);
 
 			TRACE_EXIT(TRACE_VERBOSE);
 		}
@@ -210,10 +347,36 @@ namespace NIMBLE {
 			__in const _nimble_parser &other
 			)
 		{
+			nimble_node_factory_ptr fact = NULL;
+			nimble_statement::iterator node_iter;
+			std::vector<nimble_statement>::iterator stmt_iter;
+
 			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
 
-			// TODO
+			nimble_parser::clear();
+			nimble_lexer::operator=(other);
+			m_stmt_list = other.m_stmt_list;
+			m_stmt_position = other.m_stmt_position;
+
+			try {
+
+				fact = nimble_parser::acquire_node();
+				if(fact && fact->is_initialized()) {
+
+					for(stmt_iter = m_stmt_list.begin(); 
+							stmt_iter != m_stmt_list.end(); ++stmt_iter) {
+
+						for(node_iter = stmt_iter->begin(); 
+								node_iter != stmt_iter->end(); ++node_iter) {
+
+							if(fact->contains(*node_iter)) {
+								fact->increment_reference(*node_iter);
+							}
+						}
+					}
+				}
+			} catch(...) { }
 
 			TRACE_EXIT(TRACE_VERBOSE);
 		}
@@ -264,9 +427,49 @@ namespace NIMBLE {
 			TRACE_ENTRY(TRACE_VERBOSE);
 
 			// TODO
+			result << nimble_parser::acquire_node()->at(statement.front()).to_string(true);
+			// ---
 
 			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %s", CHK_STR(result.str()));
 			return CHK_STR(result.str());
+		}
+
+		nimble_statement &
+		_nimble_parser::statement_begin(void)
+		{
+			TRACE_ENTRY(TRACE_VERBOSE);
+			SERIALIZE_CALL_RECUR(m_lock);
+
+			if(m_stmt_list.empty()) {
+				TRACE_MESSAGE(TRACE_ERROR, "%s", 
+					NIMBLE_PARSER_EXCEPTION_STRING(NIMBLE_PARSER_EXCEPTION_INVALID_STATEMENT_POSITION));
+				THROW_NIMBLE_PARSER_EXCEPTION(NIMBLE_PARSER_EXCEPTION_INVALID_STATEMENT_POSITION);
+			}
+
+			nimble_statement &stmt = m_stmt_list.front();
+
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %s", 
+				CHK_STR(nimble_parser::statement_as_string(stmt, true)));
+			return stmt;
+		}
+
+		nimble_statement &
+		_nimble_parser::statement_end(void)
+		{
+			TRACE_ENTRY(TRACE_VERBOSE);
+			SERIALIZE_CALL_RECUR(m_lock);
+
+			if(m_stmt_list.empty()) {
+				TRACE_MESSAGE(TRACE_ERROR, "%s", 
+					NIMBLE_PARSER_EXCEPTION_STRING(NIMBLE_PARSER_EXCEPTION_INVALID_STATEMENT_POSITION));
+				THROW_NIMBLE_PARSER_EXCEPTION(NIMBLE_PARSER_EXCEPTION_INVALID_STATEMENT_POSITION);
+			}
+
+			nimble_statement &stmt = m_stmt_list.back();
+
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %s", 
+				CHK_STR(nimble_parser::statement_as_string(stmt, true)));
+			return stmt;
 		}
 
 		std::string 
@@ -299,15 +502,27 @@ namespace NIMBLE {
 			__in_opt bool verbose
 			)
 		{
-			std::string result;
+			std::stringstream result;
 
 			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
 
-			result = nimble_parser::statement_as_string(statement(), verbose);
+			if(verbose) {
+				result << "(" << m_stmt_position << "/" << (m_stmt_list.size() - 1) << ") ";
+			}
 
-			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %s", CHK_STR(result));
-			return CHK_STR(result);
+			if(m_stmt_position >= m_stmt_list.size()) {
+				TRACE_MESSAGE(TRACE_ERROR, "%s, pos. %lu", 
+					NIMBLE_PARSER_EXCEPTION_STRING(NIMBLE_PARSER_EXCEPTION_INVALID_STATEMENT_POSITION),
+					m_tok_position);
+				THROW_NIMBLE_PARSER_EXCEPTION_MESSAGE(NIMBLE_PARSER_EXCEPTION_INVALID_STATEMENT_POSITION,
+					"%lu", m_stmt_position);
+			}
+
+			result << nimble_parser::statement_as_string(statement(), verbose);
+
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %s", CHK_STR(result.str()));
+			return CHK_STR(result.str());
 		}
 	}
 }

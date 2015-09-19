@@ -167,18 +167,18 @@ namespace NIMBLE {
 				try {
 
 					// TODO: run command, set m_result
-					nimble_lexer base(command);
+					nimble_parser par(command);
 
-					while(base.has_next_token()) {
-						std::cout << base.to_string(true) << std::endl;
-						base.move_next_token();
+					while(par.has_next_statement()) {
+						std::cout << par.to_string(true) << std::endl;
+						par.move_next_statement();
 					}
 
-					std::cout << base.to_string(true) << std::endl;
+					std::cout << par.to_string(true) << std::endl;
 
-					while(base.has_previous_token()) {
-						base.move_previous_token();
-						std::cout << base.to_string(true) << std::endl;
+					while(par.has_previous_statement()) {
+						par.move_previous_statement();
+						std::cout << par.to_string(true) << std::endl;
 					}
 					// ---
 

@@ -13,6 +13,10 @@ Changelog
 =========
 
 ##Version 0.1.1538
+*Updated:9/19/2015*
+
+* Implemented parser class (partial, continued)
+
 *Updated:9/18/2015*
 
 * Implemented parser class (partial)

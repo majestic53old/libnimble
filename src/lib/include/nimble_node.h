@@ -63,15 +63,19 @@ namespace NIMBLE {
 
 				size_t &parent(void);
 
+				virtual void set(
+					__in const nimble_uid &token
+					);
+
 				virtual std::string to_string(
 					__in_opt bool verbose = false
 					);
 
-				nimble_uid &token(void);
+				nimble_uid token(void);
 
 			protected:
 
-				nimble_token_factory_ptr acquire_token(void);
+				static nimble_token_factory_ptr acquire_token(void);
 
 				std::vector<size_t> m_children;
 

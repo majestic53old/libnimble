@@ -808,23 +808,9 @@ namespace NIMBLE {
 
 		_nimble_lexer::~_nimble_lexer(void)
 		{
-			std::vector<nimble_uid>::iterator iter;
-			nimble_token_factory_ptr fact = nimble_lexer::acquire_token();
-
 			TRACE_ENTRY(TRACE_VERBOSE);
 
-			try {
-
-				if(fact && fact->is_initialized()) {
-
-					for(iter = m_tok_list.begin(); iter != m_tok_list.end(); ++iter) {
-
-						if(fact->contains(*iter)) {
-							fact->decrement_reference(*iter);
-						}
-					}
-				}
-			} catch(...) { }
+			nimble_lexer::clear();
 
 			TRACE_EXIT(TRACE_VERBOSE);
 		}
@@ -1391,6 +1377,42 @@ namespace NIMBLE {
 
 			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %s", CHK_STR(result));
 			return CHK_STR(result);
+		}
+
+		nimble_token &
+		_nimble_lexer::token_begin(void)
+		{
+			TRACE_ENTRY(TRACE_VERBOSE);
+
+			if(m_tok_list.empty()) {
+				TRACE_MESSAGE(TRACE_ERROR, "%s", 
+					NIMBLE_LEXER_EXCEPTION_STRING(NIMBLE_LEXER_EXCEPTION_INVALID_TOKEN_POSITION));
+				THROW_NIMBLE_LEXER_EXCEPTION(NIMBLE_LEXER_EXCEPTION_INVALID_TOKEN_POSITION);
+			}
+
+			nimble_token &tok = acquire_token()->at(m_tok_list.front());
+
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %s", 
+				CHK_STR(nimble_token::as_string(tok, true)));
+			return tok;
+		}
+
+		nimble_token &
+		_nimble_lexer::token_end(void)
+		{
+			TRACE_ENTRY(TRACE_VERBOSE);
+
+			if(m_tok_list.empty()) {
+				TRACE_MESSAGE(TRACE_ERROR, "%s", 
+					NIMBLE_LEXER_EXCEPTION_STRING(NIMBLE_LEXER_EXCEPTION_INVALID_TOKEN_POSITION));
+				THROW_NIMBLE_LEXER_EXCEPTION(NIMBLE_LEXER_EXCEPTION_INVALID_TOKEN_POSITION);
+			}
+
+			nimble_token &tok = acquire_token()->at(m_tok_list.back());
+
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %s", 
+				CHK_STR(nimble_token::as_string(tok, true)));
+			return tok;
 		}
 
 		std::string 

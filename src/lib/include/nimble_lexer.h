@@ -225,6 +225,10 @@ namespace NIMBLE {
 					__in_opt bool verbose = false
 					);
 
+				nimble_token &token_begin(void);
+
+				nimble_token &token_end(void);
+
 				std::string token_exception(
 					__in_opt size_t tabs = 0,
 					__in_opt bool verbose = false

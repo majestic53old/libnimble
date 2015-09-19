@@ -33,7 +33,9 @@ namespace NIMBLE {
 		#endif // NDEBUG
 
 		enum {
-			NIMBLE_PARSER_EXCEPTION_INVALID_STATEMENT_POSITION = 0,
+			NIMBLE_PARSER_EXCEPTION_COMPONENT_NOT_READY = 0,
+			NIMBLE_PARSER_EXCEPTION_INVALID_COMPONENT,
+			NIMBLE_PARSER_EXCEPTION_INVALID_STATEMENT_POSITION,
 			NIMBLE_PARSER_EXCEPTION_NO_NEXT_STATEMENT,
 			NIMBLE_PARSER_EXCEPTION_NO_PREVIOUS_STATEMENT,
 		};
@@ -41,6 +43,8 @@ namespace NIMBLE {
 		#define NIMBLE_PARSER_EXCEPTION_MAX NIMBLE_PARSER_EXCEPTION_NO_PREVIOUS_STATEMENT
 
 		static const std::string NIMBLE_PARSER_EXCEPTION_STR[] = {
+			"Node component is not ready",
+			"Invalid node component",
 			"Invalid statement position",
 			"No next statement is stream",
 			"No previous statement in stream",

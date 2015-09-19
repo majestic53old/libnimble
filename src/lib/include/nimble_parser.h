@@ -75,6 +75,10 @@ namespace NIMBLE {
 
 				nimble_statement &statement(void);
 
+				nimble_statement &statement_begin(void);
+
+				nimble_statement &statement_end(void);
+
 				static std::string statement_as_string(
 					__in const nimble_statement &statement,
 					__in_opt bool verbose = false
@@ -92,6 +96,22 @@ namespace NIMBLE {
 					);
 
 			protected:
+
+				static nimble_node_factory_ptr acquire_node(void);
+
+				size_t insert_node(
+					__in nimble_statement &stmt,
+					__in const nimble_uid &token,
+					__in_opt size_t parent = PAR_INVALID
+					);
+
+				void insert_statement(
+					__in const nimble_statement &stmt
+					);
+
+				static nimble_token &node_token(
+					__in const nimble_uid &uid
+					);
 
 				std::vector<nimble_statement> m_stmt_list;
 

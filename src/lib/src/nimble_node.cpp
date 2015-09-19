@@ -28,10 +28,12 @@ namespace NIMBLE {
 			__in_opt const nimble_uid &token,
 			__in_opt size_t parent
 			) :
-				m_parent(parent),
-				m_token(token)
+				m_parent(parent)
 		{
 			TRACE_ENTRY(TRACE_VERBOSE);
+
+			nimble_node::set(token);
+
 			TRACE_EXIT(TRACE_VERBOSE);
 		}
 
@@ -40,16 +42,21 @@ namespace NIMBLE {
 			) :
 				nimble_uid_class(other),
 				m_children(other.m_children),
-				m_parent(other.m_parent),
-				m_token(other.m_token)
+				m_parent(other.m_parent)
 		{
 			TRACE_ENTRY(TRACE_VERBOSE);
+
+			nimble_node::set(other.m_token);
+
 			TRACE_EXIT(TRACE_VERBOSE);
 		}
 
 		_nimble_node::~_nimble_node(void)
 		{
 			TRACE_ENTRY(TRACE_VERBOSE);
+
+			nimble_node::clear();
+
 			TRACE_EXIT(TRACE_VERBOSE);
 		}
 
@@ -65,7 +72,7 @@ namespace NIMBLE {
 				nimble_uid_class::operator=(other);
 				m_children = other.m_children;
 				m_parent = other.m_parent;
-				m_token = other.m_token;
+				nimble_node::set(other.m_token);
 			}
 
 			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "ptr. 0x%p", this);
@@ -101,7 +108,17 @@ namespace NIMBLE {
 				result << nimble_uid::as_string(node.m_uid, true) << " ";
 			}
 
-			result << "[";
+			if(nimble_token_factory::is_allocated()) {
+				fact = nimble_token_factory::acquire();
+			}
+
+			if(fact && fact->contains(node.m_token)) {
+				result << fact->at(node.m_token).to_string(verbose);
+			} else {
+				result << nimble_uid::as_string(node.m_token, true);
+			}
+
+			result << " [";
 
 			if(node.m_parent == PAR_INVALID) {
 				result << "ROOT";
@@ -115,19 +132,16 @@ namespace NIMBLE {
 
 			result << "]";
 
-			if(nimble_token_factory::is_allocated()) {
-				fact = nimble_token_factory::acquire();
-			}
-
-			if(fact && fact->contains(node.m_token)) {
-				result << fact->at(node.m_token).to_string(verbose);
-			} else {
-				result << nimble_uid::as_string(node.m_token, true);
-			}
-
 			if(verbose) {
-				result << ", par. " << node.m_parent 
-					<< ", chd. " << node.m_children.size();
+				result << ", par. "; 
+
+				if(node.m_parent != PAR_INVALID) {
+					result << node.m_parent;
+				} else {
+					result << "INV";
+				}
+
+				result << ", chd. " << node.m_children.size();
 			}
 
 			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %s", CHK_STR(result.str()));
@@ -146,11 +160,23 @@ namespace NIMBLE {
 		void 
 		_nimble_node::clear(void)
 		{
+			nimble_token_factory_ptr fact = NULL;
+
 			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
 
 			m_children.clear();
 			m_parent = PAR_INVALID;
+			fact = nimble_node::acquire_token();
+
+			try {
+				if(fact 
+						&& fact->is_initialized() 
+						&& fact->contains(m_token)) {
+					fact->decrement_reference(m_token);
+				}
+			} catch(...) { }
+
 			m_token = UID_INVALID;
 
 			TRACE_EXIT(TRACE_VERBOSE);
@@ -193,6 +219,40 @@ namespace NIMBLE {
 			return m_parent;
 		}
 
+		void 
+		_nimble_node::set(
+			__in const nimble_uid &token
+			)
+		{
+			nimble_token_factory_ptr fact = NULL;
+
+			TRACE_ENTRY(TRACE_VERBOSE);
+			SERIALIZE_CALL_RECUR(m_lock);
+
+			fact = nimble_node::acquire_token();
+
+			try {
+
+				if(fact 
+						&& fact->is_initialized() 
+						&& fact->contains(m_token)) {
+					fact->decrement_reference(m_token);
+				}
+			} catch(...) { }
+
+			m_token = token;
+
+			try {
+				if(fact 
+						&& fact->is_initialized() 
+						&& fact->contains(m_token)) {
+					fact->increment_reference(m_token);
+				}
+			} catch(...) { }
+
+			TRACE_EXIT(TRACE_VERBOSE);
+		}
+
 		std::string 
 		_nimble_node::to_string(
 			__in_opt bool verbose
@@ -209,7 +269,7 @@ namespace NIMBLE {
 			return CHK_STR(result);
 		}
 
-		nimble_uid &
+		nimble_uid 
 		_nimble_node::token(void)
 		{
 			TRACE_ENTRY(TRACE_VERBOSE);
