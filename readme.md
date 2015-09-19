@@ -13,6 +13,10 @@ Changelog
 =========
 
 ##Version 0.1.1538
+*Updated:9/18/2015*
+
+* Implemented parser class (partial)
+
 *Updated:9/17/2015*
 
 * Improved tracing facilities

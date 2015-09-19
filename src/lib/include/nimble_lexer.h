@@ -170,7 +170,7 @@ namespace NIMBLE {
 		} nimble_lexer_base, *nimble_lexer_base_ptr;
 
 		typedef class _nimble_lexer :
-				protected _nimble_lexer_base {
+				protected nimble_lexer_base {
 
 			public:
 
@@ -208,7 +208,7 @@ namespace NIMBLE {
 					__in_opt bool is_file = false
 					);
 
-				virtual void set(
+				void set(
 					__in const _nimble_lexer &other
 					);
 

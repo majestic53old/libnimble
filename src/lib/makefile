@@ -28,11 +28,11 @@ all: build archive
 archive:
 	@echo ''
 	@echo '--- BUILDING LIBRARY -----------------------'
-	ar rcs $(DIR_BUILD)$(LIB) $(DIR_BUILD)nimble.o $(DIR_BUILD)nimble_color.o $(DIR_BUILD)nimble_command.o $(DIR_BUILD)nimble_exception.o $(DIR_BUILD)nimble_language.o $(DIR_BUILD)nimble_lexer.o $(DIR_BUILD)nimble_node.o $(DIR_BUILD)nimble_token.o $(DIR_BUILD)nimble_trace.o $(DIR_BUILD)nimble_uid.o
+	ar rcs $(DIR_BUILD)$(LIB) $(DIR_BUILD)nimble.o $(DIR_BUILD)nimble_color.o $(DIR_BUILD)nimble_command.o $(DIR_BUILD)nimble_exception.o $(DIR_BUILD)nimble_language.o $(DIR_BUILD)nimble_lexer.o $(DIR_BUILD)nimble_node.o $(DIR_BUILD)nimble_parser.o $(DIR_BUILD)nimble_token.o $(DIR_BUILD)nimble_trace.o $(DIR_BUILD)nimble_uid.o
 	@echo '--- DONE -----------------------------------'
 	@echo ''
 
-build: nimble.o nimble_color.o nimble_command.o nimble_exception.o nimble_language.o nimble_lexer.o nimble_node.o nimble_token.o nimble_trace.o nimble_uid.o
+build: nimble.o nimble_color.o nimble_command.o nimble_exception.o nimble_language.o nimble_lexer.o nimble_node.o nimble_parser.o nimble_token.o nimble_trace.o nimble_uid.o
 
 nimble.o: $(DIR_SRC)nimble.cpp $(DIR_INC)nimble.h
 	$(CC) $(CC_FLAGS) -c $(DIR_SRC)nimble.cpp -o $(DIR_BUILD)nimble.o
@@ -67,3 +67,6 @@ nimble_uid.o: $(DIR_SRC)nimble_uid.cpp $(DIR_INC)nimble_uid.h
 
 nimble_lexer.o: $(DIR_SRC)nimble_lexer.cpp $(DIR_INC)nimble_lexer.h
 	$(CC) $(CC_FLAGS) -c $(DIR_SRC)nimble_lexer.cpp -o $(DIR_BUILD)nimble_lexer.o
+
+nimble_parser.o: $(DIR_SRC)nimble_parser.cpp $(DIR_INC)nimble_parser.h
+	$(CC) $(CC_FLAGS) -c $(DIR_SRC)nimble_parser.cpp -o $(DIR_BUILD)nimble_parser.o

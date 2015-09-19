@@ -1277,7 +1277,7 @@ namespace NIMBLE {
 			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
 
-			result = (m_tok_list.size() - SENTINEL_LEXER);
+			result = (!m_tok_list.empty() ? (m_tok_list.size() - SENTINEL_LEXER) : 0);
 
 			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %lu", result);
 			return result;

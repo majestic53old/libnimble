@@ -60,6 +60,7 @@ using namespace NIMBLE::COMPONENT;
 #endif // LANGUAGE
 
 #include "nimble_lexer.h"
+#include "nimble_parser.h"
 
 using namespace NIMBLE::LANGUAGE;
 
