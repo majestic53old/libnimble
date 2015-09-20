@@ -13,6 +13,10 @@ Changelog
 =========
 
 ##Version 0.1.1538
+*Updated:9/20/2015*
+
+* Improved tracing facilities
+
 *Updated:9/19/2015*
 
 * Implemented parser class (partial, continued)
@@ -64,24 +68,6 @@ Changelog
 *Updated:9/8/2015*
 
 * Added command factory class (partial)
-
-##Version 0.1.1536
-*Updated:9/7/2015*
-
-* Added skinnable color prompt
-* Added language helper routines
-
-*Updated:9/6/2015*
-
-* Implemented lexer base class
-
-*Updated:9/5/2015*
-
-* Added Uid factory component
-
-*Updated:9/3/2015*
-
-* Initial commit
 
 *Changelog truncated (see file history for full log)*
 

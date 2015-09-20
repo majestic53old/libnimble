@@ -27,7 +27,7 @@
 #endif // TLEVEL
 
 #ifndef TLOGOUT
-#define TLOGOUT "./nimble"
+#define TLOGOUT "nimble"
 #endif // TLOGOUT
 
 #include <map>

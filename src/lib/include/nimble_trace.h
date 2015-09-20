@@ -39,12 +39,13 @@ namespace NIMBLE {
 	#endif // TLEVEL
 
 	#ifndef TLOGOUT
-	#define TLOGOUT "./log"
+	#define TLOGOUT "log"
 	#endif // TLOGOUT
 
 	#ifndef NDEBUG
 	#define TRACE_HEADER_ENTRY "+"
 	#define TRACE_HEADER_EXIT "-"
+	#define TRACE_PATH_DEF "."
 	#define _TRACE(_LEVEL_, _HEADER_) {\
 		if(((TLEVEL) > TRACE_NONE) && ((TLEVEL) >= (_LEVEL_))) { \
 		nimble_trace::generate(_LEVEL_, _HEADER_, __FUNCTION__, \
@@ -68,7 +69,8 @@ namespace NIMBLE {
 	#define TRACE_MESSAGE(_LEVEL_, _FORMAT_, ...) \
 		_TRACE_MESSAGE(_LEVEL_, std::string(), _FORMAT_, \
 		__VA_ARGS__)
-	#define TRACE_START() nimble_trace::start(TLEVEL, TLOGOUT)
+	#define TRACE_START() nimble_trace::start(TLEVEL, TRACE_PATH_DEF, TLOGOUT)
+	#define TRACE_START_PATH(_PATH_) nimble_trace::start(TLEVEL, _PATH_, TLOGOUT)
 	#define TRACE_STARTED() nimble_trace::is_started()
 	#define TRACE_STOP() nimble_trace::stop()
 	#else
@@ -80,6 +82,7 @@ namespace NIMBLE {
 	#define TRACE_EXIT_MESSAGE(_LEVEL_, _FORMAT_, ...)
 	#define TRACE_MESSAGE(_LEVEL_, _FORMAT_, ...)
 	#define TRACE_START()
+	#define TRACE_START_PATH(_PATH_)
 	#define TRACE_STARTED()
 	#define TRACE_STOP()
 	#endif
@@ -102,6 +105,7 @@ namespace NIMBLE {
 
 			static void start(
 				__in nimble_lvl_t level,
+				__in const std::string &path,
 				__in const std::string &output
 				);
 

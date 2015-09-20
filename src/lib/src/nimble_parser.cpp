@@ -75,6 +75,49 @@ namespace NIMBLE {
 			return *this;
 		}
 
+		void 
+		_nimble_parser::_statement_as_string(
+			__out std::stringstream &stream,
+			__in const nimble_statement &stmt,
+			__in_opt size_t position,
+			__in_opt size_t tabs,
+			__in_opt bool verbose
+			)
+		{
+			size_t tab_iter;
+			std::vector<size_t>::iterator child_iter;
+
+			TRACE_ENTRY(TRACE_VERBOSE);
+
+			for(tab_iter = 0; tab_iter < tabs; ++tab_iter) {
+				stream << "\t";
+			}
+
+			if(position >= stmt.size()) {
+				TRACE_MESSAGE(TRACE_ERROR, "%s, pos. %lu", 
+					NIMBLE_PARSER_EXCEPTION_STRING(NIMBLE_PARSER_EXCEPTION_INVALID_STATEMENT_POSITION),
+					position);
+				THROW_NIMBLE_PARSER_EXCEPTION_MESSAGE(NIMBLE_PARSER_EXCEPTION_INVALID_STATEMENT_POSITION,
+					"%lu", position);
+			}
+
+			nimble_node &node = nimble_parser::acquire_node()->at(stmt.at(position));
+			stream << node.to_string(verbose);
+
+			if(!node.is_leaf()) {
+
+				for(child_iter = node.children().begin();
+						child_iter != node.children().end();
+						++child_iter) {
+					stream << std::endl;
+					nimble_parser::_statement_as_string(stream, stmt, *child_iter, 
+						tabs + 1, verbose);
+				}
+			}
+
+			TRACE_EXIT(TRACE_VERBOSE);
+		}
+
 		nimble_node_factory_ptr 
 		_nimble_parser::acquire_node(void)
 		{
@@ -418,7 +461,7 @@ namespace NIMBLE {
 
 		std::string 
 		_nimble_parser::statement_as_string(
-			__in const nimble_statement &statement,
+			__in const nimble_statement &stmt,
 			__in_opt bool verbose
 			)
 		{
@@ -426,9 +469,7 @@ namespace NIMBLE {
 
 			TRACE_ENTRY(TRACE_VERBOSE);
 
-			// TODO
-			result << nimble_parser::acquire_node()->at(statement.front()).to_string(true);
-			// ---
+			nimble_parser::_statement_as_string(result, stmt, 0, 0, verbose);
 
 			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %s", CHK_STR(result.str()));
 			return CHK_STR(result.str());
@@ -481,8 +522,9 @@ namespace NIMBLE {
 			std::stringstream result;
 
 			TRACE_ENTRY(TRACE_VERBOSE);
+			SERIALIZE_CALL_RECUR(m_lock);
 
-			// TODO
+			result << nimble_lexer::token_exception(tabs, verbose);
 
 			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %s", CHK_STR(result.str()));
 			return CHK_STR(result.str());

@@ -28,8 +28,9 @@ main(
 {
 	int result = 0;
 	nimble_ptr inst = NULL;
+	std::string path = std::string(argv[0]);
 
-	TRACE_START();
+	TRACE_START_PATH(path.substr(0, path.find_last_of("/\\")));
 	TRACE_ENTRY(TRACE_VERBOSE);
 
 	try {

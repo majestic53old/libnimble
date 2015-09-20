@@ -80,11 +80,11 @@ namespace NIMBLE {
 				nimble_statement &statement_end(void);
 
 				static std::string statement_as_string(
-					__in const nimble_statement &statement,
+					__in const nimble_statement &stmt,
 					__in_opt bool verbose = false
 					);
 
-				static std::string statement_exception(
+				std::string statement_exception(
 					__in_opt size_t tabs = 0,
 					__in_opt bool verbose = false
 					);
@@ -96,6 +96,14 @@ namespace NIMBLE {
 					);
 
 			protected:
+
+				static void _statement_as_string(
+					__out std::stringstream &stream,
+					__in const nimble_statement &stmt,
+					__in_opt size_t position = 0,
+					__in_opt size_t tabs = 0,
+					__in_opt bool verbose = false
+					);
 
 				static nimble_node_factory_ptr acquire_node(void);
 

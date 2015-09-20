@@ -150,17 +150,18 @@ namespace NIMBLE {
 	void 
 	_nimble_trace::start(
 		__in nimble_lvl_t level,
+		__in const std::string &path,
 		__in const std::string &output
 		)
 	{
 		std::time_t tm;
-		std::stringstream path;
+		std::stringstream loc;
 
 		if(!nimble_trace::m_started) {
 			std::time(&tm);
-			path << output << "_" << NIMBLE_TRACE_LEVEL_STRING(level) 
+			loc << path << "/" << output << "_" << NIMBLE_TRACE_LEVEL_STRING(level) 
 				<< "_" << tm;
-			nimble_trace::m_stream = std::ofstream(path.str().c_str(), 
+			nimble_trace::m_stream = std::ofstream(loc.str().c_str(), 
 				std::ios::out | std::ios::trunc);
 
 			if(nimble_trace::m_stream) {
