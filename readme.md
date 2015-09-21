@@ -15,6 +15,7 @@ Changelog
 ##Version 0.1.1538
 *Updated:9/20/2015*
 
+* Added statement enumeration routines (partial)
 * Improved tracing facilities
 
 *Updated:9/19/2015*

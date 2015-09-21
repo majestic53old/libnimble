@@ -61,7 +61,7 @@ namespace NIMBLE {
 
 				size_t &row(void);
 
-				toksub_t &subtype(void);
+				nimble_subtok_t &subtype(void);
 
 				std::string &text(void);
 
@@ -69,7 +69,7 @@ namespace NIMBLE {
 					__in_opt bool verbose = false
 					);
 
-				tok_t &type(void);
+				nimble_tok_t &type(void);
 
 				double &value(void);
 
@@ -83,11 +83,11 @@ namespace NIMBLE {
 
 				size_t m_row;
 
-				toksub_t m_subtype;
+				nimble_subtok_t m_subtype;
 
 				std::string m_text;
 
-				tok_t m_type;
+				nimble_tok_t m_type;
 
 				double m_value;
 

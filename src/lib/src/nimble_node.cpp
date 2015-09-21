@@ -123,10 +123,10 @@ namespace NIMBLE {
 			if(node.m_parent == PAR_INVALID) {
 				result << "ROOT";
 
-				if(node.m_children.size()) {
+				if(node.m_children.empty()) {
 					result << ", LEAF";
 				}
-			} else if(node.m_children.size()) {
+			} else if(node.m_children.empty()) {
 				result << "LEAF";
 			}
 

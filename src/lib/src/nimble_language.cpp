@@ -33,8 +33,8 @@ namespace NIMBLE {
 		};
 
 	static const std::string SYMBOL_STR[] = {
-		")", "&", "$", "(", "|", "<", ">", ">>",
-		">&", ">>&", ">&!", ">!", ";", "!",
+		"=", ")", "&", "$", "(", "|", "<", ">", 
+		">>", ">&", ">>&", ">&!", ">!", ";", "!",
 		};
 
 	#define SYMBOL_STRING(_TYPE_) \
@@ -47,8 +47,16 @@ namespace NIMBLE {
 
 	#define IS_SYMBOL(_STR_) (SYMBOL_SET.find(_STR_) != SYMBOL_SET.end())
 
+	static const std::set<nimble_tok_t> CONTROL_TOKEN_SET = {
+		TOKEN_BEGIN, TOKEN_END, TOKEN_STATEMENT,
+		};
+
+	#define IS_CONTROL_TOKEN(_TYPE_) \
+		(CONTROL_TOKEN_SET.find(_TYPE_) != CONTROL_TOKEN_SET.end())
+
 	static const std::string TOKEN_STR[] = {
-		"BEGIN", "END", "IMMEDIATE", "LITERAL", "SYMBOL",
+		"ARGUMENT", "ASSIGNMENT", "BEGIN", "CALL", "CALL_LIST", "COMMAND", 
+		"END", "IMMEDIATE", "LITERAL", "STATEMENT", "SYMBOL",
 		};
 
 	#define TOKEN_STRING(_TYPE_) \
@@ -56,6 +64,7 @@ namespace NIMBLE {
 		CHK_STR(TOKEN_STR[_TYPE_]))
 
 	static const std::string *TOKEN_STR_PTR[] = {
+		NULL, NULL, NULL, NULL, NULL, NULL, 
 		NULL, NULL, NULL, NULL, SYMBOL_STR,
 		};
 
@@ -64,6 +73,7 @@ namespace NIMBLE {
 		TOKEN_STR_PTR[_TYPE_])
 
 	static const size_t TOKEN_STR_LEN[] = {
+		0, 0, 0, 0, 0, 0, 
 		0, 0, 0, 0, (SYMBOL_MAX + 1),
 		};
 
@@ -183,6 +193,21 @@ namespace NIMBLE {
 	}
 
 	bool 
+	_nimble_language::is_control_token(
+		__in nimble_tok_t type
+		)
+	{
+		bool result;
+
+		TRACE_ENTRY(TRACE_VERBOSE);
+
+		result = IS_CONTROL_TOKEN(type);
+
+		TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. 0x%x", result);
+		return result;
+	}
+
+	bool 
 	_nimble_language::is_symbol(
 		__in const std::string &text
 		)
@@ -197,14 +222,14 @@ namespace NIMBLE {
 		return result;
 	}
 
-	toksub_t 
+	nimble_subtok_t 
 	_nimble_language::subtype(
 		__in const std::string &text,
-		__in tok_t type
+		__in nimble_tok_t type
 		)
 	{
 		size_t iter = 0, len;
-		toksub_t result = TOKSUB_INVALID;
+		nimble_subtok_t result = TOKSUB_INVALID;
 
 		TRACE_ENTRY(TRACE_VERBOSE);
 
@@ -229,8 +254,8 @@ namespace NIMBLE {
 
 	std::string 
 	_nimble_language::subtype_as_string(
-		__in tok_t type,
-		__in toksub_t subtype
+		__in nimble_tok_t type,
+		__in nimble_subtok_t subtype
 		)
 	{
 		std::string result = UNKNOWN;
@@ -251,7 +276,7 @@ namespace NIMBLE {
 
 	std::string 
 	_nimble_language::type_as_string(
-		__in tok_t type
+		__in nimble_tok_t type
 		)
 	{
 		std::string result;

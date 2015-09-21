@@ -641,7 +641,7 @@ namespace NIMBLE {
 			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
 			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %s", CHK_STR(m_path));
-			return CHK_STR(m_path);
+			return m_path;
 		}
 
 		void 
@@ -982,9 +982,7 @@ namespace NIMBLE {
 								&& ((cls == CHAR_CLASS_END) 
 								|| (cls == CHAR_CLASS_SPACE)
 								|| ((cls == CHAR_CLASS_SYMBOL)
-								&& ((ch != CHAR_DIRECTORY_MARKER)
-								&& (ch != CHAR_DIRECTORY_SEPERATOR_BACKWARD)
-								&& (ch != CHAR_DIRECTORY_SEPERATOR_FOREWORD))))) {
+								&& nimble_language::is_symbol(std::string(1, ch))))) {
 							break;
 						}
 
@@ -1095,8 +1093,8 @@ namespace NIMBLE {
 
 		nimble_token &
 		_nimble_lexer::insert_token(
-			__in tok_t type,
-			__in_opt toksub_t subtype,
+			__in nimble_tok_t type,
+			__in_opt nimble_subtok_t subtype,
 			__in_opt size_t position
 			)
 		{
@@ -1109,8 +1107,12 @@ namespace NIMBLE {
 			fact = acquire_token();
 			uid = fact->generate();
 			nimble_token &tok = fact->at(uid);
-			tok.type() = type;
+			tok.column() = character_column();
+			tok.path() = path();
+			tok.position() = character_position();
+			tok.row() = character_row();
 			tok.subtype() = subtype;
+			tok.type() = type;
 
 			if(position == POS_INVALID) {
 				position = m_tok_position;

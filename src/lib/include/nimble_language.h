@@ -34,10 +34,10 @@ namespace NIMBLE {
 	#define CHAR_SPACE ' '
 	#define CHAR_TAB '\t'
 
-	#define TOK_INVALID INVALID_TYPE(tok_t)
-	#define TOKSUB_INVALID INVALID_TYPE(toksub_t)
+	#define TOK_INVALID INVALID_TYPE(nimble_tok_t)
+	#define TOKSUB_INVALID INVALID_TYPE(nimble_subtok_t)
 
-	typedef uint32_t tok_t, toksub_t;
+	typedef uint32_t nimble_tok_t, nimble_subtok_t;
 
 	typedef enum {
 		BASE_BINARY = 2,
@@ -47,7 +47,8 @@ namespace NIMBLE {
 	} base_t;
 
 	enum {
-		SYMBOL_CLOSE_PARENTHESIS = 0,
+		SYMBOL_ASSIGNMENT = 0,
+		SYMBOL_CLOSE_PARENTHESIS,
 		SYMBOL_MODE,
 		SYMBOL_MODIFIER,
 		SYMBOL_OPEN_PARENTHESIS,
@@ -63,13 +64,19 @@ namespace NIMBLE {
 		SYMBOL_UNARY_NEGATION,
 	};
 
-	#define SYMBOL_MAX SYMBOL_UNARY_NEGATION
+	#define SYMBOL_MAX SYMBOL_SEPERATOR
 
 	enum {
-		TOKEN_BEGIN = 0,
+		TOKEN_ARGUMENT = 0,
+		TOKEN_ASSIGNMENT,
+		TOKEN_BEGIN,
+		TOKEN_CALL,
+		TOKEN_CALL_LIST,
+		TOKEN_COMMAND,
 		TOKEN_END,
 		TOKEN_IMMEDIATE,
 		TOKEN_LITERAL,
+		TOKEN_STATEMENT,
 		TOKEN_SYMBOL,
 	};
 
@@ -151,22 +158,26 @@ namespace NIMBLE {
 				__in_opt const nimble_token_meta &meta = nimble_token_meta()
 				);
 
+			static bool is_control_token(
+				__in nimble_tok_t type
+				);
+
 			static bool is_symbol(
 				__in const std::string &text
 				);
 
-			static toksub_t subtype(
+			static nimble_subtok_t subtype(
 				__in const std::string &text,
-				__in tok_t type
+				__in nimble_tok_t type
 				);
 
 			static std::string subtype_as_string(
-				__in tok_t type,
-				__in toksub_t subtype
+				__in nimble_tok_t type,
+				__in nimble_subtok_t subtype
 				);
 
 			static std::string type_as_string(
-				__in tok_t type
+				__in nimble_tok_t type
 				);
 
 		protected:

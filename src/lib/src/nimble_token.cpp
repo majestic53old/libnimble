@@ -107,8 +107,7 @@ namespace NIMBLE {
 
 			result << "]";
 
-			if((tok.m_type != TOKEN_BEGIN) 
-					&& (tok.m_type != TOKEN_END)) {
+			if(!nimble_language::is_control_token(tok.m_type)) {
 
 				if(!tok.m_text.empty()
 						&& (tok.m_type == TOKEN_LITERAL)) {
@@ -210,7 +209,7 @@ namespace NIMBLE {
 			return m_row;
 		}
 
-		toksub_t &
+		nimble_subtok_t &
 		_nimble_token::subtype(void)
 		{
 			TRACE_ENTRY(TRACE_VERBOSE);
@@ -246,7 +245,7 @@ namespace NIMBLE {
 			return CHK_STR(result);
 		}
 
-		tok_t &
+		nimble_tok_t &
 		_nimble_token::type(void)
 		{
 			TRACE_ENTRY(TRACE_VERBOSE);

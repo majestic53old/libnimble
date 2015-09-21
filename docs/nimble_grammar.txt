@@ -1,3 +1,18 @@
+# Nimble Grammar
+#
+# command -[options] [arguments] < input file > output file 
+# ---
+# >	Redirect standard output
+# >&	Redirect standard output and standard error
+# <	Redirect standard input
+# >!	Redirect standard output; overwrite file if it exists
+# >&!	Redirect standard output and standard error; overwrite file if it exists
+# |	Redirect standard output to another command (pipe)
+# >>	Append standard output
+# >>&	Append standard output and standard error
+
+---
+
 literal ::= '\"' .* '\"' | .* ';' | .*\n
 
 mode :: '&'
@@ -10,44 +25,32 @@ redirect_output ::= '>' | '>&' | '>!' | '>&!' | '>>' | '>>&'
 
 redirect_pipe ::= '|'
 
-symbol ::= ';' | '(' | ')' | '!'
+symbol ::= ';' | '(' | ')' | '='
 
 ---
 
-#
-# command -[options] [arguments] < input file > output file 
-# ---
-# >	Redirect standard output
-# >&	Redirect standard output and standard error
-# <	Redirect standard input
-# >!	Redirect standard output; overwrite file if it exists
-# >&!	Redirect standard output and standard error; overwrite file if it exists
-# |	Redirect standard output to another command (pipe)
-# >>	Append standard output
-# >>&	Append standard output and standard error
-#
+argument ::= <modifier> <literal>
 
-statement ::= <command_0> <mode>?
+assignment ::= <argument> = <statement>
 
-argument ::= (<modifier> <literal>)
-	| <literal>
+call ::= <literal> (<argument> | <literal>)*
 
-command_0 ::= <command_1> <command_0p>*
+call_list ::= <call> (<symbol[';']> <call>)*
 
-command_0p ::= <<redirect_input>> <command_1> <command_0p>*
+command_0 ::= <command_1> <command_0_tail>*
 
-command_1 ::= <command_2> <command_1p>*
+command_0_tail ::= <redirect_input> <command_1> <command_0_tail>*
 
-command_1p ::= <redirect_output> <command_2> <command_1p>*
+command_1 ::= <command_2> <command_1_tail>*
 
-command_2 ::= <command_3> <command_2p>*
+command_1_tail ::= <redirect_output> <command_2> <command_1_tail>*
 
-command_2p ::= <redirect_pipe> <command_3> <command_2p>*
+command_2 ::= <command_3> <command_2_tail>*
 
-command_3 ::= '(' <command_0> ')'
-	| <command_call_list>
-	| <modifier> <literal>
+command_2_tail ::= <redirect_pipe> <command_3> <command_2_tail>*
 
-command_call ::= <literal> <argument>*
+command_3 ::= <symbol['(']> <command_0> <symbol[')']>
+	| <call_list>
+	| <argument>
 
-command_call_list ::= <command_call> (';' <command_call_list>)*
+statement ::= <assignment> | <command_0> <mode>?

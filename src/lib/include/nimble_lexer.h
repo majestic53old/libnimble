@@ -249,8 +249,8 @@ namespace NIMBLE {
 					);
 
 				nimble_token &insert_token(
-					__in tok_t type,
-					__in_opt toksub_t subtype = TOKSUB_INVALID,
+					__in nimble_tok_t type,
+					__in_opt nimble_subtok_t subtype = TOKSUB_INVALID,
 					__in size_t position = POS_INVALID
 					);
 

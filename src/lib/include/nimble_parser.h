@@ -107,8 +107,72 @@ namespace NIMBLE {
 
 				static nimble_node_factory_ptr acquire_node(void);
 
+				nimble_uid create_token(
+					__in nimble_tok_t type
+					);
+
+				size_t enumerate_statement(
+					__inout nimble_statement &stmt,
+					__in_opt size_t parent = PAR_INVALID
+					);
+
+				size_t enumerate_statement_argument(
+					__inout nimble_statement &stmt,
+					__in_opt size_t parent = PAR_INVALID
+					);
+
+				size_t enumerate_statement_assignment(
+					__inout nimble_statement &stmt,
+					__in_opt size_t parent = PAR_INVALID
+					);
+
+				size_t enumerate_statement_call(
+					__inout nimble_statement &stmt,
+					__in_opt size_t parent = PAR_INVALID
+					);
+
+				size_t enumerate_statement_call_list(
+					__inout nimble_statement &stmt,
+					__in_opt size_t parent = PAR_INVALID
+					);
+
+				size_t enumerate_statement_command_0(
+					__inout nimble_statement &stmt,
+					__in_opt size_t parent = PAR_INVALID
+					);
+
+				size_t enumerate_statement_command_0_tail(
+					__inout nimble_statement &stmt,
+					__in_opt size_t parent = PAR_INVALID
+					);
+
+				size_t enumerate_statement_command_1(
+					__inout nimble_statement &stmt,
+					__in_opt size_t parent = PAR_INVALID
+					);
+
+				size_t enumerate_statement_command_1_tail(
+					__inout nimble_statement &stmt,
+					__in_opt size_t parent = PAR_INVALID
+					);
+
+				size_t enumerate_statement_command_2(
+					__inout nimble_statement &stmt,
+					__in_opt size_t parent = PAR_INVALID
+					);
+
+				size_t enumerate_statement_command_2_tail(
+					__inout nimble_statement &stmt,
+					__in_opt size_t parent = PAR_INVALID
+					);
+
+				size_t enumerate_statement_command_3(
+					__inout nimble_statement &stmt,
+					__in_opt size_t parent = PAR_INVALID
+					);
+
 				size_t insert_node(
-					__in nimble_statement &stmt,
+					__inout nimble_statement &stmt,
 					__in const nimble_uid &token,
 					__in_opt size_t parent = PAR_INVALID
 					);

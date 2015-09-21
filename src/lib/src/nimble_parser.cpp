@@ -178,6 +178,233 @@ namespace NIMBLE {
 			TRACE_EXIT(TRACE_VERBOSE);
 		}
 
+		nimble_uid 
+		_nimble_parser::create_token(
+			__in nimble_tok_t type
+			)
+		{
+			nimble_uid result;
+			nimble_token_factory_ptr fact = NULL;
+
+			TRACE_ENTRY(TRACE_VERBOSE);
+
+			fact = nimble_lexer::acquire_token();
+			result = fact->generate();
+			fact->at(result).type() = type;
+
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %s", 
+				CHK_STR(nimble_uid::as_string(result, true)));
+			return result;
+		}
+
+		size_t 
+		_nimble_parser::enumerate_statement(
+			__inout nimble_statement &stmt,
+			__in_opt size_t parent
+			)
+		{
+			size_t result = parent;
+
+			TRACE_ENTRY(TRACE_VERBOSE);
+
+			result = insert_node(stmt, create_token(TOKEN_STATEMENT), result);
+			
+			// TODO
+			result = insert_node(stmt, token(), result);
+			insert_statement(stmt);
+			move_next_token();
+			// ---
+
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %lu", result);
+			return result;
+		}
+
+		size_t 
+		_nimble_parser::enumerate_statement_argument(
+			__inout nimble_statement &stmt,
+			__in_opt size_t parent
+			)
+		{
+			size_t result = parent;
+
+			TRACE_ENTRY(TRACE_VERBOSE);
+
+			result = insert_node(stmt, create_token(TOKEN_ARGUMENT), result);
+
+			// TODO
+
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %lu", result);
+			return result;
+		}
+
+		size_t 
+		_nimble_parser::enumerate_statement_assignment(
+			__inout nimble_statement &stmt,
+			__in_opt size_t parent
+			)
+		{
+			size_t result = parent;
+
+			TRACE_ENTRY(TRACE_VERBOSE);
+
+			result = insert_node(stmt, create_token(TOKEN_ASSIGNMENT), result);
+
+			// TODO
+
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %lu", result);
+			return result;
+		}
+
+		size_t 
+		_nimble_parser::enumerate_statement_call(
+			__inout nimble_statement &stmt,
+			__in_opt size_t parent
+			)
+		{
+			size_t result = parent;
+
+			TRACE_ENTRY(TRACE_VERBOSE);
+
+			result = insert_node(stmt, create_token(TOKEN_CALL), result);
+
+			// TODO
+
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %lu", result);
+			return result;
+		}
+
+		size_t 
+		_nimble_parser::enumerate_statement_call_list(
+			__inout nimble_statement &stmt,
+			__in_opt size_t parent
+			)
+		{
+			size_t result = parent;
+
+			TRACE_ENTRY(TRACE_VERBOSE);
+
+			result = insert_node(stmt, create_token(TOKEN_CALL_LIST), result);
+
+			// TODO
+
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %lu", result);
+			return result;
+		}
+
+		size_t 
+		_nimble_parser::enumerate_statement_command_0(
+			__inout nimble_statement &stmt,
+			__in_opt size_t parent
+			)
+		{
+			size_t result = parent;
+
+			TRACE_ENTRY(TRACE_VERBOSE);
+
+			result = insert_node(stmt, create_token(TOKEN_COMMAND), result);
+
+			// TODO
+
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %lu", result);
+			return result;
+		}
+
+		size_t 
+		_nimble_parser::enumerate_statement_command_0_tail(
+			__inout nimble_statement &stmt,
+			__in_opt size_t parent
+			)
+		{
+			size_t result = parent;
+
+			TRACE_ENTRY(TRACE_VERBOSE);
+
+			// TODO
+
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %lu", result);
+			return result;
+		}
+
+		size_t 
+		_nimble_parser::enumerate_statement_command_1(
+			__inout nimble_statement &stmt,
+			__in_opt size_t parent
+			)
+		{
+			size_t result = parent;
+
+			TRACE_ENTRY(TRACE_VERBOSE);
+
+			// TODO
+
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %lu", result);
+			return result;
+		}
+
+		size_t 
+		_nimble_parser::enumerate_statement_command_1_tail(
+			__inout nimble_statement &stmt,
+			__in_opt size_t parent
+			)
+		{
+			size_t result = parent;
+
+			TRACE_ENTRY(TRACE_VERBOSE);
+
+			// TODO
+
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %lu", result);
+			return result;
+		}
+
+		size_t 
+		_nimble_parser::enumerate_statement_command_2(
+			__inout nimble_statement &stmt,
+			__in_opt size_t parent
+			)
+		{
+			size_t result = parent;
+
+			TRACE_ENTRY(TRACE_VERBOSE);
+
+			// TODO
+
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %lu", result);
+			return result;
+		}
+
+		size_t 
+		_nimble_parser::enumerate_statement_command_2_tail(
+			__inout nimble_statement &stmt,
+			__in_opt size_t parent
+			)
+		{
+			size_t result = parent;
+
+			TRACE_ENTRY(TRACE_VERBOSE);
+
+			// TODO
+
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %lu", result);
+			return result;
+		}
+
+		size_t 
+		_nimble_parser::enumerate_statement_command_3(
+			__inout nimble_statement &stmt,
+			__in_opt size_t parent
+			)
+		{
+			size_t result = parent;
+
+			TRACE_ENTRY(TRACE_VERBOSE);
+
+			// TODO
+
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %lu", result);
+			return result;
+		}
+
 		size_t 
 		_nimble_parser::discover(void)
 		{
@@ -233,7 +460,7 @@ namespace NIMBLE {
 
 		size_t 
 		_nimble_parser::insert_node(
-			__in nimble_statement &stmt,
+			__inout nimble_statement &stmt,
 			__in const nimble_uid &token,
 			__in_opt size_t parent
 			)
@@ -251,6 +478,10 @@ namespace NIMBLE {
 			node.parent() = parent;
 			result = stmt.size();
 			stmt.push_back(uid);
+
+			if(parent != PAR_INVALID) {
+				fact->at(stmt.at(parent)).children().push_back(result);
+			}
 
 			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %lu", result);
 			return result;
@@ -279,6 +510,8 @@ namespace NIMBLE {
 		nimble_statement &
 		_nimble_parser::move_next_statement(void)
 		{
+			nimble_statement stmt_new;
+
 			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
 
@@ -290,10 +523,13 @@ namespace NIMBLE {
 					"%lu", m_stmt_position);
 			}
 
+			if(token().type() == TOKEN_BEGIN) {
+				move_next_token();
+			}
+
 			if(has_next_token()
 					&& (m_stmt_position <= (m_stmt_list.size() - SENTINEL_PARSER))) {
-
-				// TODO
+				enumerate_statement(stmt_new);
 			}
 
 			++m_stmt_position;
