@@ -34,6 +34,13 @@ namespace NIMBLE {
 
 		enum {
 			NIMBLE_PARSER_EXCEPTION_COMPONENT_NOT_READY = 0,
+			NIMBLE_PARSER_EXCEPTION_EXPECTING_ASSIGNMENT,
+			NIMBLE_PARSER_EXCEPTION_EXPECTING_COMMAND,
+			NIMBLE_PARSER_EXCEPTION_EXPECTING_LITERAL,
+			NIMBLE_PARSER_EXCEPTION_EXPECTING_MODIFIER,
+			NIMBLE_PARSER_EXCEPTION_EXPECTING_REDIRECT_IN,
+			NIMBLE_PARSER_EXCEPTION_EXPECTING_REDIRECT_OUT,
+			NIMBLE_PARSER_EXCEPTION_EXPECTING_STATEMENT,
 			NIMBLE_PARSER_EXCEPTION_INVALID_COMPONENT,
 			NIMBLE_PARSER_EXCEPTION_INVALID_STATEMENT_POSITION,
 			NIMBLE_PARSER_EXCEPTION_NO_NEXT_STATEMENT,
@@ -44,6 +51,13 @@ namespace NIMBLE {
 
 		static const std::string NIMBLE_PARSER_EXCEPTION_STR[] = {
 			"Node component is not ready",
+			"Expecting assignment",
+			"Expecting command",
+			"Expecting literal",
+			"Expecting modifier",
+			"Expecting redirected input",
+			"Expecting redirected output",
+			"Expecting statement",
 			"Invalid node component",
 			"Invalid statement position",
 			"No next statement is stream",

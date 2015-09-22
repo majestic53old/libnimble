@@ -118,19 +118,22 @@ namespace NIMBLE {
 				result << nimble_uid::as_string(node.m_token, true);
 			}
 
-			result << " [";
+			if((node.m_parent == PAR_INVALID)
+					|| node.m_children.empty()) {
+				result << " [";
 
-			if(node.m_parent == PAR_INVALID) {
-				result << "ROOT";
+				if(node.m_parent == PAR_INVALID) {
+					result << "ROOT";
 
-				if(node.m_children.empty()) {
-					result << ", LEAF";
+					if(node.m_children.empty()) {
+						result << ", LEAF";
+					}
+				} else if(node.m_children.empty()) {
+					result << "LEAF";
 				}
-			} else if(node.m_children.empty()) {
-				result << "LEAF";
-			}
 
-			result << "]";
+				result << "]";
+			}
 
 			if(verbose) {
 				result << ", par. "; 

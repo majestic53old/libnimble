@@ -209,11 +209,13 @@ namespace NIMBLE {
 
 			result = insert_node(stmt, create_token(TOKEN_STATEMENT), result);
 			
-			// TODO
-			result = insert_node(stmt, token(), result);
-			insert_statement(stmt);
-			move_next_token();
-			// ---
+			nimble_token &tok = token();
+			if((tok.type() != TOKEN_SYMBOL)
+					|| (tok.subtype() != SYMBOL_MODIFIER)) {
+				result = enumerate_statement_assignment(stmt, result);
+			} else {
+				result = enumerate_statement_command_0(stmt, result);
+			}
 
 			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %lu", result);
 			return result;
@@ -231,7 +233,38 @@ namespace NIMBLE {
 
 			result = insert_node(stmt, create_token(TOKEN_ARGUMENT), result);
 
-			// TODO
+			nimble_token &tok = token();
+			if((tok.type() != TOKEN_SYMBOL)
+					|| (tok.subtype() != SYMBOL_MODIFIER)) {
+				TRACE_MESSAGE(TRACE_ERROR, "%s\n%s", 
+					NIMBLE_PARSER_EXCEPTION_STRING(NIMBLE_PARSER_EXCEPTION_EXPECTING_MODIFIER),
+					CHK_STR(nimble_lexer::token_exception(0, true)));
+				THROW_NIMBLE_PARSER_EXCEPTION_MESSAGE(NIMBLE_PARSER_EXCEPTION_EXPECTING_MODIFIER,
+					"%s", CHK_STR(nimble_lexer::token_exception(0, true)));
+			}
+
+			if(!has_next_token()) {
+				TRACE_MESSAGE(TRACE_ERROR, "%s\n%s", 
+					NIMBLE_PARSER_EXCEPTION_STRING(NIMBLE_PARSER_EXCEPTION_EXPECTING_LITERAL),
+					CHK_STR(nimble_lexer::token_exception(0, true)));
+				THROW_NIMBLE_PARSER_EXCEPTION_MESSAGE(NIMBLE_PARSER_EXCEPTION_EXPECTING_LITERAL,
+					"%s", CHK_STR(nimble_lexer::token_exception(0, true)));
+			}
+
+			tok = move_next_token();
+			if(tok.type() != TOKEN_LITERAL) {
+				TRACE_MESSAGE(TRACE_ERROR, "%s\n%s", 
+					NIMBLE_PARSER_EXCEPTION_STRING(NIMBLE_PARSER_EXCEPTION_EXPECTING_LITERAL),
+					CHK_STR(nimble_lexer::token_exception(0, true)));
+				THROW_NIMBLE_PARSER_EXCEPTION_MESSAGE(NIMBLE_PARSER_EXCEPTION_EXPECTING_LITERAL,
+					"%s", CHK_STR(nimble_lexer::token_exception(0, true)));
+			}
+
+			insert_node(stmt, tok, result);
+
+			if(has_next_token()) {
+				move_next_token();
+			}
 
 			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %lu", result);
 			return result;
@@ -248,8 +281,28 @@ namespace NIMBLE {
 			TRACE_ENTRY(TRACE_VERBOSE);
 
 			result = insert_node(stmt, create_token(TOKEN_ASSIGNMENT), result);
+			enumerate_statement_argument(stmt, result);
 
-			// TODO
+			nimble_token &tok = token();
+			if((tok.type() != TOKEN_SYMBOL)
+					|| (tok.subtype() != SYMBOL_ASSIGNMENT)) {
+				TRACE_MESSAGE(TRACE_ERROR, "%s\n%s", 
+					NIMBLE_PARSER_EXCEPTION_STRING(NIMBLE_PARSER_EXCEPTION_EXPECTING_ASSIGNMENT),
+					CHK_STR(nimble_lexer::token_exception(0, true)));
+				THROW_NIMBLE_PARSER_EXCEPTION_MESSAGE(NIMBLE_PARSER_EXCEPTION_EXPECTING_ASSIGNMENT,
+					"%s", CHK_STR(nimble_lexer::token_exception(0, true)));
+			}
+
+			if(!has_next_token()) {
+				TRACE_MESSAGE(TRACE_ERROR, "%s\n%s", 
+					NIMBLE_PARSER_EXCEPTION_STRING(NIMBLE_PARSER_EXCEPTION_EXPECTING_STATEMENT),
+					CHK_STR(nimble_lexer::token_exception(0, true)));
+				THROW_NIMBLE_PARSER_EXCEPTION_MESSAGE(NIMBLE_PARSER_EXCEPTION_EXPECTING_STATEMENT,
+					"%s", CHK_STR(nimble_lexer::token_exception(0, true)));
+			}
+
+			tok = move_next_token();
+			enumerate_statement(stmt, result);
 
 			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %lu", result);
 			return result;
@@ -265,9 +318,41 @@ namespace NIMBLE {
 
 			TRACE_ENTRY(TRACE_VERBOSE);
 
-			result = insert_node(stmt, create_token(TOKEN_CALL), result);
+			result = insert_node(stmt, create_token(TOKEN_COMMAND), result);
 
-			// TODO
+			nimble_token &tok = token();
+			if(tok.type() != TOKEN_LITERAL) {
+				TRACE_MESSAGE(TRACE_ERROR, "%s\n%s", 
+					NIMBLE_PARSER_EXCEPTION_STRING(NIMBLE_PARSER_EXCEPTION_EXPECTING_LITERAL),
+					CHK_STR(nimble_lexer::token_exception(0, true)));
+				THROW_NIMBLE_PARSER_EXCEPTION_MESSAGE(NIMBLE_PARSER_EXCEPTION_EXPECTING_LITERAL,
+					"%s", CHK_STR(nimble_lexer::token_exception(0, true)));
+			}
+
+			insert_node(stmt, tok, result);
+
+			if(has_next_token()) {
+				tok = move_next_token();
+
+				for(;;) {
+
+					if((tok.type() == TOKEN_SYMBOL)
+							&& (tok.subtype() == SYMBOL_MODIFIER)) {
+						enumerate_statement_argument(stmt, result);
+						tok = token();
+					} else if(tok.type() == TOKEN_LITERAL) {
+						insert_node(stmt, tok, result);
+
+						if(!has_next_token()) {
+							break;
+						}
+
+						tok = move_next_token();
+					} else {
+						break;
+					}
+				}
+			}
 
 			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %lu", result);
 			return result;
@@ -283,9 +368,30 @@ namespace NIMBLE {
 
 			TRACE_ENTRY(TRACE_VERBOSE);
 
-			result = insert_node(stmt, create_token(TOKEN_CALL_LIST), result);
+			result = insert_node(stmt, create_token(TOKEN_COMMAND), result);
 
-			// TODO
+			enumerate_statement_call(stmt, result);
+
+			nimble_token &tok = token();
+			for(;;) {
+
+				if((tok.type() != TOKEN_SYMBOL)
+						|| (tok.subtype() != SYMBOL_SEPERATOR)) {
+					break;
+				}
+
+				if(!has_next_token()) {
+					TRACE_MESSAGE(TRACE_ERROR, "%s\n%s", 
+						NIMBLE_PARSER_EXCEPTION_STRING(NIMBLE_PARSER_EXCEPTION_EXPECTING_COMMAND),
+						CHK_STR(nimble_lexer::token_exception(0, true)));
+					THROW_NIMBLE_PARSER_EXCEPTION_MESSAGE(NIMBLE_PARSER_EXCEPTION_EXPECTING_COMMAND,
+						"%s", CHK_STR(nimble_lexer::token_exception(0, true)));
+				}
+
+				move_next_token();
+				enumerate_statement_call(stmt, result);
+				tok = token();
+			}
 
 			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %lu", result);
 			return result;
@@ -302,8 +408,14 @@ namespace NIMBLE {
 			TRACE_ENTRY(TRACE_VERBOSE);
 
 			result = insert_node(stmt, create_token(TOKEN_COMMAND), result);
+			result = enumerate_statement_command_1(stmt, result);
 
-			// TODO
+			nimble_token &tok = token();
+			while((tok.type() == TOKEN_SYMBOL)
+					&& (tok.subtype() == SYMBOL_REDIRECT_IN)) {
+				result = enumerate_statement_command_0_tail(stmt, result);
+				tok = token();
+			}
 
 			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %lu", result);
 			return result;
@@ -319,7 +431,35 @@ namespace NIMBLE {
 
 			TRACE_ENTRY(TRACE_VERBOSE);
 
-			// TODO
+			nimble_token &tok = token();
+			if((tok.type() != TOKEN_SYMBOL)
+					|| (tok.subtype() != SYMBOL_REDIRECT_IN)) {
+				TRACE_MESSAGE(TRACE_ERROR, "%s\n%s", 
+					NIMBLE_PARSER_EXCEPTION_STRING(NIMBLE_PARSER_EXCEPTION_EXPECTING_REDIRECT_IN),
+					CHK_STR(nimble_lexer::token_exception(0, true)));
+				THROW_NIMBLE_PARSER_EXCEPTION_MESSAGE(NIMBLE_PARSER_EXCEPTION_EXPECTING_REDIRECT_IN,
+					"%s", CHK_STR(nimble_lexer::token_exception(0, true)));
+			}
+
+			result = insert_node(stmt, tok, result);
+
+			if(!has_next_token()) {
+				TRACE_MESSAGE(TRACE_ERROR, "%s\n%s", 
+					NIMBLE_PARSER_EXCEPTION_STRING(NIMBLE_PARSER_EXCEPTION_EXPECTING_COMMAND),
+					CHK_STR(nimble_lexer::token_exception(0, true)));
+				THROW_NIMBLE_PARSER_EXCEPTION_MESSAGE(NIMBLE_PARSER_EXCEPTION_EXPECTING_COMMAND,
+					"%s", CHK_STR(nimble_lexer::token_exception(0, true)));
+			}
+
+			move_next_token();
+			result = enumerate_statement_command_1(stmt, result);
+
+			tok = token();
+			while((tok.type() == TOKEN_SYMBOL)
+					&& (tok.subtype() == SYMBOL_REDIRECT_IN)) {
+				result = enumerate_statement_command_0_tail(stmt, result);
+				tok = token();
+			}
 
 			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %lu", result);
 			return result;
@@ -335,7 +475,20 @@ namespace NIMBLE {
 
 			TRACE_ENTRY(TRACE_VERBOSE);
 
-			// TODO
+			result = insert_node(stmt, create_token(TOKEN_COMMAND), result);
+			result = enumerate_statement_command_2(stmt, result);
+
+			nimble_token &tok = token();
+			while((tok.type() == TOKEN_SYMBOL)
+					&& ((tok.subtype() == SYMBOL_REDIRECT_OUT)
+					|| (tok.subtype() == SYMBOL_REDIRECT_OUT_APPEND)
+					|| (tok.subtype() == SYMBOL_REDIRECT_OUT_ERR)
+					|| (tok.subtype() == SYMBOL_REDIRECT_OUT_ERR_APPEND)
+					|| (tok.subtype() == SYMBOL_REDIRECT_OUT_ERR_OVERWRITE)
+					|| (tok.subtype() == SYMBOL_REDIRECT_OUT_OVERWRITE))) {
+				result = enumerate_statement_command_1_tail(stmt, result);
+				tok = token();
+			}
 
 			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %lu", result);
 			return result;
@@ -351,7 +504,45 @@ namespace NIMBLE {
 
 			TRACE_ENTRY(TRACE_VERBOSE);
 
-			// TODO
+			nimble_token &tok = token();
+			if((tok.type() != TOKEN_SYMBOL)
+					|| ((tok.subtype() != SYMBOL_REDIRECT_OUT)
+					&& (tok.subtype() != SYMBOL_REDIRECT_OUT_APPEND)
+					&& (tok.subtype() != SYMBOL_REDIRECT_OUT_ERR)
+					&& (tok.subtype() != SYMBOL_REDIRECT_OUT_ERR_APPEND)
+					&& (tok.subtype() != SYMBOL_REDIRECT_OUT_ERR_OVERWRITE)
+					&& (tok.subtype() != SYMBOL_REDIRECT_OUT_OVERWRITE))) {
+				TRACE_MESSAGE(TRACE_ERROR, "%s\n%s", 
+					NIMBLE_PARSER_EXCEPTION_STRING(NIMBLE_PARSER_EXCEPTION_EXPECTING_REDIRECT_OUT),
+					CHK_STR(nimble_lexer::token_exception(0, true)));
+				THROW_NIMBLE_PARSER_EXCEPTION_MESSAGE(NIMBLE_PARSER_EXCEPTION_EXPECTING_REDIRECT_OUT,
+					"%s", CHK_STR(nimble_lexer::token_exception(0, true)));
+			}
+
+			result = insert_node(stmt, tok, result);
+
+			if(!has_next_token()) {
+				TRACE_MESSAGE(TRACE_ERROR, "%s\n%s", 
+					NIMBLE_PARSER_EXCEPTION_STRING(NIMBLE_PARSER_EXCEPTION_EXPECTING_COMMAND),
+					CHK_STR(nimble_lexer::token_exception(0, true)));
+				THROW_NIMBLE_PARSER_EXCEPTION_MESSAGE(NIMBLE_PARSER_EXCEPTION_EXPECTING_COMMAND,
+					"%s", CHK_STR(nimble_lexer::token_exception(0, true)));
+			}
+
+			move_next_token();
+			result = enumerate_statement_command_2(stmt, result);
+
+			tok = token();
+			while((tok.type() == TOKEN_SYMBOL)
+					&& ((tok.subtype() == SYMBOL_REDIRECT_OUT)
+					|| (tok.subtype() == SYMBOL_REDIRECT_OUT_APPEND)
+					|| (tok.subtype() == SYMBOL_REDIRECT_OUT_ERR)
+					|| (tok.subtype() == SYMBOL_REDIRECT_OUT_ERR_APPEND)
+					|| (tok.subtype() == SYMBOL_REDIRECT_OUT_ERR_OVERWRITE)
+					|| (tok.subtype() == SYMBOL_REDIRECT_OUT_OVERWRITE))) {
+				result = enumerate_statement_command_1_tail(stmt, result);
+				tok = token();
+			}
 
 			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %lu", result);
 			return result;
@@ -367,7 +558,15 @@ namespace NIMBLE {
 
 			TRACE_ENTRY(TRACE_VERBOSE);
 
-			// TODO
+			result = insert_node(stmt, create_token(TOKEN_COMMAND), result);
+			result = enumerate_statement_command_3(stmt, result);
+
+			nimble_token &tok = token();
+			while((tok.type() == TOKEN_SYMBOL)
+					&& (tok.subtype() == SYMBOL_PIPE)) {
+				result = enumerate_statement_command_2_tail(stmt, result);
+				tok = token();
+			}
 
 			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %lu", result);
 			return result;
@@ -383,7 +582,35 @@ namespace NIMBLE {
 
 			TRACE_ENTRY(TRACE_VERBOSE);
 
-			// TODO
+			nimble_token &tok = token();
+			if((tok.type() != TOKEN_SYMBOL)
+					|| (tok.subtype() != SYMBOL_PIPE)) {
+				TRACE_MESSAGE(TRACE_ERROR, "%s\n%s", 
+					NIMBLE_PARSER_EXCEPTION_STRING(NIMBLE_PARSER_EXCEPTION_EXPECTING_REDIRECT_IN),
+					CHK_STR(nimble_lexer::token_exception(0, true)));
+				THROW_NIMBLE_PARSER_EXCEPTION_MESSAGE(NIMBLE_PARSER_EXCEPTION_EXPECTING_REDIRECT_IN,
+					"%s", CHK_STR(nimble_lexer::token_exception(0, true)));
+			}
+
+			result = insert_node(stmt, tok, result);
+
+			if(!has_next_token()) {
+				TRACE_MESSAGE(TRACE_ERROR, "%s\n%s", 
+					NIMBLE_PARSER_EXCEPTION_STRING(NIMBLE_PARSER_EXCEPTION_EXPECTING_COMMAND),
+					CHK_STR(nimble_lexer::token_exception(0, true)));
+				THROW_NIMBLE_PARSER_EXCEPTION_MESSAGE(NIMBLE_PARSER_EXCEPTION_EXPECTING_COMMAND,
+					"%s", CHK_STR(nimble_lexer::token_exception(0, true)));
+			}
+
+			move_next_token();
+			result = enumerate_statement_command_3(stmt, result);
+
+			tok = token();
+			while((tok.type() == TOKEN_SYMBOL)
+					&& (tok.subtype() == SYMBOL_PIPE)) {
+				result = enumerate_statement_command_2_tail(stmt, result);
+				tok = token();
+			}
 
 			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %lu", result);
 			return result;
@@ -530,6 +757,7 @@ namespace NIMBLE {
 			if(has_next_token()
 					&& (m_stmt_position <= (m_stmt_list.size() - SENTINEL_PARSER))) {
 				enumerate_statement(stmt_new);
+				insert_statement(stmt_new);
 			}
 
 			++m_stmt_position;

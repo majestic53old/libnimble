@@ -12,6 +12,11 @@ Table of Contents
 Changelog
 =========
 
+##Version 0.1.1539
+*Updated:9/21/2015*
+
+* Added statement enumeration routines (partial)
+
 ##Version 0.1.1538
 *Updated:9/20/2015*
 
