@@ -35,6 +35,7 @@ namespace NIMBLE {
 		enum {
 			NIMBLE_PARSER_EXCEPTION_COMPONENT_NOT_READY = 0,
 			NIMBLE_PARSER_EXCEPTION_EXPECTING_ASSIGNMENT,
+			NIMBLE_PARSER_EXCEPTION_EXPECTING_CLOSING_PARETHESIS,
 			NIMBLE_PARSER_EXCEPTION_EXPECTING_COMMAND,
 			NIMBLE_PARSER_EXCEPTION_EXPECTING_LITERAL,
 			NIMBLE_PARSER_EXCEPTION_EXPECTING_MODIFIER,
@@ -52,6 +53,7 @@ namespace NIMBLE {
 		static const std::string NIMBLE_PARSER_EXCEPTION_STR[] = {
 			"Node component is not ready",
 			"Expecting assignment",
+			"Expecting closing parethesis",
 			"Expecting command",
 			"Expecting literal",
 			"Expecting modifier",

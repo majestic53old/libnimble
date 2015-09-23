@@ -13,6 +13,10 @@ Changelog
 =========
 
 ##Version 0.1.1539
+*Updated:9/22/2015*
+
+* Added statement enumeration routines (complete, buggy)
+
 *Updated:9/21/2015*
 
 * Added statement enumeration routines (partial)

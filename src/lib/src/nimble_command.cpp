@@ -176,10 +176,10 @@ namespace NIMBLE {
 
 					std::cout << par.to_string(true) << std::endl;
 
-					while(par.has_previous_statement()) {
+					/*while(par.has_previous_statement()) {
 						par.move_previous_statement();
 						std::cout << par.to_string(true) << std::endl;
-					}
+					}*/
 					// ---
 
 				} catch(nimble_exception &exc) {

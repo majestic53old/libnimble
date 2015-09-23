@@ -28,10 +28,10 @@ namespace NIMBLE {
 	#define CHAR_ENV_HOME '~'
 	#define CHAR_HOST_SEP '@'
 	#define ENV_HOME "HOME"
-	#define ENV_HOST "HOSTNAME"
+	#define ENV_HOST "HOST"
 	#define ENV_PWD "PWD"
 	#define ENV_UNKNOWN "unknown"
-	#define ENV_USER "USERNAME"
+	#define ENV_USER "USER"
 
 	nimble_ptr nimble::m_instance = NULL;
 
