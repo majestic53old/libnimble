@@ -13,6 +13,11 @@ Changelog
 =========
 
 ##Version 0.1.1539
+*Updated:9/23/2015*
+
+* Fixed buggy parser
+* Added command executor class (partial)
+
 *Updated:9/22/2015*
 
 * Added statement enumeration routines (complete, buggy)

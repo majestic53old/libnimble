@@ -61,6 +61,7 @@ using namespace NIMBLE::COMPONENT;
 
 #include "nimble_lexer.h"
 #include "nimble_parser.h"
+#include "nimble_executor.h"
 
 using namespace NIMBLE::LANGUAGE;
 

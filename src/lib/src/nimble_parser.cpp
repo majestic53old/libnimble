@@ -204,21 +204,20 @@ namespace NIMBLE {
 			__in_opt size_t parent
 			)
 		{
+			nimble_token tok;
 			size_t result = parent;
 
 			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
 
 			result = insert_node(stmt, create_token(TOKEN_STATEMENT), result);
-			
-			nimble_token &tok = token();
+
+			tok = token();
 			if((tok.type() == TOKEN_SYMBOL)
 					&& (tok.subtype() == SYMBOL_MODIFIER)) {
-				result = enumerate_statement_assignment(stmt, result);
+				enumerate_statement_assignment(stmt, result);
 			} else {
-				result = enumerate_statement_command_0(stmt, result);
-
-				// TODO: check for mode
+				enumerate_statement_command_0(stmt, result);
 			}
 
 			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %lu", result);
@@ -238,7 +237,7 @@ namespace NIMBLE {
 
 			result = insert_node(stmt, create_token(TOKEN_ARGUMENT), result);
 
-			nimble_token &tok = token();
+			nimble_token tok = token();
 			if((tok.type() != TOKEN_SYMBOL)
 					|| (tok.subtype() != SYMBOL_MODIFIER)) {
 				TRACE_MESSAGE(TRACE_ERROR, "%s\n%s", 
@@ -289,7 +288,7 @@ namespace NIMBLE {
 			result = insert_node(stmt, create_token(TOKEN_ASSIGNMENT), result);
 			enumerate_statement_argument(stmt, result);
 
-			nimble_token &tok = token();
+			nimble_token tok = token();
 			if((tok.type() != TOKEN_SYMBOL)
 					|| (tok.subtype() != SYMBOL_ASSIGNMENT)) {
 				TRACE_MESSAGE(TRACE_ERROR, "%s\n%s", 
@@ -310,9 +309,9 @@ namespace NIMBLE {
 			tok = move_next_token();
 			if((tok.type() == TOKEN_SYMBOL)
 					&& (tok.subtype() == SYMBOL_MODIFIER)) {
-				result = enumerate_statement_assignment(stmt, result);
+				enumerate_statement_assignment(stmt, result);
 			} else {
-				result = enumerate_statement_command_0(stmt, result);
+				enumerate_statement_command_0(stmt, result);
 			}
 
 			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %lu", result);
@@ -325,6 +324,7 @@ namespace NIMBLE {
 			__in_opt size_t parent
 			)
 		{
+			nimble_token tok;
 			size_t result = parent;
 
 			TRACE_ENTRY(TRACE_VERBOSE);
@@ -332,8 +332,7 @@ namespace NIMBLE {
 
 			result = insert_node(stmt, create_token(TOKEN_CALL), result);
 
-			nimble_token &tok = token();
-
+			tok = token();
 			if(tok.type() != TOKEN_LITERAL) {
 				TRACE_MESSAGE(TRACE_ERROR, "%s\n%s", 
 					NIMBLE_PARSER_EXCEPTION_STRING(NIMBLE_PARSER_EXCEPTION_EXPECTING_LITERAL),
@@ -377,6 +376,7 @@ namespace NIMBLE {
 			__in_opt size_t parent
 			)
 		{
+			nimble_token tok;
 			size_t result = parent;
 
 			TRACE_ENTRY(TRACE_VERBOSE);
@@ -386,7 +386,7 @@ namespace NIMBLE {
 
 			enumerate_statement_call(stmt, result);
 
-			nimble_token &tok = token();
+			tok = token();
 			for(;;) {
 
 				if((tok.type() != TOKEN_SYMBOL)
@@ -417,18 +417,19 @@ namespace NIMBLE {
 			__in_opt size_t parent
 			)
 		{
+			nimble_token tok;
 			size_t result = parent;
 
 			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
 
 			result = insert_node(stmt, create_token(TOKEN_COMMAND), result);
-			result = enumerate_statement_command_1(stmt, result);
+			enumerate_statement_command_1(stmt, result);
 
-			nimble_token &tok = token();
+			tok = token();
 			while((tok.type() == TOKEN_SYMBOL)
 					&& (tok.subtype() == SYMBOL_REDIRECT_IN)) {
-				result = enumerate_statement_command_0_tail(stmt, result);
+				enumerate_statement_command_0_tail(stmt, result);
 				tok = token();
 			}
 
@@ -442,12 +443,13 @@ namespace NIMBLE {
 			__in_opt size_t parent
 			)
 		{
+			nimble_token tok;
 			size_t result = parent;
 
 			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
 
-			nimble_token &tok = token();
+			tok = token();
 			if((tok.type() != TOKEN_SYMBOL)
 					|| (tok.subtype() != SYMBOL_REDIRECT_IN)) {
 				TRACE_MESSAGE(TRACE_ERROR, "%s\n%s", 
@@ -468,12 +470,12 @@ namespace NIMBLE {
 			}
 
 			move_next_token();
-			result = enumerate_statement_command_1(stmt, result);
+			enumerate_statement_command_1(stmt, result);
 
 			tok = token();
 			while((tok.type() == TOKEN_SYMBOL)
 					&& (tok.subtype() == SYMBOL_REDIRECT_IN)) {
-				result = enumerate_statement_command_0_tail(stmt, result);
+				enumerate_statement_command_0_tail(stmt, result);
 				tok = token();
 			}
 
@@ -487,14 +489,15 @@ namespace NIMBLE {
 			__in_opt size_t parent
 			)
 		{
+			nimble_token tok;
 			size_t result = parent;
 
 			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
 
-			result = enumerate_statement_command_2(stmt, result);
+			enumerate_statement_command_2(stmt, result);
 
-			nimble_token &tok = token();
+			tok = token();
 			while((tok.type() == TOKEN_SYMBOL)
 					&& ((tok.subtype() == SYMBOL_REDIRECT_OUT)
 					|| (tok.subtype() == SYMBOL_REDIRECT_OUT_APPEND)
@@ -502,7 +505,7 @@ namespace NIMBLE {
 					|| (tok.subtype() == SYMBOL_REDIRECT_OUT_ERR_APPEND)
 					|| (tok.subtype() == SYMBOL_REDIRECT_OUT_ERR_OVERWRITE)
 					|| (tok.subtype() == SYMBOL_REDIRECT_OUT_OVERWRITE))) {
-				result = enumerate_statement_command_1_tail(stmt, result);
+				enumerate_statement_command_1_tail(stmt, result);
 				tok = token();
 			}
 
@@ -516,12 +519,13 @@ namespace NIMBLE {
 			__in_opt size_t parent
 			)
 		{
+			nimble_token tok;
 			size_t result = parent;
 
 			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
 
-			nimble_token &tok = token();
+			tok = token();
 			if((tok.type() != TOKEN_SYMBOL)
 					|| ((tok.subtype() != SYMBOL_REDIRECT_OUT)
 					&& (tok.subtype() != SYMBOL_REDIRECT_OUT_APPEND)
@@ -547,7 +551,7 @@ namespace NIMBLE {
 			}
 
 			move_next_token();
-			result = enumerate_statement_command_2(stmt, result);
+			enumerate_statement_command_2(stmt, result);
 
 			tok = token();
 			while((tok.type() == TOKEN_SYMBOL)
@@ -557,7 +561,7 @@ namespace NIMBLE {
 					|| (tok.subtype() == SYMBOL_REDIRECT_OUT_ERR_APPEND)
 					|| (tok.subtype() == SYMBOL_REDIRECT_OUT_ERR_OVERWRITE)
 					|| (tok.subtype() == SYMBOL_REDIRECT_OUT_OVERWRITE))) {
-				result = enumerate_statement_command_1_tail(stmt, result);
+				enumerate_statement_command_1_tail(stmt, result);
 				tok = token();
 			}
 
@@ -571,17 +575,18 @@ namespace NIMBLE {
 			__in_opt size_t parent
 			)
 		{
+			nimble_token tok;
 			size_t result = parent;
 
 			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
 
-			result = enumerate_statement_command_3(stmt, result);
+			enumerate_statement_command_3(stmt, result);
 
-			nimble_token &tok = token();
+			tok = token();
 			while((tok.type() == TOKEN_SYMBOL)
 					&& (tok.subtype() == SYMBOL_PIPE)) {
-				result = enumerate_statement_command_2_tail(stmt, result);
+				enumerate_statement_command_2_tail(stmt, result);
 				tok = token();
 			}
 
@@ -595,12 +600,13 @@ namespace NIMBLE {
 			__in_opt size_t parent
 			)
 		{
+			nimble_token tok;
 			size_t result = parent;
 
 			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
 
-			nimble_token &tok = token();
+			tok = token();
 			if((tok.type() != TOKEN_SYMBOL)
 					|| (tok.subtype() != SYMBOL_PIPE)) {
 				TRACE_MESSAGE(TRACE_ERROR, "%s\n%s", 
@@ -621,12 +627,12 @@ namespace NIMBLE {
 			}
 
 			move_next_token();
-			result = enumerate_statement_command_3(stmt, result);
+			enumerate_statement_command_3(stmt, result);
 
 			tok = token();
 			while((tok.type() == TOKEN_SYMBOL)
 					&& (tok.subtype() == SYMBOL_PIPE)) {
-				result = enumerate_statement_command_2_tail(stmt, result);
+				enumerate_statement_command_2_tail(stmt, result);
 				tok = token();
 			}
 
@@ -640,21 +646,22 @@ namespace NIMBLE {
 			__in_opt size_t parent
 			)
 		{
+			nimble_token tok;
 			size_t result = parent;
 
 			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
 
-			nimble_token &tok = token();
+			tok = token();
 			switch(tok.type()) {
 				case TOKEN_LITERAL:
-					result = enumerate_statement_call_list(stmt, result);
+					enumerate_statement_call_list(stmt, result);
 					break;
 				case TOKEN_SYMBOL:
 
 					switch(tok.subtype()) {
 						case SYMBOL_MODIFIER:
-							result = enumerate_statement_argument(stmt, result);
+							enumerate_statement_argument(stmt, result);
 							break;
 						case SYMBOL_OPEN_PARENTHESIS:
 
@@ -669,7 +676,7 @@ namespace NIMBLE {
 							}
 
 							move_next_token();
-							result = enumerate_statement_command_0(stmt, result);
+							enumerate_statement_command_0(stmt, result);
 							tok = token();
 
 							if((tok.type() != TOKEN_SYMBOL)
@@ -682,6 +689,12 @@ namespace NIMBLE {
 									NIMBLE_PARSER_EXCEPTION_EXPECTING_CLOSING_PARETHESIS,
 									"%s", CHK_STR(nimble_lexer::token_exception(0, true)));
 							}
+
+							if(has_next_token()) {
+								move_next_token();
+							}
+							break;
+						case SYMBOL_SEPERATOR:
 
 							if(has_next_token()) {
 								move_next_token();
