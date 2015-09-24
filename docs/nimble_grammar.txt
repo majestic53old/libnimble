@@ -53,4 +53,4 @@ command_3 ::= <symbol['(']> <command_0> <symbol[')']>
 	| <call_list>
 	| <argument>
 
-statement ::= <assignment> | <command_0> <mode>? | <symbol[';']>
+statement ::= <assignment> | <command_0> | <symbol[';']>
