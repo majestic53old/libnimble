@@ -83,6 +83,19 @@ namespace NIMBLE {
 
 			nimble_uid_factory_ptr acquire_uid(void);
 
+			bool environment_contains(
+				__in const std::string &field
+				);
+
+			std::map<std::string, std::string>::iterator environment_find(
+				__in const std::string &field
+				);
+
+			void environment_set(
+				__in const std::string &field,
+				__in const std::string &value
+				);
+
 			void initialize(void);
 
 			static bool is_allocated(void);
@@ -144,10 +157,6 @@ namespace NIMBLE {
 				__in std::string &user,
 				__in_opt bool advance = false,
 				__in_opt bool update = false
-				);
-
-			std::map<std::string, std::string>::iterator environment_find(
-				__in const std::string &field
 				);
 
 			void environment_update(

@@ -181,6 +181,10 @@ namespace NIMBLE {
 					__in const nimble_statement &stmt
 					);
 
+				static nimble_node &node(
+					__in const nimble_uid &uid
+					);
+
 				static nimble_token &node_token(
 					__in const nimble_uid &uid
 					);

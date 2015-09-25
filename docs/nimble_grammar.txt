@@ -31,7 +31,7 @@ symbol ::= ';' | '(' | ')' | '='
 
 argument ::= <modifier> <literal>
 
-assignment ::= <argument> <symbol['=']> <statement>
+assignment ::= <argument> <symbol['=']> (<argument> | <literal>)
 
 call ::= <literal> (<argument> | <literal>)*
 

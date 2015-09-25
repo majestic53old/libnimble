@@ -94,6 +94,8 @@ namespace NIMBLE {
 		__in int sig
 		)
 	{
+
+		// TODO
 		/*nimble_ptr inst = NULL;
 
 		TRACE_ENTRY(TRACE_VERBOSE);
@@ -105,6 +107,7 @@ namespace NIMBLE {
 				inst->acquire_command()->stop_last(SIGKILL);
 			}
 		}*/
+		// ---
 
 		TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "sig. 0x%x", sig);
 		std::exit(sig);
@@ -298,6 +301,22 @@ namespace NIMBLE {
 		TRACE_EXIT(TRACE_VERBOSE);
 	}
 
+	bool 
+	_nimble::environment_contains(
+		__in const std::string &field
+		)
+	{
+		bool result;
+
+		TRACE_ENTRY(TRACE_VERBOSE);
+		SERIALIZE_CALL_RECUR(m_lock);
+
+		result = (m_environment_map.find(field) != m_environment_map.end());
+
+		TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. 0x%x", result);
+		return result;
+	}
+
 	std::map<std::string, std::string>::iterator 
 	_nimble::environment_find(
 		__in const std::string &field
@@ -318,6 +337,27 @@ namespace NIMBLE {
 
 		TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. 0x%p", result);
 		return result;
+	}
+
+	void 
+	_nimble::environment_set(
+		__in const std::string &field,
+		__in const std::string &value
+		)
+	{
+		std::map<std::string, std::string>::iterator iter;
+
+		TRACE_ENTRY(TRACE_VERBOSE);
+		SERIALIZE_CALL_RECUR(m_lock);
+
+		iter = m_environment_map.find(field);
+		if(iter == m_environment_map.end()) {
+			m_environment_map.insert(std::pair<std::string, std::string>(field, value));
+		} else {
+			iter->second = value;
+		}
+
+		TRACE_EXIT(TRACE_VERBOSE);
 	}
 
 	void 

@@ -132,6 +132,8 @@ namespace NIMBLE {
 			__out bool &update
 			)
 		{
+			nimble_executor exe;
+
 			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
 
@@ -165,23 +167,8 @@ namespace NIMBLE {
 			if(!m_pid) {
 
 				try {
-
-					// TODO: run command, set m_result
-					nimble_parser par(command);
-
-					while(par.has_next_statement()) {
-						std::cout << par.to_string(true) << std::endl;
-						par.move_next_statement();
-					}
-
-					std::cout << par.to_string(true) << std::endl;
-
-					/*while(par.has_previous_statement()) {
-						par.move_previous_statement();
-						std::cout << par.to_string(true) << std::endl;
-					}*/
-					// ---
-
+					exe.set(command);
+					m_result = exe.evaluate();
 				} catch(nimble_exception &exc) {
 					TRACE_MESSAGE(TRACE_ERROR, "%s", CHK_STR(exc.to_string(true)));
 					std::cerr << exc.to_string(true) << std::endl;

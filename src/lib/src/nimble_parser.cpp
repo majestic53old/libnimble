@@ -309,9 +309,19 @@ namespace NIMBLE {
 			tok = move_next_token();
 			if((tok.type() == TOKEN_SYMBOL)
 					&& (tok.subtype() == SYMBOL_MODIFIER)) {
-				enumerate_statement_assignment(stmt, result);
+				enumerate_statement_argument(stmt, result);
+			} else if(tok.type() == TOKEN_LITERAL) {
+				insert_node(stmt, tok, result);
+
+				if(has_next_token()) {
+					move_next_token();
+				}
 			} else {
-				enumerate_statement_command_0(stmt, result);
+				TRACE_MESSAGE(TRACE_ERROR, "%s\n%s", 
+					NIMBLE_PARSER_EXCEPTION_STRING(NIMBLE_PARSER_EXCEPTION_EXPECTING_LITERAL),
+					CHK_STR(nimble_lexer::token_exception(0, true)));
+				THROW_NIMBLE_PARSER_EXCEPTION_MESSAGE(NIMBLE_PARSER_EXCEPTION_EXPECTING_LITERAL,
+					"%s", CHK_STR(nimble_lexer::token_exception(0, true)));
 			}
 
 			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %lu", result);
@@ -884,19 +894,27 @@ namespace NIMBLE {
 			return stmt;
 		}
 
+		nimble_node &
+		_nimble_parser::node(
+			__in const nimble_uid &uid
+			)
+		{
+			TRACE_ENTRY(TRACE_VERBOSE);
+
+			nimble_node &node = nimble_parser::acquire_node()->at(uid);
+
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "%s", CHK_STR(node.to_string(true)));
+			return node;
+		}
+
 		nimble_token &
 		_nimble_parser::node_token(
 			__in const nimble_uid &uid
 			)
 		{
-			nimble_node_factory_ptr node_fact = NULL;
-			nimble_token_factory_ptr tok_fact = NULL;
-
 			TRACE_ENTRY(TRACE_VERBOSE);
 
-			node_fact = nimble_parser::acquire_node();
-			tok_fact = nimble_lexer::acquire_token();
-			nimble_token &tok = tok_fact->at(node_fact->at(uid).token());
+			nimble_token &tok = nimble_lexer::acquire_token()->at(node(uid).token());
 
 			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "%s", CHK_STR(tok.to_string(true)));
 			return tok;

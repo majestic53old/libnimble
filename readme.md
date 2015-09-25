@@ -13,6 +13,10 @@ Changelog
 =========
 
 ##Version 0.1.1539
+*Updated:9/24/2015*
+
+* Added command executor evaluation routines (partial)
+
 *Updated:9/23/2015*
 
 * Fixed buggy parser

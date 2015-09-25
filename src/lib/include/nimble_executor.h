@@ -24,7 +24,64 @@ namespace NIMBLE {
 
 	namespace LANGUAGE {
 
-		// TODO
+		typedef class _nimble_executor :
+				protected nimble_parser {
+
+			public:
+
+				_nimble_executor(
+					__in_opt const std::string &input = std::string(),
+					__in_opt bool is_file = false
+					);
+
+				_nimble_executor(
+					__in const _nimble_executor &other
+					);
+
+				virtual ~_nimble_executor(void);
+
+				_nimble_executor &operator=(
+					__in const _nimble_executor &other
+					);
+
+				virtual void clear(void);
+
+				virtual int evaluate(void);
+
+				virtual void set(
+					__in_opt const std::string &input,
+					__in_opt bool is_file = false
+					);
+
+				void set(
+					__in const _nimble_executor &other
+					);
+
+			protected:
+
+				size_t evaluate_statement(
+					__out int &status,
+					__in const nimble_statement &stmt,
+					__in_opt size_t parent = PAR_INVALID
+					);
+
+				size_t evaluate_statement_assignment(
+					__out int &status,
+					__in const nimble_statement &stmt,
+					__in_opt size_t parent = PAR_INVALID
+					);
+
+				size_t evaluate_statement_command(
+					__out int &status,
+					__in const nimble_statement &stmt,
+					__in_opt size_t parent = PAR_INVALID
+					);
+
+			private:
+
+				std::recursive_mutex m_lock;
+
+		} nimble_executor, *nimble_executor_ptr;
 	}
 }
 
