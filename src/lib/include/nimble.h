@@ -83,6 +83,10 @@ namespace NIMBLE {
 
 			nimble_uid_factory_ptr acquire_uid(void);
 
+			std::string environment_as_string(
+				__in_opt bool verbose = false
+				);
+
 			bool environment_contains(
 				__in const std::string &field
 				);
@@ -164,7 +168,7 @@ namespace NIMBLE {
 				__in_opt const char *entry = NULL
 				);
 
-			void signal_set(void);		
+			void signal_set(void);
 
 			std::map<std::string, std::string> m_environment_map;
 

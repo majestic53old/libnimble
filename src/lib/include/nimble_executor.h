@@ -65,6 +65,11 @@ namespace NIMBLE {
 					__in_opt size_t parent = PAR_INVALID
 					);
 
+				std::string evaluate_statement_argument(
+					__in const nimble_statement &stmt,
+					__in_opt size_t parent = PAR_INVALID
+					);
+
 				size_t evaluate_statement_assignment(
 					__out int &status,
 					__in const nimble_statement &stmt,
@@ -73,6 +78,11 @@ namespace NIMBLE {
 
 				size_t evaluate_statement_command(
 					__out int &status,
+					__in const nimble_statement &stmt,
+					__in_opt size_t parent = PAR_INVALID
+					);
+
+				std::string evaluate_statement_literal(
 					__in const nimble_statement &stmt,
 					__in_opt size_t parent = PAR_INVALID
 					);

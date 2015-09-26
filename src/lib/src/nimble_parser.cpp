@@ -210,13 +210,30 @@ namespace NIMBLE {
 			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
 
-			result = insert_node(stmt, create_token(TOKEN_STATEMENT), result);
-
 			tok = token();
-			if((tok.type() == TOKEN_SYMBOL)
-					&& (tok.subtype() == SYMBOL_MODIFIER)) {
-				enumerate_statement_assignment(stmt, result);
+			if(tok.type() == TOKEN_SYMBOL) {
+
+				switch(tok.subtype()) {
+					case SYMBOL_MODIFIER:
+						result = insert_node(stmt, create_token(TOKEN_STATEMENT), result);
+						enumerate_statement_assignment(stmt, result);
+						break;
+					case SYMBOL_SEPERATOR:
+
+						if(has_next_token()) {
+							move_next_token();
+							enumerate_statement(stmt, result);
+						}
+						break;
+					default:
+						TRACE_MESSAGE(TRACE_ERROR, "%s\n%s", 
+							NIMBLE_PARSER_EXCEPTION_STRING(NIMBLE_PARSER_EXCEPTION_EXPECTING_STATEMENT),
+							CHK_STR(nimble_lexer::token_exception(0, true)));
+						THROW_NIMBLE_PARSER_EXCEPTION_MESSAGE(NIMBLE_PARSER_EXCEPTION_EXPECTING_STATEMENT,
+							"%s", CHK_STR(nimble_lexer::token_exception(0, true)));
+				}
 			} else {
+				result = insert_node(stmt, create_token(TOKEN_STATEMENT), result);
 				enumerate_statement_command_0(stmt, result);
 			}
 
@@ -340,38 +357,31 @@ namespace NIMBLE {
 			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
 
-			result = insert_node(stmt, create_token(TOKEN_CALL), result);
-
 			tok = token();
-			if(tok.type() != TOKEN_LITERAL) {
-				TRACE_MESSAGE(TRACE_ERROR, "%s\n%s", 
-					NIMBLE_PARSER_EXCEPTION_STRING(NIMBLE_PARSER_EXCEPTION_EXPECTING_LITERAL),
-					CHK_STR(nimble_lexer::token_exception(0, true)));
-				THROW_NIMBLE_PARSER_EXCEPTION_MESSAGE(NIMBLE_PARSER_EXCEPTION_EXPECTING_LITERAL,
-					"%s", CHK_STR(nimble_lexer::token_exception(0, true)));
-			}
+			if(tok.type() == TOKEN_LITERAL) {
+				result = insert_node(stmt, create_token(TOKEN_CALL), result);
+				insert_node(stmt, tok, result);
 
-			insert_node(stmt, tok, result);
+				if(has_next_token()) {
+					tok = move_next_token();
 
-			if(has_next_token()) {
-				tok = move_next_token();
+					for(;;) {
 
-				for(;;) {
+						if((tok.type() == TOKEN_SYMBOL)
+								&& (tok.subtype() == SYMBOL_MODIFIER)) {
+							enumerate_statement_argument(stmt, result);
+							tok = token();
+						} else if(tok.type() == TOKEN_LITERAL) {
+							insert_node(stmt, tok, result);
 
-					if((tok.type() == TOKEN_SYMBOL)
-							&& (tok.subtype() == SYMBOL_MODIFIER)) {
-						enumerate_statement_argument(stmt, result);
-						tok = token();
-					} else if(tok.type() == TOKEN_LITERAL) {
-						insert_node(stmt, tok, result);
+							if(!has_next_token()) {
+								break;
+							}
 
-						if(!has_next_token()) {
+							tok = move_next_token();
+						} else {
 							break;
 						}
-
-						tok = move_next_token();
-					} else {
-						break;
 					}
 				}
 			}

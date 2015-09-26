@@ -301,6 +301,42 @@ namespace NIMBLE {
 		TRACE_EXIT(TRACE_VERBOSE);
 	}
 
+	std::string 
+	_nimble::environment_as_string(
+		__in_opt bool verbose
+		)
+	{
+		std::stringstream result;
+		std::map<std::string, std::string>::iterator iter;
+
+		TRACE_ENTRY(TRACE_VERBOSE);
+		SERIALIZE_CALL_RECUR(m_lock);
+
+		if(verbose) {
+			result << "ENV[" << m_environment_map.size() << "] {" << std::endl;
+		}
+
+		for(iter = m_environment_map.begin(); iter != m_environment_map.end(); ++iter) {
+
+			if(iter != m_environment_map.begin()) {
+				result << std::endl;
+			}
+
+			if(verbose) {
+				result << "\t";
+			}
+
+			result << CHK_STR(iter->first) << " --> " << CHK_STR(iter->second);
+		}
+
+		if(verbose) {
+			result << std::endl << "}";
+		}
+
+		TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %s", CHK_STR(result.str()));
+		return CHK_STR(result.str());
+	}
+
 	bool 
 	_nimble::environment_contains(
 		__in const std::string &field
