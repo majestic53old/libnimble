@@ -13,6 +13,10 @@ Changelog
 =========
 
 ##Version 0.1.1539
+*Updated:9/26/2015*
+
+* Added support for persistant environment variables
+
 *Updated:9/25/2015*
 
 * Implemented assignment evaluation routine

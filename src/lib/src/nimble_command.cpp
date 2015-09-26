@@ -18,6 +18,7 @@
  */
 
 #include <errno.h>
+#include <sys/mman.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include "../include/nimble.h"
@@ -27,9 +28,12 @@ namespace NIMBLE {
 
 	namespace COMPONENT {
 
+		#define MAP_INVALID INVALID_TYPE(int)
+
 		_nimble_command::_nimble_command(void) :
 			m_active(false),
 			m_complete(NULL),
+			m_par_environment(NULL),
 			m_pid(PID_INVALID),
 			m_result(0)
 		{
@@ -43,6 +47,7 @@ namespace NIMBLE {
 				nimble_uid_class(other),
 				m_active(other.m_active),
 				m_complete(other.m_complete),
+				m_par_environment(other.m_par_environment),
 				m_pid(other.m_pid),
 				m_result(other.m_result)
 		{
@@ -73,6 +78,7 @@ namespace NIMBLE {
 				nimble_uid_class::operator=(other);
 				m_active = other.m_active;
 				m_complete = other.m_complete;
+				m_par_environment = other.m_par_environment;
 				m_pid = other.m_pid;
 				m_result = other.m_result;
 			}
@@ -132,7 +138,11 @@ namespace NIMBLE {
 			__out bool &update
 			)
 		{
+			uint16_t iter = 0;
+			char *share = NULL;
 			nimble_executor exe;
+			nimble_ptr inst = NULL;
+			std::string field, value;
 
 			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
@@ -151,8 +161,20 @@ namespace NIMBLE {
 					"%s", CHK_STR(nimble_uid::as_string(m_uid)));
 			}
 
+			share = (char *) mmap(NULL, ENV_MEM_LEN, PROT_READ | PROT_WRITE, 
+				MAP_ANON | MAP_SHARED, -1, 0);
+
+			if(!share || (share == MAP_FAILED)) {
+				TRACE_MESSAGE(TRACE_ERROR, "%s, err. 0x%x", NIMBLE_COMMAND_EXCEPTION_STRING(
+					NIMBLE_COMMAND_EXCEPTION_ALLOCATED_SHARE), errno);
+				THROW_NIMBLE_COMMAND_EXCEPTION_MESSAGE(NIMBLE_COMMAND_EXCEPTION_ALLOCATED_SHARE,
+					"err. 0x%x", errno);
+			}
+
+			nimble_environment::initialize(share, ENV_MEM_LEN);
 			m_active = true;
 			m_complete = complete;
+			m_par_environment = nimble::acquire()->environment_instance();
 			m_pid = PID_INVALID;
 			m_result = 0;
 
@@ -168,7 +190,7 @@ namespace NIMBLE {
 
 				try {
 					exe.set(command);
-					m_result = exe.evaluate();
+					m_result = exe.evaluate(share);
 				} catch(nimble_exception &exc) {
 					TRACE_MESSAGE(TRACE_ERROR, "%s", CHK_STR(exc.to_string(true)));
 					std::cerr << exc.to_string(true) << std::endl;
@@ -177,6 +199,13 @@ namespace NIMBLE {
 					TRACE_MESSAGE(TRACE_ERROR, "%s", exc.what());
 					std::cerr << exc.what() << std::endl;
 					m_result = INVALID_TYPE(int);
+				}
+
+				if(munmap(share, ENV_MEM_LEN) == MAP_INVALID) {
+					TRACE_MESSAGE(TRACE_ERROR, "%s, err. 0x%x", NIMBLE_COMMAND_EXCEPTION_STRING(
+						NIMBLE_COMMAND_EXCEPTION_UNALLOCATED_SHARE), errno);
+					THROW_NIMBLE_COMMAND_EXCEPTION_MESSAGE(NIMBLE_COMMAND_EXCEPTION_UNALLOCATED_SHARE,
+						"err. 0x%x", errno);
 				}
 
 				_exit(m_result);
@@ -198,6 +227,22 @@ namespace NIMBLE {
 				m_complete(*this);
 				m_complete = NULL;
 			}
+
+			inst = nimble::acquire();
+
+			for(; iter < nimble_environment::count(share); ++iter) {
+				nimble_environment::at(share, iter, field, value);
+				inst->environment_set(field, value);
+			}
+
+			if(munmap(share, ENV_MEM_LEN) == MAP_INVALID) {
+				TRACE_MESSAGE(TRACE_ERROR, "%s, err. 0x%x", NIMBLE_COMMAND_EXCEPTION_STRING(
+					NIMBLE_COMMAND_EXCEPTION_UNALLOCATED_SHARE), errno);
+				THROW_NIMBLE_COMMAND_EXCEPTION_MESSAGE(NIMBLE_COMMAND_EXCEPTION_UNALLOCATED_SHARE,
+					"err. 0x%x", errno);
+			}
+
+			m_par_environment = NULL;
 
 			TRACE_EXIT(TRACE_VERBOSE);
 		}
@@ -232,6 +277,7 @@ namespace NIMBLE {
 
 			m_active = false;
 			m_pid = PID_INVALID;
+			m_par_environment = NULL;
 			m_result = 0;
 
 			if(m_complete) {

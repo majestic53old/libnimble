@@ -46,7 +46,9 @@ namespace NIMBLE {
 
 				virtual void clear(void);
 
-				virtual int evaluate(void);
+				virtual int evaluate(
+					__inout_opt void *environment = NULL
+					);
 
 				virtual void set(
 					__in_opt const std::string &input,
@@ -62,29 +64,34 @@ namespace NIMBLE {
 				size_t evaluate_statement(
 					__out int &status,
 					__in const nimble_statement &stmt,
-					__in_opt size_t parent = PAR_INVALID
+					__in_opt size_t parent = PAR_INVALID,
+					__inout_opt void *environment = NULL
 					);
 
 				std::string evaluate_statement_argument(
 					__in const nimble_statement &stmt,
-					__in_opt size_t parent = PAR_INVALID
+					__in_opt size_t parent = PAR_INVALID,
+					__inout_opt void *environment = NULL
 					);
 
 				size_t evaluate_statement_assignment(
 					__out int &status,
 					__in const nimble_statement &stmt,
-					__in_opt size_t parent = PAR_INVALID
+					__in_opt size_t parent = PAR_INVALID,
+					__inout_opt void *environment = NULL
 					);
 
 				size_t evaluate_statement_command(
 					__out int &status,
 					__in const nimble_statement &stmt,
-					__in_opt size_t parent = PAR_INVALID
+					__in_opt size_t parent = PAR_INVALID,
+					__inout_opt void *environment = NULL
 					);
 
 				std::string evaluate_statement_literal(
 					__in const nimble_statement &stmt,
-					__in_opt size_t parent = PAR_INVALID
+					__in_opt size_t parent = PAR_INVALID,
+					__inout_opt void *environment = NULL
 					);
 
 			private:

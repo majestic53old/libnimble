@@ -79,6 +79,8 @@ namespace NIMBLE {
 
 				_nimble_cmd_fact_cb m_complete;
 
+				nimble_environment_map_ptr m_par_environment;
+
 				pid_t m_pid;
 
 				int m_result;

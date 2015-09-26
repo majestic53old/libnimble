@@ -41,6 +41,7 @@
 #include "nimble_trace.h"
 #include "nimble_language.h"
 #include "nimble_exception.h"
+#include "nimble_environment.h"
 
 using namespace NIMBLE;
 
@@ -87,13 +88,20 @@ namespace NIMBLE {
 				__in_opt bool verbose = false
 				);
 
+			static std::string environment_as_string(
+				__in const nimble_environment_map &environment,
+				__in_opt bool verbose = false
+				);
+
 			bool environment_contains(
 				__in const std::string &field
 				);
 
-			std::map<std::string, std::string>::iterator environment_find(
+			nimble_environment_map::iterator environment_find(
 				__in const std::string &field
 				);
+
+			nimble_environment_map_ptr environment_instance(void);
 
 			void environment_set(
 				__in const std::string &field,
@@ -170,7 +178,7 @@ namespace NIMBLE {
 
 			void signal_set(void);
 
-			std::map<std::string, std::string> m_environment_map;
+			nimble_environment_map m_environment_map;
 
 			nimble_command_factory_ptr m_factory_command;
 

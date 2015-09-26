@@ -89,7 +89,9 @@ namespace NIMBLE {
 		}
 
 		int 
-		_nimble_executor::evaluate(void)
+		_nimble_executor::evaluate(
+			__inout_opt void *environment
+			)
 		{
 			int result = 0;
 			nimble_statement stmt;
@@ -107,7 +109,7 @@ namespace NIMBLE {
 					case TOKEN_END:
 						break;
 					case TOKEN_STATEMENT:
-						evaluate_statement(result, stmt);
+						evaluate_statement(result, stmt, PAR_INVALID, environment);
 						break;
 					default:
 						TRACE_MESSAGE(TRACE_ERROR, "%s\n%s", 
@@ -128,7 +130,8 @@ namespace NIMBLE {
 		_nimble_executor::evaluate_statement(
 			__out int &status,
 			__in const nimble_statement &stmt,
-			__in_opt size_t parent
+			__in_opt size_t parent,
+			__inout_opt void *environment
 			)
 		{
 			size_t result = parent;
@@ -176,10 +179,10 @@ namespace NIMBLE {
 
 			switch(node_token(stmt.at(result)).type()) {
 				case TOKEN_ASSIGNMENT:
-					result = evaluate_statement_assignment(status, stmt, result);
+					result = evaluate_statement_assignment(status, stmt, result, environment);
 					break;
 				case TOKEN_COMMAND:
-					result = evaluate_statement_command(status, stmt, result);
+					result = evaluate_statement_command(status, stmt, result, environment);
 					break;
 				default:
 					TRACE_MESSAGE(TRACE_ERROR, "%s\n%s", 
@@ -196,7 +199,8 @@ namespace NIMBLE {
 		std::string 
 		_nimble_executor::evaluate_statement_argument(
 			__in const nimble_statement &stmt,
-			__in_opt size_t parent
+			__in_opt size_t parent,
+			__inout_opt void *environment
 			)
 		{
 			std::string result;
@@ -233,7 +237,7 @@ namespace NIMBLE {
 					"%s", CHK_STR(nimble_parser::statement_exception(0, true)));
 			}
 
-			result = evaluate_statement_literal(stmt, nd.children().front());
+			result = evaluate_statement_literal(stmt, nd.children().front(), environment);
 
 			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %s", CHK_STR(result));
 			return result;
@@ -243,7 +247,8 @@ namespace NIMBLE {
 		_nimble_executor::evaluate_statement_assignment(
 			__out int &status,
 			__in const nimble_statement &stmt,
-			__in_opt size_t parent
+			__in_opt size_t parent,
+			__inout_opt void *environment
 			)
 		{
 			bool right_arg = false;
@@ -282,15 +287,17 @@ namespace NIMBLE {
 					"%s", CHK_STR(nimble_parser::statement_exception(0, true)));
 			}
 
-			field = evaluate_statement_argument(stmt, nd.children().at(STMT_ASSIGNMENT_CHILD_LEFT));
+			field = evaluate_statement_argument(stmt, nd.children().at(STMT_ASSIGNMENT_CHILD_LEFT), environment);
 
 			switch(node_token(stmt.at(nd.children().at(STMT_ASSIGNMENT_CHILD_RIGHT))).type()) {
 				case TOKEN_ARGUMENT:					
-					value = evaluate_statement_argument(stmt, nd.children().at(STMT_ASSIGNMENT_CHILD_RIGHT));
+					value = evaluate_statement_argument(stmt, nd.children().at(STMT_ASSIGNMENT_CHILD_RIGHT), 
+							environment);
 					right_arg = true;
 					break;
 				case TOKEN_LITERAL:
-					value = evaluate_statement_literal(stmt, nd.children().at(STMT_ASSIGNMENT_CHILD_RIGHT));
+					value = evaluate_statement_literal(stmt, nd.children().at(STMT_ASSIGNMENT_CHILD_RIGHT), 
+							environment);
 					break;
 				default:
 					TRACE_MESSAGE(TRACE_ERROR, "%s\n%s", 
@@ -315,9 +322,13 @@ namespace NIMBLE {
 				value = inst->environment_find(value)->second;
 			}
 
+			if(environment) {
+				nimble_environment::add(environment, field, value);
+			}
+
 			inst->environment_set(field, value);
 
-			// TODO
+			// TODO:
 			std::cout << inst->environment_as_string(true) << std::endl;
 			// ---
 
@@ -329,7 +340,8 @@ namespace NIMBLE {
 		_nimble_executor::evaluate_statement_command(
 			__out int &status,
 			__in const nimble_statement &stmt,
-			__in_opt size_t parent
+			__in_opt size_t parent,
+			__inout_opt void *environment
 			)
 		{
 			size_t result = parent;
@@ -374,7 +386,8 @@ namespace NIMBLE {
 		std::string 
 		_nimble_executor::evaluate_statement_literal(
 			__in const nimble_statement &stmt,
-			__in_opt size_t parent
+			__in_opt size_t parent,
+			__inout_opt void *environment
 			)
 		{
 			std::string result;

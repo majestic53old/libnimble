@@ -225,7 +225,7 @@ namespace NIMBLE {
 		)
 	{
 		size_t pos = 0;
-		std::map<std::string, std::string>::iterator iter;
+		nimble_environment_map::iterator iter;
 
 		TRACE_ENTRY(TRACE_VERBOSE);
 		SERIALIZE_CALL_RECUR(m_lock);
@@ -306,19 +306,43 @@ namespace NIMBLE {
 		__in_opt bool verbose
 		)
 	{
-		std::stringstream result;
-		std::map<std::string, std::string>::iterator iter;
+		std::string result;
 
 		TRACE_ENTRY(TRACE_VERBOSE);
 		SERIALIZE_CALL_RECUR(m_lock);
 
-		if(verbose) {
-			result << "ENV[" << m_environment_map.size() << "] {" << std::endl;
+		if(!m_initialized) {
+			TRACE_MESSAGE(TRACE_ERROR, "%s", NIMBLE_EXCEPTION_STRING(
+				NIMBLE_EXCEPTION_UNINITIALIZED));
+			THROW_NIMBLE_EXCEPTION(NIMBLE_EXCEPTION_UNINITIALIZED);
 		}
 
-		for(iter = m_environment_map.begin(); iter != m_environment_map.end(); ++iter) {
+		result = nimble::environment_as_string(m_environment_map, verbose);
 
-			if(iter != m_environment_map.begin()) {
+		TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %s", CHK_STR(result));
+		return CHK_STR(result);
+	}
+
+	std::string 
+	_nimble::environment_as_string(
+		__in const nimble_environment_map &environment,
+		__in_opt bool verbose
+		)
+	{
+		std::stringstream result;
+		nimble_environment_map::const_iterator iter;
+
+		TRACE_ENTRY(TRACE_VERBOSE);
+
+		if(verbose) {
+			result << "ENV{" << VAL_AS_HEX(nimble_environment_map_ptr, &environment) 
+				<< "}[" << environment.size() << "] {" << std::endl;
+		}
+
+		for(iter = environment.begin(); 
+				iter != environment.end(); ++iter) {
+
+			if(iter != environment.begin()) {
 				result << std::endl;
 			}
 
@@ -347,18 +371,24 @@ namespace NIMBLE {
 		TRACE_ENTRY(TRACE_VERBOSE);
 		SERIALIZE_CALL_RECUR(m_lock);
 
+		if(!m_initialized) {
+			TRACE_MESSAGE(TRACE_ERROR, "%s", NIMBLE_EXCEPTION_STRING(
+				NIMBLE_EXCEPTION_UNINITIALIZED));
+			THROW_NIMBLE_EXCEPTION(NIMBLE_EXCEPTION_UNINITIALIZED);
+		}
+
 		result = (m_environment_map.find(field) != m_environment_map.end());
 
 		TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. 0x%x", result);
 		return result;
 	}
 
-	std::map<std::string, std::string>::iterator 
+	nimble_environment_map::iterator 
 	_nimble::environment_find(
 		__in const std::string &field
 		)
 	{
-		std::map<std::string, std::string>::iterator result;
+		nimble_environment_map::iterator result;
 
 		TRACE_ENTRY(TRACE_VERBOSE);
 		SERIALIZE_CALL_RECUR(m_lock);
@@ -375,16 +405,42 @@ namespace NIMBLE {
 		return result;
 	}
 
+	nimble_environment_map_ptr 
+	_nimble::environment_instance(void)
+	{
+		nimble_environment_map_ptr result = NULL;
+
+		TRACE_ENTRY(TRACE_VERBOSE);
+		SERIALIZE_CALL_RECUR(m_lock);
+
+		if(!m_initialized) {
+			TRACE_MESSAGE(TRACE_ERROR, "%s", NIMBLE_EXCEPTION_STRING(
+				NIMBLE_EXCEPTION_UNINITIALIZED));
+			THROW_NIMBLE_EXCEPTION(NIMBLE_EXCEPTION_UNINITIALIZED);
+		}
+
+		result = &m_environment_map;
+
+		TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. 0x%p", result);
+		return result;
+	}
+
 	void 
 	_nimble::environment_set(
 		__in const std::string &field,
 		__in const std::string &value
 		)
 	{
-		std::map<std::string, std::string>::iterator iter;
+		nimble_environment_map::iterator iter;
 
 		TRACE_ENTRY(TRACE_VERBOSE);
 		SERIALIZE_CALL_RECUR(m_lock);
+
+		if(!m_initialized) {
+			TRACE_MESSAGE(TRACE_ERROR, "%s", NIMBLE_EXCEPTION_STRING(
+				NIMBLE_EXCEPTION_UNINITIALIZED));
+			THROW_NIMBLE_EXCEPTION(NIMBLE_EXCEPTION_UNINITIALIZED);
+		}
 
 		iter = m_environment_map.find(field);
 		if(iter == m_environment_map.end()) {
@@ -404,8 +460,8 @@ namespace NIMBLE {
 	{
 		size_t len;		
 		const char *value = NULL;
+		nimble_environment_map::iterator iter;
 		std::string field, field_entry, field_value;
-		std::map<std::string, std::string>::iterator iter;
 
 		TRACE_ENTRY(TRACE_VERBOSE);
 		SERIALIZE_CALL_RECUR(m_lock);

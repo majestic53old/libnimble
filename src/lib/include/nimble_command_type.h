@@ -35,6 +35,7 @@ namespace NIMBLE {
 		enum {
 			NIMBLE_COMMAND_EXCEPTION_ACTIVE = 0,
 			NIMBLE_COMMAND_EXCEPTION_ALLOCATED,
+			NIMBLE_COMMAND_EXCEPTION_ALLOCATED_SHARE,
 			NIMBLE_COMMAND_EXCEPTION_INITIALIZED,
 			NIMBLE_COMMAND_EXCEPTION_INVALID_CALLBACK,
 			NIMBLE_COMMAND_EXCEPTION_INVALID_PID,
@@ -42,6 +43,7 @@ namespace NIMBLE {
 			NIMBLE_COMMAND_EXCEPTION_NOT_FOUND,
 			NIMBLE_COMMAND_EXCEPTION_PID_KILL,
 			NIMBLE_COMMAND_EXCEPTION_PID_WAIT,
+			NIMBLE_COMMAND_EXCEPTION_UNALLOCATED_SHARE,
 			NIMBLE_COMMAND_EXCEPTION_UNINITIALIZED,
 		};
 
@@ -50,6 +52,7 @@ namespace NIMBLE {
 		static const std::string NIMBLE_COMMAND_EXCEPTION_STR[] = {
 			"Command is active",
 			"Failed to allocate command component",
+			"Failed to allocate command share",
 			"Command component is initialized",
 			"Command received invalid callback",
 			"Command failed to create child process",
@@ -57,6 +60,7 @@ namespace NIMBLE {
 			"Command does not exist",
 			"Command failed to kill child process",
 			"Command failed to wait for child process",
+			"Failed to unallocate command share",
 			"Command component is uninitialized",
 			};
 
