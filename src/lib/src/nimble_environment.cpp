@@ -26,7 +26,12 @@ namespace NIMBLE {
 
 	#define ENV_ENTRY_MAX UINT16_MAX
 
+	#define ENV_FLG_CHECK(_F_, _FLG_) ((_F_) & (_FLG_))
+	#define ENV_FLG_CLEAR(_F_, _FLG_) ((_F_) &= ~(_FLG_))
+	#define ENV_FLG_SET(_F_, _FLG_) ((_F_) |= (_FLG_))
+
 	typedef struct __attribute__((__packed__)) _nimble_environment_header {
+		uint8_t flag;
 		uint32_t size;
 		uint32_t position;
 		uint16_t count;
@@ -78,7 +83,7 @@ namespace NIMBLE {
 
 		nimble_environment::validate(context);
 		head = (nimble_environment_header_ptr) context;
-		result << "ENV[" << head->count << "]";
+		result << "ENV[" << head->count << "], flg. 0x" << VAL_AS_HEX(uint8_t, head->flag);
 
 		if(verbose) {
 			result << " (" << head->size << " bytes, pos. " 
@@ -158,6 +163,56 @@ namespace NIMBLE {
 	}
 
 	void 
+	_nimble_environment::flag_clear(
+		__in void *context,
+		__in uint8_t flag
+		)
+	{
+		nimble_environment_header_ptr head = NULL;
+
+		TRACE_ENTRY(TRACE_VERBOSE);
+
+		if(!context) {
+			TRACE_MESSAGE(TRACE_ERROR, "%s", 
+				NIMBLE_ENVIRONMENT_EXCEPTION_STRING(NIMBLE_ENVIRONMENT_EXCEPTION_INVALID));
+			THROW_NIMBLE_ENVIRONMENT_EXCEPTION(NIMBLE_ENVIRONMENT_EXCEPTION_INVALID);
+		}
+
+		head = (nimble_environment_header_ptr) context;
+
+		if(flag <= ENV_FLAG_MAX) {
+			ENV_FLG_CLEAR(head->flag, flag);
+		}
+
+		TRACE_EXIT(TRACE_VERBOSE);
+	}
+
+	void 
+	_nimble_environment::flag_set(
+		__in void *context,
+		__in uint8_t flag
+		)
+	{
+		nimble_environment_header_ptr head = NULL;
+
+		TRACE_ENTRY(TRACE_VERBOSE);
+
+		if(!context) {
+			TRACE_MESSAGE(TRACE_ERROR, "%s", 
+				NIMBLE_ENVIRONMENT_EXCEPTION_STRING(NIMBLE_ENVIRONMENT_EXCEPTION_INVALID));
+			THROW_NIMBLE_ENVIRONMENT_EXCEPTION(NIMBLE_ENVIRONMENT_EXCEPTION_INVALID);
+		}
+
+		head = (nimble_environment_header_ptr) context;
+
+		if(flag <= ENV_FLAG_MAX) {
+			ENV_FLG_SET(head->flag, flag);
+		}
+
+		TRACE_EXIT(TRACE_VERBOSE);
+	}
+
+	void 
 	_nimble_environment::initialize(
 		__inout void *context,
 		__in size_t size
@@ -175,10 +230,38 @@ namespace NIMBLE {
 
 		memset(context, 0, size);
 		head = (nimble_environment_header_ptr) context;
+		head->flag = 0;
 		head->size = size;
 		head->position = offsetof(nimble_environment_header, pairs);
 
 		TRACE_EXIT(TRACE_VERBOSE);
+	}
+
+	bool 
+	_nimble_environment::is_flag_set(
+		__in void *context,
+		__in uint8_t flag
+		)
+	{
+		bool result = false;
+		nimble_environment_header_ptr head = NULL;
+
+		TRACE_ENTRY(TRACE_VERBOSE);
+
+		if(!context) {
+			TRACE_MESSAGE(TRACE_ERROR, "%s", 
+				NIMBLE_ENVIRONMENT_EXCEPTION_STRING(NIMBLE_ENVIRONMENT_EXCEPTION_INVALID));
+			THROW_NIMBLE_ENVIRONMENT_EXCEPTION(NIMBLE_ENVIRONMENT_EXCEPTION_INVALID);
+		}
+
+		head = (nimble_environment_header_ptr) context;
+
+		if(flag <= ENV_FLAG_MAX) {
+			result = ENV_FLG_CHECK(head->flag, flag);
+		}
+
+		TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. 0x%x", result);
+		return result;
 	}
 
 	uint32_t 

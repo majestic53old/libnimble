@@ -218,6 +218,10 @@ namespace NIMBLE {
 						result = insert_node(stmt, create_token(TOKEN_STATEMENT), result);
 						enumerate_statement_assignment(stmt, result);
 						break;
+					case SYMBOL_OPEN_PARENTHESIS:
+						result = insert_node(stmt, create_token(TOKEN_STATEMENT), result);
+						enumerate_statement_command_0(stmt, result);
+						break;
 					case SYMBOL_SEPERATOR:
 
 						if(has_next_token()) {

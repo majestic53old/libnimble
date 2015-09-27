@@ -28,6 +28,7 @@ namespace NIMBLE {
 		#define STMT_ASSIGNMENT_CHILD_COUNT 2
 		#define STMT_ASSIGNMENT_CHILD_LEFT 0
 		#define STMT_ASSIGNMENT_CHILD_RIGHT 1
+		#define STMT_CALL_CHILD_COUNT_MIN 1
 		#define STMT_CHILD_COUNT 1
 		#define STMT_COMMAND_LIST_CHILD_COUNT 1
 		#define STMT_LITERAL_CHILD_COUNT 0
@@ -328,23 +329,23 @@ namespace NIMBLE {
 
 			inst->environment_set(field, value);
 
-			// TODO:
-			std::cout << inst->environment_as_string(true) << std::endl;
-			// ---
-
 			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %lu", result);
 			return result;
 		}
 
 		size_t 
-		_nimble_executor::evaluate_statement_command(
+		_nimble_executor::evaluate_statement_call(
 			__out int &status,
 			__in const nimble_statement &stmt,
 			__in_opt size_t parent,
 			__inout_opt void *environment
 			)
 		{
-			size_t result = parent;
+			std::string ar;
+			nimble_ptr inst = NULL;
+			std::vector<char *> args;
+			size_t iter, result = parent;
+			std::vector<std::string> call;
 
 			TRACE_ENTRY(TRACE_VERBOSE);
 			SERIALIZE_CALL_RECUR(m_lock);
@@ -361,15 +362,15 @@ namespace NIMBLE {
 			result = (result != PAR_INVALID) ? result : 0;
 
 			nimble_node nd = node(stmt.at(result));
-			if(node_token(nd).type() != TOKEN_COMMAND) {
+			if(node_token(nd).type() != TOKEN_CALL) {
 				TRACE_MESSAGE(TRACE_ERROR, "%s\n%s", 
-					NIMBLE_EXECUTOR_EXCEPTION_STRING(NIMBLE_EXECUTOR_EXCEPTION_EXPECTING_COMMAND),
+					NIMBLE_EXECUTOR_EXCEPTION_STRING(NIMBLE_EXECUTOR_EXCEPTION_EXPECTING_CALL),
 					CHK_STR(nimble_parser::statement_exception(0, true)));
-				THROW_NIMBLE_EXECUTOR_EXCEPTION_MESSAGE(NIMBLE_EXECUTOR_EXCEPTION_EXPECTING_COMMAND,
+				THROW_NIMBLE_EXECUTOR_EXCEPTION_MESSAGE(NIMBLE_EXECUTOR_EXCEPTION_EXPECTING_CALL,
 					"%s", CHK_STR(nimble_parser::statement_exception(0, true)));
 			}
 
-			if(nd.children().size() != STMT_COMMAND_LIST_CHILD_COUNT) {
+			if(nd.children().size() < STMT_CALL_CHILD_COUNT_MIN) {
 				TRACE_MESSAGE(TRACE_ERROR, "%s\n%s", 
 					NIMBLE_EXECUTOR_EXCEPTION_STRING(NIMBLE_EXECUTOR_EXCEPTION_MALFORMED_STATEMENT),
 					CHK_STR(nimble_parser::statement_exception(0, true)));
@@ -377,7 +378,116 @@ namespace NIMBLE {
 					"%s", CHK_STR(nimble_parser::statement_exception(0, true)));
 			}
 
-			// TODO: evaluate command statement
+			inst = nimble::acquire();
+
+			for(iter = 0; iter < nd.children().size(); ++iter) {
+
+				if(node_token(stmt.at(nd.children().at(iter))).type() == TOKEN_ARGUMENT) {
+					ar = evaluate_statement_argument(stmt, nd.children().at(iter), 
+						environment);
+
+					if(!inst->environment_contains(ar)) {
+						TRACE_MESSAGE(TRACE_ERROR, "%s\n%s", 
+							NIMBLE_EXECUTOR_EXCEPTION_STRING(NIMBLE_EXECUTOR_EXCEPTION_UNDEFINED_ARGUMENT),
+							CHK_STR(ar));
+						THROW_NIMBLE_EXECUTOR_EXCEPTION_MESSAGE(NIMBLE_EXECUTOR_EXCEPTION_UNDEFINED_ARGUMENT,
+							"%s", CHK_STR(ar));
+					}
+
+					call.push_back(inst->environment_find(ar)->second);
+				} else {
+					call.push_back(evaluate_statement_literal(stmt, nd.children().at(iter), 
+						environment));
+				}
+			}
+
+			for(iter = 0; iter < call.size(); ++iter) {
+				args.push_back((char *) call.at(iter).c_str());
+			}
+
+			args.push_back(NULL);
+
+			if(call.front() == CMD_EXIT) {
+				nimble_environment::flag_set(environment, ENV_FLAG_EXIT);
+			}
+
+			status = execv(call.front().c_str(), &args[0]);
+
+			// TODO: handle redirection/pipes
+
+			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %lu", result);
+			return result;
+		}
+
+		size_t 
+		_nimble_executor::evaluate_statement_command(
+			__out int &status,
+			__in const nimble_statement &stmt,
+			__in_opt size_t parent,
+			__inout_opt void *environment
+			)
+		{
+			size_t iter = 0, result = parent;
+
+			TRACE_ENTRY(TRACE_VERBOSE);
+			SERIALIZE_CALL_RECUR(m_lock);
+
+			if((result != PAR_INVALID) && (result >= stmt.size())) {
+				TRACE_MESSAGE(TRACE_ERROR, "%s, %lu\n%s", 
+					NIMBLE_EXECUTOR_EXCEPTION_STRING(NIMBLE_EXECUTOR_EXCEPTION_INVALID_PARENT),
+					CHK_STR(nimble_parser::statement_exception(0, true)), result);
+				THROW_NIMBLE_EXECUTOR_EXCEPTION_MESSAGE(NIMBLE_EXECUTOR_EXCEPTION_INVALID_PARENT,
+					"%s, pos. %lu", CHK_STR(nimble_parser::statement_exception(0, true)), 
+					result);
+			}
+
+			result = (result != PAR_INVALID) ? result : 0;
+
+			nimble_node nd = node(stmt.at(result));
+			if(node_token(nd).type() == TOKEN_COMMAND) {
+
+				if(nd.children().size() != STMT_COMMAND_LIST_CHILD_COUNT) {
+					TRACE_MESSAGE(TRACE_ERROR, "%s\n%s", 
+						NIMBLE_EXECUTOR_EXCEPTION_STRING(NIMBLE_EXECUTOR_EXCEPTION_MALFORMED_STATEMENT),
+						CHK_STR(nimble_parser::statement_exception(0, true)));
+					THROW_NIMBLE_EXECUTOR_EXCEPTION_MESSAGE(NIMBLE_EXECUTOR_EXCEPTION_MALFORMED_STATEMENT,
+						"%s", CHK_STR(nimble_parser::statement_exception(0, true)));
+				}
+
+				if(nd.children().front() >= stmt.size()) {
+					TRACE_MESSAGE(TRACE_ERROR, "%s, %lu\n%s", 
+						NIMBLE_EXECUTOR_EXCEPTION_STRING(NIMBLE_EXECUTOR_EXCEPTION_INVALID_CHILD),
+						CHK_STR(nimble_parser::statement_exception(0, true)), 
+						nd.children().front());
+					THROW_NIMBLE_EXECUTOR_EXCEPTION_MESSAGE(NIMBLE_EXECUTOR_EXCEPTION_INVALID_CHILD,
+						"%s, pos. %lu", CHK_STR(nimble_parser::statement_exception(0, true)), 
+						nd.children().front());
+				}
+
+				nd = node(stmt.at(nd.children().front()));
+			}
+
+			switch(node_token(nd).type()) {
+				case TOKEN_CALL_LIST:
+
+					for(; iter < nd.children().size(); ++iter) {
+						evaluate_statement_call(status, stmt, nd.children().at(iter), environment);
+
+						if(status < 0) {
+							break;
+						}
+					}
+					break;
+				case TOKEN_COMMAND:
+					evaluate_statement_command(status, stmt, nd.children().front(), environment);
+					break;
+				default:
+					TRACE_MESSAGE(TRACE_ERROR, "%s\n%s", 
+						NIMBLE_EXECUTOR_EXCEPTION_STRING(NIMBLE_EXECUTOR_EXCEPTION_EXPECTING_CALL_LIST),
+						CHK_STR(nimble_parser::statement_exception(0, true)));
+					THROW_NIMBLE_EXECUTOR_EXCEPTION_MESSAGE(NIMBLE_EXECUTOR_EXCEPTION_EXPECTING_CALL_LIST,
+						"%s", CHK_STR(nimble_parser::statement_exception(0, true)));
+			}
 
 			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %lu", result);
 			return result;

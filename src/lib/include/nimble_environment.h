@@ -22,6 +22,8 @@
 
 namespace NIMBLE {
 
+	#define ENV_FLAG_EXIT 0x1
+	#define ENV_FLAG_MAX ENV_FLAG_EXIT
 	#define ENV_MEM_LEN 1024
 
 	typedef std::map<std::string, std::string> nimble_environment_map, 
@@ -53,9 +55,24 @@ namespace NIMBLE {
 				__in void *context
 				);
 
+			static void flag_clear(
+				__in void *context,
+				__in uint8_t flag
+				);
+
+			static void flag_set(
+				__in void *context,
+				__in uint8_t flag
+				);
+
 			static void initialize(
 				__inout void *context,
 				__in size_t size
+				);
+
+			static bool is_flag_set(
+				__in void *context,
+				__in uint8_t flag
 				);
 
 			static uint32_t size(

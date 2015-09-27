@@ -81,6 +81,13 @@ namespace NIMBLE {
 					__inout_opt void *environment = NULL
 					);
 
+				size_t evaluate_statement_call(
+					__out int &status,
+					__in const nimble_statement &stmt,
+					__in_opt size_t parent = PAR_INVALID,
+					__inout_opt void *environment = NULL
+					);
+
 				size_t evaluate_statement_command(
 					__out int &status,
 					__in const nimble_statement &stmt,

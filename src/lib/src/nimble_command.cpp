@@ -21,6 +21,7 @@
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <unistd.h>
 #include "../include/nimble.h"
 #include "../include/nimble_command_type.h"
 
@@ -229,6 +230,10 @@ namespace NIMBLE {
 			}
 
 			inst = nimble::acquire();
+
+			if(nimble_environment::is_flag_set(share, ENV_FLAG_EXIT)) {
+				exit(0);
+			}
 
 			for(; iter < nimble_environment::count(share); ++iter) {
 				nimble_environment::at(share, iter, field, value);

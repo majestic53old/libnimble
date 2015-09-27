@@ -13,6 +13,10 @@ Changelog
 =========
 
 ##Version 0.1.1539
+*Updated:9/27/2015*
+
+* Added support for basic command handling and exit
+
 *Updated:9/26/2015*
 
 * Added support for persistant environment variables

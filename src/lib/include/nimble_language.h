@@ -34,6 +34,8 @@ namespace NIMBLE {
 	#define CHAR_SPACE ' '
 	#define CHAR_TAB '\t'
 
+	#define CMD_EXIT "exit"
+
 	#define TOK_INVALID INVALID_TYPE(nimble_tok_t)
 	#define TOKSUB_INVALID INVALID_TYPE(nimble_subtok_t)
 

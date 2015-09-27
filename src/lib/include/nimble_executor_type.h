@@ -35,6 +35,8 @@ namespace NIMBLE {
 		enum {
 			NIMBLE_EXECUTOR_EXCEPTION_EXPECTING_ARGUMENT = 0,
 			NIMBLE_EXECUTOR_EXCEPTION_EXPECTING_ASSIGNMENT,
+			NIMBLE_EXECUTOR_EXCEPTION_EXPECTING_CALL,
+			NIMBLE_EXECUTOR_EXCEPTION_EXPECTING_CALL_LIST,
 			NIMBLE_EXECUTOR_EXCEPTION_EXPECTING_COMMAND,
 			NIMBLE_EXECUTOR_EXCEPTION_EXPECTING_LITERAL,
 			NIMBLE_EXECUTOR_EXCEPTION_EXPECTING_STATEMENT,
@@ -49,6 +51,8 @@ namespace NIMBLE {
 		static const std::string NIMBLE_EXECUTOR_EXCEPTION_STR[] = {
 			"Expecting argument",
 			"Expecting assignment",
+			"Expecting call",
+			"Expecting call list",
 			"Expecting command",
 			"Expecting literal",
 			"Expecting statement",
