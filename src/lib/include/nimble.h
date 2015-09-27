@@ -20,10 +20,10 @@
 #ifndef NIMBLE_H_
 #define NIMBLE_H_
 
-//#define NDEBUG
+#define NDEBUG
 
 #ifndef TLEVEL
-#define TLEVEL TRACE_INFORMATION
+#define TLEVEL TRACE_ERROR
 #endif // TLEVEL
 
 #ifndef TLOGOUT

@@ -170,6 +170,7 @@ namespace NIMBLE {
 
 		result << what();
 
+#ifndef NDEBUG
 		if(verbose) {
 			SET_TERM_ATTRIB(result, 1, COL_FORE_YELLOW);
 			result << " (";
@@ -180,7 +181,10 @@ namespace NIMBLE {
 
 			result << m_line << ") ";
 			CLEAR_TERM_ATTRIB(result);
-		}	
+		}
+#else
+		REF_PARAM(verbose);
+#endif
 
 		return CHK_STR(result.str());
 	}

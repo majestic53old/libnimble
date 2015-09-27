@@ -413,8 +413,6 @@ namespace NIMBLE {
 
 			status = execv(call.front().c_str(), &args[0]);
 
-			// TODO: handle redirection/pipes
-
 			TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "res. %lu", result);
 			return result;
 		}
@@ -446,7 +444,7 @@ namespace NIMBLE {
 			nimble_node nd = node(stmt.at(result));
 			if(node_token(nd).type() == TOKEN_COMMAND) {
 
-				if(nd.children().size() != STMT_COMMAND_LIST_CHILD_COUNT) {
+				if(nd.children().size() < STMT_COMMAND_LIST_CHILD_COUNT) {
 					TRACE_MESSAGE(TRACE_ERROR, "%s\n%s", 
 						NIMBLE_EXECUTOR_EXCEPTION_STRING(NIMBLE_EXECUTOR_EXCEPTION_MALFORMED_STATEMENT),
 						CHK_STR(nimble_parser::statement_exception(0, true)));
@@ -473,7 +471,12 @@ namespace NIMBLE {
 					for(; iter < nd.children().size(); ++iter) {
 						evaluate_statement_call(status, stmt, nd.children().at(iter), environment);
 
-						if(status < 0) {
+						if(status < 0 
+								&& !nimble_environment::is_flag_set(environment, ENV_FLAG_EXIT)) {
+							TRACE_MESSAGE(TRACE_INFORMATION, "Command returned with error: 0x%x (%i)", 
+								status, status);
+							std::cout << "Command returned with error: " << status << " (0x" 
+								<< VAL_AS_HEX(uint32_t, status) << ")" << std::endl;
 							break;
 						}
 					}

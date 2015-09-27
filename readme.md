@@ -16,6 +16,7 @@ Changelog
 *Updated:9/27/2015*
 
 * Added support for basic command handling and exit
+* Exception code cleanup
 
 *Updated:9/26/2015*
 

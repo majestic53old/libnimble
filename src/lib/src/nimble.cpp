@@ -94,9 +94,7 @@ namespace NIMBLE {
 		__in int sig
 		)
 	{
-
-		// TODO
-		/*nimble_ptr inst = NULL;
+		nimble_ptr inst = NULL;
 
 		TRACE_ENTRY(TRACE_VERBOSE);
 
@@ -106,8 +104,7 @@ namespace NIMBLE {
 			if(inst && inst->is_initialized()) {
 				inst->acquire_command()->stop_last(SIGKILL);
 			}
-		}*/
-		// ---
+		}
 
 		TRACE_EXIT_MESSAGE(TRACE_VERBOSE, "sig. 0x%x", sig);
 		std::exit(sig);
